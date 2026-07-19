@@ -1,0 +1,29 @@
+﻿Sprint,Story ID,Epic,Priority,User Story / Task,Acceptance Summary,Story Points,Dependencies,Owner
+Sprint 0,S0-01,Engineering baseline,Must,Freeze approved versions and dependency policy,"Version matrix, SBOM and upgrade owner approved",3,,Engineering
+Sprint 0,S0-02,Repository,Must,"Create monorepo, branch protections and CODEOWNERS",Build can run from clean checkout; protected main branch,3,,Engineering
+Sprint 0,S0-03,Architecture,Must,"Approve ADRs for modular monolith, RLS and outbox",ADRs reviewed and recorded,5,,Engineering
+Sprint 0,S0-04,Database,Must,Create migration pipeline and schema verification,Migrations run from empty database and checksum validation passes,5,,Engineering
+Sprint 0,S0-05,Security,Must,Configure development OIDC realm and tenant claim,Token contains tenant_id and application roles,5,,Engineering
+Sprint 0,S0-06,Quality,Must,"Configure unit, integration, architecture and frontend gates",CI blocks failing tests and migration drift,5,,Engineering
+Sprint 0,S0-07,Observability,Must,"Establish correlation IDs, structured logs and metrics",No payroll amounts or PII in logs,3,,Engineering
+Sprint 0,S0-08,Developer experience,Must,Publish Compose setup and golden seed,New engineer reaches running environment under 30 minutes,3,,Engineering
+Sprint 1,S1-00,Integration reliability,Must,Prove outbox publication and inbox consumption idempotency before any real domain-event publication,"Transactional persistence, stable event identity, duplicate dispatch and tenant-and-consumer inbox deduplication tests pass",5,S0-03,Engineering
+Sprint 1,S1-01,Tenant,Must,Implement tenant context and transaction-scoped SET LOCAL,All requests fail closed without tenant; RLS isolation tests pass,8,,Engineering
+Sprint 1,S1-02,Security,Must,Map OIDC issuer/subject and role permissions,Unauthorised operations return 403 and are audited,8,,Engineering
+Sprint 1,S1-03,Organisation,Must,Create legal entity and PSU APIs/UI,Effective-dated hierarchy is tenant safe and audited,8,,Engineering
+Sprint 1,S1-04,Organisation,Must,Create establishment API/UI,Establishment belongs to same-tenant PSU,5,,Engineering
+Sprint 1,S1-05,Audit,Must,Implement append-only audit event writer,Before/after metadata and correlation ID retained,5,,Engineering
+Sprint 1,S1-06,Architecture,Must,Add Spring Modulith verification,CI detects module cycles and internal package imports,5,,Engineering
+Sprint 2,S2-01,Calendar,Must,Create monthly calendar and period generation,"Periods are contiguous, non-overlapping and deterministic",8,,Engineering
+Sprint 2,S2-02,Pay group,Must,Create pay group and proration policy,One monthly calendar and INR currency assigned,5,,Engineering
+Sprint 2,S2-03,Compensation,Must,"Create Basic, HRA and Special components",Approved effective-dated component versions available,8,,Engineering
+Sprint 2,S2-04,Compensation,Must,Create salary structure and dependency validation,BASIC precedes HRA; residual SPECIAL balances target salary,8,,Engineering
+Sprint 2,S2-05,Employee,Must,"Create relationship, assignment and payroll profile",Employee is ready only with valid org and pay group,8,,Engineering
+Sprint 2,S2-06,Employee,Must,Assign salary and pay group,No overlapping active assignments; tenant-safe FKs enforced,8,,Engineering
+Sprint 3,S3-01,Operations,Must,Create payroll cycle and resolve population,Eligible assignment included exactly once,8,,Engineering
+Sprint 3,S3-02,Snapshot,Must,Seal immutable employee calculation input,Canonical JSON hash is stable and auditable,8,,Engineering
+Sprint 3,S3-03,Calculation,Must,Compile BASIC-HRA-SPECIAL plan,Dependency order is deterministic and cycle-free,8,,Engineering
+Sprint 3,S3-04,Calculation,Must,Implement calendar-day proration,Full and partial month golden tests pass,8,,Engineering
+Sprint 3,S3-05,Calculation,Must,Persist immutable result and component trace,Same snapshot produces same result hash; mutation rejected,13,,Engineering
+Sprint 3,S3-06,Documents,Must,Generate immutable draft-payslip snapshot,Document shows DRAFT and reconciles to result,8,,Engineering
+Sprint 3,S3-07,End-to-end,Must,Execute organisation-to-payslip golden scenario,"Basic 50k, HRA 20k, Special 20k, gross/net 90k",13,,Engineering

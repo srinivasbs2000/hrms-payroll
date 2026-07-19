@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>com.acme.hrms</groupId><artifactId>hrms-payroll-parent</artifactId><version>1.0.0-SNAPSHOT</version><relativePath>../../pom.xml</relativePath></parent>
+  <artifactId>payroll-boot</artifactId>
+  <dependencies>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>platform-core</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>security</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>integrations</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>organisation</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>compensation</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>employee-payroll</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>payroll-operations</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>calculation-engine</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>documents-reporting</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>database-migrations</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>com.tngtech.archunit</groupId><artifactId>archunit-junit5</artifactId><version>1.4.1</version><scope>test</scope></dependency>
+  </dependencies>
+  <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>
+</project>

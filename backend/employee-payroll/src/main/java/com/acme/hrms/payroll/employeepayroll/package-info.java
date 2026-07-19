@@ -1,0 +1,1 @@
+@org.springframework.modulith.ApplicationModule(displayName="Employee Payroll") package com.acme.hrms.payroll.employeepayroll;

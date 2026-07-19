@@ -1,0 +1,14 @@
+spring:
+  config.activate.on-profile: prod
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  flyway.enabled: false
+  security.oauth2.resourceserver.jwt:
+    issuer-uri: ${OIDC_ISSUER}
+    jwk-set-uri: ${OIDC_JWK_SET_URI:}
+payroll:
+  audit.service-identity: ${AUDIT_SERVICE_IDENTITY}
+  security.audience: ${OIDC_AUDIENCE}
+  baseline-smoke.enabled: false

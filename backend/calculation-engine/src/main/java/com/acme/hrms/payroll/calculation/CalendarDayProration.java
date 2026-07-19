@@ -1,0 +1,3 @@
+package com.acme.hrms.payroll.calculation;
+import java.math.*; import java.time.*; import java.time.temporal.ChronoUnit;
+public final class CalendarDayProration { public BigDecimal factor(LocalDate periodStart,LocalDate periodEnd,LocalDate eligibleFrom,LocalDate eligibleTo){var from=eligibleFrom.isAfter(periodStart)?eligibleFrom:periodStart;var to=eligibleTo.isBefore(periodEnd)?eligibleTo:periodEnd;if(to.isBefore(from))return BigDecimal.ZERO;long period=ChronoUnit.DAYS.between(periodStart,periodEnd)+1;long eligible=ChronoUnit.DAYS.between(from,to)+1;return BigDecimal.valueOf(eligible).divide(BigDecimal.valueOf(period),10,RoundingMode.HALF_UP);} }

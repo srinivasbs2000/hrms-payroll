@@ -1,0 +1,1 @@
+@org.springframework.modulith.ApplicationModule(displayName="Documents and Reporting") package com.acme.hrms.payroll.documentsreporting;

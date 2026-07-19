@@ -1,0 +1,43 @@
+# Operating systems and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+.secrets/
+
+# Java and Maven
+target/
+*.class
+*.jar
+*.war
+*.log
+.mvn/timing.properties
+
+# Node and frontend build output
+node_modules/
+.pnpm-store/
+dist/
+coverage/
+bom-*.json
+bom-*.xml
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local runtime state
+.docker/
+tmp/
+temp/

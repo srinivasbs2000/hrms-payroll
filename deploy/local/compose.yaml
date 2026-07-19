@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: payroll
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:?set POSTGRES_ADMIN_PASSWORD in deploy/local/.env}
+      PAYROLL_APP_PASSWORD: ${PAYROLL_APP_PASSWORD:?set PAYROLL_APP_PASSWORD in deploy/local/.env}
+      PAYROLL_MIGRATOR_PASSWORD: ${PAYROLL_MIGRATOR_PASSWORD:?set PAYROLL_MIGRATOR_PASSWORD in deploy/local/.env}
+    ports: ["127.0.0.1:${POSTGRES_PORT:-15432}:5432"]
+    volumes:
+      - payroll-db-v17:/var/lib/postgresql/data
+      - ./postgres/001_admin_bootstrap.sh:/docker-entrypoint-initdb.d/001_admin_bootstrap.sh:ro
+      - ../../database/flyway/bootstrap/001_admin_bootstrap.sql:/bootstrap/001_admin_bootstrap.sql:ro
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U postgres -d payroll"], interval: 5s, timeout: 5s, retries: 20}
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.0
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:?set KEYCLOAK_ADMIN in deploy/local/.env}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set KEYCLOAK_ADMIN_PASSWORD in deploy/local/.env}
+    ports: ["127.0.0.1:8081:8080"]
+    volumes: ["./keycloak/payroll-realm.json:/opt/keycloak/data/import/payroll-realm.json:ro"]
+volumes: {payroll-db-v17: {}}

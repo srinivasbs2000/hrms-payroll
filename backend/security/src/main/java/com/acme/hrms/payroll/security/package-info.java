@@ -1,0 +1,1 @@
+@org.springframework.modulith.ApplicationModule(displayName="Security") package com.acme.hrms.payroll.security;

@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "generated": "2026-07-19",
+  "validation": {
+    "docx_pages": 20,
+    "docx_accessibility_findings": 0,
+    "openapi_redocly": "valid",
+    "sql_parser": "13 of 13 parsed and Flyway-validated",
+    "react_tests": "1 passed",
+    "react_production_build": "passed",
+    "maven_poms": "13 XML parsed",
+    "maven_dependency_build": "13 of 13 reactor modules verified"
+  },
+  "files": [
+    {
+      "file": "Payroll_Implementation_Foundation_Pack_v1_0.docx",
+      "bytes": 463200,
+      "sha256": "1be26ef7c32c875e55386dec3b8265f18762d724c927a2ea01528445ea8b715b"
+    },
+    {
+      "file": "Payroll_Organisation_to_Draft_Payslip_Implementation_Pack_v1_0.docx",
+      "bytes": 174714,
+      "sha256": "d7aa91ecacf48104eca6399f738f1ed2c5361f5dff28ce6c33b918e18722daf6"
+    },
+    {
+      "file": "payroll-vertical-slice-flyway.zip",
+      "bytes": 9701,
+      "sha256": "6a38af1d946346890ee53e5792ecdc570f0aa5dc66acb130cfdbf1a4d8bc1e33"
+    },
+    {
+      "file": "payroll-vertical-slice-openapi-v1.yaml",
+      "bytes": 25366,
+      "sha256": "352d776f7962edd6ac69f72e9da8028439a11beff83edab1bea1f7e356448989"
+    },
+    {
+      "file": "hrms-payroll-vertical-slice-maven.zip",
+      "bytes": 32943,
+      "sha256": "fb614c4c9f6c06469a3a2331232f1ab34e943a461b2ad71b0d81c7a653756441"
+    },
+    {
+      "file": "payroll-web-react18.zip",
+      "bytes": 33787,
+      "sha256": "727877e871981bd489c84ff4937ec817b78be61d4445a75ac570b871daa87f9e"
+    },
+    {
+      "file": "payroll-local-dev-compose.zip",
+      "bytes": 2041,
+      "sha256": "91b3402fc3b00f4f0421f3ed68fa4a11645e5237a25b7e3c6f2cd6bbfe094962"
+    },
+    {
+      "file": "organisation-to-draft-payslip-sprint-backlog.csv",
+      "bytes": 3940,
+      "sha256": "330f295f76d64a29c3ef56d2588682a15a10d4c0a6340bb2bd58b69f38daee82"
+    }
+  ]
+}

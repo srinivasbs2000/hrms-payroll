@@ -1,0 +1,1 @@
+@org.springframework.modulith.ApplicationModule(displayName="Integrations") package com.acme.hrms.payroll.integrations;

@@ -1,0 +1,1109 @@
+openapi: 3.1.0
+info:
+  title: HRMS Payroll Vertical Slice API
+  version: 1.0.0
+  description: Organisation-to-draft-payslip implementation contract. Statutory, tax,
+    banking, accounting, retro and final settlement are outside this contract.
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+- url: /api/v1
+security:
+- oidc: []
+tags:
+- name: Organisation
+  description: Employer hierarchy and establishment setup.
+- name: Calendar
+  description: Monthly calendars, periods and pay groups.
+- name: Compensation
+  description: Pay components and salary structures.
+- name: Employee Payroll
+  description: Payroll relationships, assignments and salary assignment.
+- name: Payroll Operations
+  description: Regular cycle, population and sealed inputs.
+- name: Calculation
+  description: Deterministic gross-to-net results and trace.
+- name: Documents
+  description: Draft payslip generation and retrieval.
+paths:
+  /legal-entities:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Organisation
+      operationId: createLegalEntity
+      x-permission: organisation.legal-entity.create
+      requestBody:
+        $ref: '#/components/requestBodies/LegalEntityRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/LegalEntityCreated'
+        '400':
+          $ref: '#/components/responses/Problem'
+        '409':
+          $ref: '#/components/responses/Problem'
+      summary: Create Legal Entity
+    get:
+      tags:
+      - Organisation
+      operationId: listLegalEntities
+      x-permission: organisation.legal-entity.read
+      responses:
+        '200':
+          description: Legal entities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LegalEntity'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: List Legal Entities
+  /payroll-statutory-units:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Organisation
+      operationId: createStatutoryUnit
+      x-permission: organisation.psu.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatutoryUnitCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityId'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Create Statutory Unit
+  /establishments:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Organisation
+      operationId: createEstablishment
+      x-permission: organisation.establishment.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EstablishmentCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityId'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Create Establishment
+  /payroll-calendars:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Calendar
+      operationId: createPayrollCalendar
+      x-permission: calendar.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayrollCalendarCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityId'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Create Payroll Calendar
+  /payroll-calendars/{calendarId}/periods:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Calendar
+      operationId: generatePayPeriods
+      x-permission: calendar.period.generate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeneratePeriodsRequest'
+      responses:
+        '201':
+          description: Generated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PayPeriod'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Generate Pay Periods
+    get:
+      tags:
+      - Calendar
+      operationId: listPayPeriods
+      x-permission: calendar.read
+      responses:
+        '200':
+          description: Periods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PayPeriod'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: List Pay Periods
+  /pay-groups:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Calendar
+      operationId: createPayGroup
+      x-permission: pay-group.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayGroupCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityId'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Create Pay Group
+  /pay-components:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Compensation
+      operationId: createPayComponent
+      x-permission: compensation.component.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayComponentCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityId'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Create Pay Component
+  /salary-structures:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Compensation
+      operationId: createSalaryStructure
+      x-permission: compensation.structure.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryStructureCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityId'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Create Salary Structure
+  /payroll-relationships:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Employee Payroll
+      operationId: createPayrollRelationship
+      x-permission: employee-payroll.relationship.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayrollRelationshipCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityId'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Create Payroll Relationship
+  /payroll-assignments/{assignmentId}/salary-assignments:
+    parameters:
+    - $ref: '#/components/parameters/AssignmentId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Employee Payroll
+      operationId: assignSalary
+      x-permission: employee-payroll.salary.assign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalaryAssignmentCreate'
+      responses:
+        '201':
+          description: Assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityId'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Assign Salary
+  /payroll-cycles:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Payroll Operations
+      operationId: createPayrollCycle
+      x-permission: payroll-cycle.create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayrollCycleCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityId'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Create Payroll Cycle
+  /payroll-cycles/{cycleId}/resolve-population:
+    parameters:
+    - $ref: '#/components/parameters/CycleId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Payroll Operations
+      operationId: resolvePopulation
+      x-permission: payroll-cycle.population.resolve
+      responses:
+        '200':
+          description: Population
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PopulationSummary'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Resolve Population
+  /payroll-cycles/{cycleId}/seal-inputs:
+    parameters:
+    - $ref: '#/components/parameters/CycleId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Payroll Operations
+      operationId: sealInputs
+      x-permission: payroll-cycle.inputs.seal
+      responses:
+        '200':
+          description: Sealed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotSummary'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Seal Inputs
+  /payroll-calculations:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Calculation
+      operationId: calculatePayroll
+      x-permission: payroll-calculation.execute
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculationRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculationAccepted'
+        '409':
+          $ref: '#/components/responses/Problem'
+        '422':
+          $ref: '#/components/responses/Problem'
+      summary: Calculate Payroll
+  /payroll-results/{resultId}:
+    parameters:
+    - $ref: '#/components/parameters/ResultId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags:
+      - Calculation
+      operationId: getPayrollResult
+      x-permission: payroll-result.read
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollResult'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Get Payroll Result
+  /payroll-results/{resultId}/trace:
+    parameters:
+    - $ref: '#/components/parameters/ResultId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags:
+      - Calculation
+      operationId: getCalculationTrace
+      x-permission: payroll-result.trace.read
+      responses:
+        '200':
+          description: Trace
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TraceStep'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Get Calculation Trace
+  /payroll-results/{resultId}/draft-payslip:
+    parameters:
+    - $ref: '#/components/parameters/ResultId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags:
+      - Documents
+      operationId: generateDraftPayslip
+      x-permission: draft-payslip.generate
+      responses:
+        '201':
+          description: Generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftPayslip'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Generate Draft Payslip
+    get:
+      tags:
+      - Documents
+      operationId: getDraftPayslip
+      x-permission: draft-payslip.read
+      responses:
+        '200':
+          description: Draft payslip
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftPayslip'
+        '400':
+          $ref: '#/components/responses/Problem'
+      summary: Get Draft Payslip
+components:
+  securitySchemes:
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: http://localhost:8081/realms/payroll/.well-known/openid-configuration
+  parameters:
+    CorrelationId:
+      name: X-Correlation-ID
+      in: header
+      required: false
+      description: Caller-supplied UUID used for request, log, event and error correlation. A value is generated when omitted or invalid.
+      schema:
+        type: string
+        format: uuid
+    CalendarId:
+      name: calendarId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AssignmentId:
+      name: assignmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CycleId:
+      name: cycleId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ResultId:
+      name: resultId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 120
+  requestBodies:
+    LegalEntityRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LegalEntityCreate'
+  responses:
+    Unauthorized:
+      $ref: '#/components/responses/Problem'
+    Forbidden:
+      $ref: '#/components/responses/Problem'
+    NotFound:
+      $ref: '#/components/responses/Problem'
+    Conflict:
+      $ref: '#/components/responses/Problem'
+    UnprocessableEntity:
+      $ref: '#/components/responses/Problem'
+    TooManyRequests:
+      $ref: '#/components/responses/Problem'
+    InternalServerError:
+      $ref: '#/components/responses/Problem'
+    ServiceUnavailable:
+      $ref: '#/components/responses/Problem'
+    LegalEntityCreated:
+      description: Created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LegalEntity'
+    Problem:
+      description: Problem Details
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/CorrelationId'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  headers:
+    CorrelationId:
+      description: UUID shared by request logs, domain events and RFC 9457 error responses.
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    EntityId:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    Money:
+      type: object
+      required:
+      - amount
+      - currency
+      properties:
+        amount:
+          type: string
+          pattern: ^-?[0-9]+(\.[0-9]{1,4})?$
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+    LegalEntityCreate:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - name
+      - effectiveFrom
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+        name:
+          type: string
+          minLength: 2
+          maxLength: 200
+        countryCode:
+          type: string
+          default: IN
+        currency:
+          type: string
+          default: INR
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type:
+          - string
+          - 'null'
+          format: date
+    LegalEntity:
+      allOf:
+      - $ref: '#/components/schemas/EntityId'
+      - $ref: '#/components/schemas/LegalEntityCreate'
+      - type: object
+        required:
+        - version
+        properties:
+          version:
+            type: integer
+            format: int64
+    StatutoryUnitCreate:
+      type: object
+      required:
+      - legalEntityId
+      - code
+      - name
+      - effectiveFrom
+      properties:
+        legalEntityId:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type:
+          - string
+          - 'null'
+          format: date
+    EstablishmentCreate:
+      type: object
+      required:
+      - statutoryUnitId
+      - code
+      - name
+      - stateCode
+      - effectiveFrom
+      properties:
+        statutoryUnitId:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        stateCode:
+          type: string
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type:
+          - string
+          - 'null'
+          format: date
+    PayrollCalendarCreate:
+      type: object
+      required:
+      - code
+      - name
+      - timezone
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        frequency:
+          type: string
+          const: MONTHLY
+        timezone:
+          type: string
+          default: Asia/Kolkata
+    GeneratePeriodsRequest:
+      type: object
+      required:
+      - year
+      properties:
+        year:
+          type: integer
+          minimum: 2020
+          maximum: 2100
+        paymentDay:
+          type: integer
+          minimum: 1
+          maximum: 31
+    PayPeriod:
+      type: object
+      required:
+      - id
+      - periodCode
+      - periodStart
+      - periodEnd
+      - paymentDate
+      properties:
+        id:
+          type: string
+          format: uuid
+        periodCode:
+          type: string
+        periodStart:
+          type: string
+          format: date
+        periodEnd:
+          type: string
+          format: date
+        paymentDate:
+          type: string
+          format: date
+    PayGroupCreate:
+      type: object
+      required:
+      - statutoryUnitId
+      - calendarId
+      - code
+      - name
+      - effectiveFrom
+      properties:
+        statutoryUnitId:
+          type: string
+          format: uuid
+        calendarId:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        currency:
+          type: string
+          default: INR
+        prorationMethod:
+          type: string
+          const: CALENDAR_DAYS
+        effectiveFrom:
+          type: string
+          format: date
+    PayComponentCreate:
+      type: object
+      required:
+      - code
+      - name
+      - componentType
+      - effectiveFrom
+      - formula
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        componentType:
+          type: string
+          enum:
+          - EARNING
+        effectiveFrom:
+          type: string
+          format: date
+        formula:
+          $ref: '#/components/schemas/Formula'
+    Formula:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - FIXED
+          - PERCENTAGE_OF_COMPONENT
+          - RESIDUAL
+        fixedAmount:
+          type:
+          - string
+          - 'null'
+        percentage:
+          type:
+          - string
+          - 'null'
+        baseComponentCode:
+          type:
+          - string
+          - 'null'
+    SalaryStructureCreate:
+      type: object
+      required:
+      - code
+      - name
+      - effectiveFrom
+      - lines
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        currency:
+          type: string
+          default: INR
+        effectiveFrom:
+          type: string
+          format: date
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/SalaryStructureLine'
+    SalaryStructureLine:
+      type: object
+      required:
+      - componentCode
+      - sequence
+      properties:
+        componentCode:
+          type: string
+        sequence:
+          type: integer
+        fixedAmount:
+          type:
+          - string
+          - 'null'
+        percentage:
+          type:
+          - string
+          - 'null'
+        baseComponentCode:
+          type:
+          - string
+          - 'null'
+    PayrollRelationshipCreate:
+      type: object
+      required:
+      - externalEmployeeId
+      - employeeNumber
+      - legalEntityId
+      - establishmentId
+      - assignmentNumber
+      - relationshipStart
+      properties:
+        externalEmployeeId:
+          type: string
+        employeeNumber:
+          type: string
+        legalEntityId:
+          type: string
+          format: uuid
+        establishmentId:
+          type: string
+          format: uuid
+        assignmentNumber:
+          type: string
+        relationshipStart:
+          type: string
+          format: date
+    SalaryAssignmentCreate:
+      type: object
+      required:
+      - salaryStructureId
+      - monthlyAmount
+      - currency
+      - effectiveFrom
+      properties:
+        salaryStructureId:
+          type: string
+          format: uuid
+        payGroupId:
+          type: string
+          format: uuid
+        monthlyAmount:
+          type: string
+        currency:
+          type: string
+          default: INR
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type:
+          - string
+          - 'null'
+          format: date
+    PayrollCycleCreate:
+      type: object
+      required:
+      - payGroupId
+      - payPeriodId
+      properties:
+        payGroupId:
+          type: string
+          format: uuid
+        payPeriodId:
+          type: string
+          format: uuid
+        cycleType:
+          type: string
+          const: REGULAR
+    PopulationSummary:
+      type: object
+      required:
+      - cycleId
+      - includedCount
+      properties:
+        cycleId:
+          type: string
+          format: uuid
+        includedCount:
+          type: integer
+        excludedCount:
+          type: integer
+    SnapshotSummary:
+      type: object
+      required:
+      - cycleId
+      - snapshotCount
+      - combinedHash
+      properties:
+        cycleId:
+          type: string
+          format: uuid
+        snapshotCount:
+          type: integer
+        combinedHash:
+          type: string
+    CalculationRequest:
+      type: object
+      required:
+      - payrollCycleId
+      properties:
+        payrollCycleId:
+          type: string
+          format: uuid
+        mode:
+          type: string
+          enum:
+          - TRIAL
+          default: TRIAL
+    CalculationAccepted:
+      type: object
+      required:
+      - calculationRequestId
+      - status
+      properties:
+        calculationRequestId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          const: ACCEPTED
+    ComponentResult:
+      type: object
+      required:
+      - componentCode
+      - unproratedAmount
+      - prorationFactor
+      - calculatedAmount
+      properties:
+        componentCode:
+          type: string
+        unproratedAmount:
+          $ref: '#/components/schemas/Money'
+        prorationFactor:
+          type: string
+        calculatedAmount:
+          $ref: '#/components/schemas/Money'
+    PayrollResult:
+      type: object
+      required:
+      - id
+      - payrollCycleId
+      - payrollAssignmentId
+      - gross
+      - deductions
+      - net
+      - components
+      - resultHash
+      properties:
+        id:
+          type: string
+          format: uuid
+        payrollCycleId:
+          type: string
+          format: uuid
+        payrollAssignmentId:
+          type: string
+          format: uuid
+        gross:
+          $ref: '#/components/schemas/Money'
+        deductions:
+          $ref: '#/components/schemas/Money'
+        net:
+          $ref: '#/components/schemas/Money'
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentResult'
+        resultHash:
+          type: string
+    TraceStep:
+      type: object
+      required:
+      - stepNo
+      - stepType
+      - inputs
+      - output
+      properties:
+        stepNo:
+          type: integer
+        componentCode:
+          type:
+          - string
+          - 'null'
+        stepType:
+          type: string
+        inputs:
+          type: object
+          additionalProperties: true
+        expression:
+          type:
+          - string
+          - 'null'
+        output:
+          type: string
+        message:
+          type:
+          - string
+          - 'null'
+    DraftPayslip:
+      type: object
+      required:
+      - id
+      - payrollResultId
+      - status
+      - employeeNumber
+      - payPeriod
+      - earnings
+      - gross
+      - net
+      properties:
+        id:
+          type: string
+          format: uuid
+        payrollResultId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          const: DRAFT
+        employeeNumber:
+          type: string
+        payPeriod:
+          type: string
+        earnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentResult'
+        gross:
+          $ref: '#/components/schemas/Money'
+        net:
+          $ref: '#/components/schemas/Money'
+        disclaimer:
+          type: string
+    Problem:
+      type: object
+      required:
+      - type
+      - title
+      - status
+      - detail
+      - instance
+      - correlationId
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        correlationId:
+          type: string
+          format: uuid
+        code:
+          type: string
+        violations:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string

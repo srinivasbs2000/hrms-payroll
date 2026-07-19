@@ -1,0 +1,1 @@
+@org.springframework.modulith.ApplicationModule(displayName="Calculation Engine") package com.acme.hrms.payroll.calculationengine;

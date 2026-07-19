@@ -1,0 +1,19 @@
+spring:
+  application.name: hrms-payroll
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/payroll}
+    username: ${DB_USER:payroll_app}
+    password: ${DB_PASSWORD:change-me}
+  jpa:
+    open-in-view: false
+    hibernate.ddl-auto: validate
+  flyway.enabled: false
+  security.oauth2.resourceserver.jwt:
+    issuer-uri: ${OIDC_ISSUER:http://localhost:8081/realms/payroll}
+    jwk-set-uri: ${OIDC_JWK_SET_URI:}
+management.endpoints.web.exposure.include: health,info,prometheus
+payroll:
+  audit.service-identity: ${AUDIT_SERVICE_IDENTITY:service:local-payroll}
+  security.audience: ${OIDC_AUDIENCE:payroll-api}
+  baseline-smoke.enabled: ${BASELINE_AUTH_SMOKE_ENABLED:false}
+logging.pattern.level: "%5p correlation_id=%X{correlation_id:-none}"

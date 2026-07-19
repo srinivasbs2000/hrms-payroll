@@ -1,0 +1,1 @@
+@org.springframework.modulith.ApplicationModule(displayName="Organisation") package com.acme.hrms.payroll.organisation;

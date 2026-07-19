@@ -1,0 +1,3 @@
+package com.acme.hrms.payroll;
+import static org.assertj.core.api.Assertions.assertThat; import java.math.BigDecimal; import com.acme.hrms.payroll.calculation.FixedGrossToNetCalculator; import org.junit.jupiter.api.Test;
+class GoldenPayrollTest { @Test void fullMonthGrossIsNinetyThousand(){var r=new FixedGrossToNetCalculator().calculate(new BigDecimal("50000"),new BigDecimal("0.40"),new BigDecimal("90000"),BigDecimal.ONE);assertThat(r.gross()).isEqualByComparingTo("90000.00");assertThat(r.components().get("HRA")).isEqualByComparingTo("20000.00");assertThat(r.components().get("SPECIAL_ALLOWANCE")).isEqualByComparingTo("20000.00");}}

@@ -1,0 +1,1 @@
+@org.springframework.modulith.ApplicationModule(displayName="Compensation") package com.acme.hrms.payroll.compensation;
