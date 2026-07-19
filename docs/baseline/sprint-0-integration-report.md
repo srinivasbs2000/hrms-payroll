@@ -640,4 +640,4 @@ Additional failed diagnostics that led to fixes: the first Keycloak password gra
 5. Mockito reports its documented future-JDK dynamic-agent warning. Java 21 tests pass; configure an explicit agent before moving to a JDK that disables dynamic attachment.
 6. There is no initial Git commit, so Git cannot show an ordinary tracked before/after diff. The temporary-index patch is complete for the current 111-file baseline and did not modify the real index.
 
-Proposed baseline commit message: `chore(payroll): close Sprint 0 baseline`
+Proposed baseline commit message: `chore(payroll): close Sprint 0 baseline` and the commit id :bba8a51d17147443e400f51bc9ccf769b8bd1af8
