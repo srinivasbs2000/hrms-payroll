@@ -1,6 +1,6 @@
 # HRMS Payroll vertical slice
 
-Runnable Sprint 0A hardened baseline for the approved organisation-to-draft-payslip slice. The repository contains a Java 21/Spring Boot modular-monolith starter, React 18/Vite starter, OpenAPI 3.1 contract, PostgreSQL 17/Flyway schema, Keycloak development realm, Docker Compose stack and Sprint 0-3 backlog.
+Runnable Sprint 1 organisation foundation for the approved organisation-to-draft-payslip slice. The repository contains a Java 21/Spring Boot modular monolith, React 18/Vite web application, OpenAPI 3.1 contract, PostgreSQL 17/Flyway schema, Keycloak development realm, Docker Compose stack and Sprint 0-3 backlog.
 
 The implemented starter scope is limited to fixed monthly BASIC, HRA and SPECIAL_ALLOWANCE gross-to-net calculation and a synthetic draft-payslip preview. Statutory deductions, tax, retro, off-cycle, final settlement, banking and accounting are intentionally excluded.
 
@@ -74,14 +74,16 @@ $local = ConvertFrom-StringData (Get-Content -Raw deploy/local/.env)
 $env:DB_URL = "jdbc:postgresql://127.0.0.1:$($local.POSTGRES_PORT)/payroll"
 $env:DB_USER = 'payroll_app'
 $env:DB_PASSWORD = $local.PAYROLL_APP_PASSWORD
-.\mvnw.cmd -pl backend/payroll-boot -am spring-boot:run
+.\mvnw.cmd -DskipTests install
+.\mvnw.cmd -f backend/payroll-boot/pom.xml spring-boot:run
 ```
 
 To run the local real-token authentication smoke test, enable its technical endpoint before starting the backend:
 
 ```powershell
 $env:BASELINE_AUTH_SMOKE_ENABLED = 'true'
-.\mvnw.cmd -pl backend/payroll-boot -am spring-boot:run
+.\mvnw.cmd -DskipTests install
+.\mvnw.cmd -f backend/payroll-boot/pom.xml spring-boot:run
 ```
 
 Then, in a second terminal from the repository root:
@@ -90,7 +92,7 @@ Then, in a second terminal from the repository root:
 .\deploy\local\smoke\auth-smoke.ps1
 ```
 
-The script obtains a real token from the development Keycloak realm, checks issuer, `payroll-api` audience, tenant, `PAYROLL_OPERATOR` role and `payroll.read` permission, and calls `GET /internal/baseline/auth-smoke`. The raw token remains in memory and is neither printed nor persisted. The endpoint is disabled by default and is forced off in the `prod` profile.
+The script obtains a real token from the development Keycloak realm, checks issuer, `payroll-api` audience, tenant, `PAYROLL_OPERATOR` role plus `payroll.read` and `organisation.read` permissions, and calls both `GET /internal/baseline/auth-smoke` and `GET /api/v1/organisation-hierarchy`. The raw token remains in memory and is neither printed nor persisted. The baseline technical endpoint is disabled by default and is forced off in the `prod` profile.
 
 In a second terminal:
 

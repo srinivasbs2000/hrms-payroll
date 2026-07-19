@@ -24,6 +24,8 @@ class RowLevelSecurityIT {
   private static final String TENANT_B = "00000000-0000-0000-0000-00000000000b";
   private static final String LEGAL_A = "10000000-0000-0000-0000-00000000000a";
   private static final String LEGAL_B = "10000000-0000-0000-0000-00000000000b";
+  private static final String LEGAL_VERSION_A = "11000000-0000-0000-0000-00000000000a";
+  private static final String LEGAL_VERSION_B = "11000000-0000-0000-0000-00000000000b";
 
   @Container
   static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine")
@@ -55,9 +57,12 @@ class RowLevelSecurityIT {
       statement.execute("INSERT INTO platform.tenant(id,code,name,created_by,updated_by) VALUES "
           + "('" + TENANT_A + "','A','Synthetic Tenant A','test','test'),"
           + "('" + TENANT_B + "','B','Synthetic Tenant B','test','test')");
-      statement.execute("INSERT INTO organisation.legal_entity(id,tenant_id,code,name,effective_from,created_by,updated_by) VALUES "
-          + "('" + LEGAL_A + "','" + TENANT_A + "','A_LE','Synthetic A','2026-01-01','test','test'),"
-          + "('" + LEGAL_B + "','" + TENANT_B + "','B_LE','Synthetic B','2026-01-01','test','test')");
+      statement.execute("INSERT INTO organisation.legal_entity(id,tenant_id,code,created_by,updated_by) VALUES "
+          + "('" + LEGAL_A + "','" + TENANT_A + "','A_LE','test','test'),"
+          + "('" + LEGAL_B + "','" + TENANT_B + "','B_LE','test','test')");
+      statement.execute("INSERT INTO organisation.legal_entity_version(id,tenant_id,legal_entity_id,name,effective_from,created_by,updated_by) VALUES "
+          + "('" + LEGAL_VERSION_A + "','" + TENANT_A + "','" + LEGAL_A + "','Synthetic A','2026-01-01','test','test'),"
+          + "('" + LEGAL_VERSION_B + "','" + TENANT_B + "','" + LEGAL_B + "','Synthetic B','2026-01-01','test','test')");
     }
   }
 
@@ -66,8 +71,8 @@ class RowLevelSecurityIT {
     try (Connection noTenant = app()) {
       assertThat(count(noTenant, "SELECT count(*) FROM organisation.legal_entity")).isZero();
       assertSqlState("42501", () -> execute(noTenant,
-          "INSERT INTO organisation.legal_entity(tenant_id,code,name,effective_from,created_by,updated_by) VALUES "
-              + "('" + TENANT_A + "','NO_TENANT','Synthetic','2026-01-01','test','test')"));
+          "INSERT INTO organisation.legal_entity(tenant_id,code,created_by,updated_by) VALUES "
+              + "('" + TENANT_A + "','NO_TENANT','test','test')"));
     }
 
     try (Connection tenantA = app()) {
@@ -76,19 +81,20 @@ class RowLevelSecurityIT {
       assertThat(count(tenantA, "SELECT count(*) FROM organisation.legal_entity WHERE id='" + LEGAL_B + "'"))
           .isZero();
       assertSqlState("42501", () -> execute(tenantA,
-          "INSERT INTO organisation.legal_entity(tenant_id,code,name,effective_from,created_by,updated_by) VALUES "
-              + "('" + TENANT_B + "','CROSS_INSERT','Synthetic','2026-01-01','test','test')"));
-      assertThat(executeUpdate(tenantA,
-          "UPDATE organisation.legal_entity SET name='Hidden update',updated_by='test' WHERE id='" + LEGAL_B + "'"))
-          .isZero();
+          "INSERT INTO organisation.legal_entity(tenant_id,code,created_by,updated_by) VALUES "
+              + "('" + TENANT_B + "','CROSS_INSERT','test','test')"));
+      assertSqlState("42501", () -> execute(tenantA,
+          "UPDATE organisation.legal_entity SET status='INACTIVE',updated_by='test' WHERE id='" + LEGAL_B + "'"));
       assertSqlState("42501", () -> execute(tenantA,
           "UPDATE organisation.legal_entity SET tenant_id='" + TENANT_B + "',updated_by='test' WHERE id='" + LEGAL_A + "'"));
-      assertThat(executeUpdate(tenantA,
-          "DELETE FROM organisation.legal_entity WHERE id='" + LEGAL_B + "'"))
-          .isZero();
+      assertSqlState("42501", () -> execute(tenantA,
+          "DELETE FROM organisation.legal_entity WHERE id='" + LEGAL_B + "'"));
+      execute(tenantA,
+          "INSERT INTO organisation.payroll_statutory_unit(id,tenant_id,code,created_by,updated_by) VALUES "
+              + "('20000000-0000-0000-0000-000000000009','" + TENANT_A + "','BAD_FK','test','test')");
       assertSqlState("23503", () -> execute(tenantA,
-          "INSERT INTO organisation.payroll_statutory_unit(tenant_id,legal_entity_id,code,name,effective_from,created_by,updated_by) VALUES "
-              + "('" + TENANT_A + "','" + LEGAL_B + "','BAD_FK','Synthetic','2026-01-01','test','test')"));
+          "INSERT INTO organisation.payroll_statutory_unit_version(tenant_id,payroll_statutory_unit_id,legal_entity_version_id,name,effective_from,created_by,updated_by) VALUES "
+              + "('" + TENANT_A + "','20000000-0000-0000-0000-000000000009','" + LEGAL_VERSION_B + "','Synthetic','2026-01-01','test','test')"));
     }
 
     try (Connection tenantB = app()) {
@@ -154,6 +160,25 @@ class RowLevelSecurityIT {
     }
   }
 
+  @Test
+  void approvedOrganisationVersionsCannotOverlapAndRuntimeCannotRewriteHistory() throws Exception {
+    try (Connection connection = admin()) {
+      assertSqlState("23P01", () -> execute(connection,
+          "INSERT INTO organisation.legal_entity_version(tenant_id,legal_entity_id,name,effective_from,approval_status,version_sequence,created_by,updated_by) VALUES ('"
+              + TENANT_A + "','" + LEGAL_A + "','Overlapping','2026-06-01','APPROVED',2,'test','test')"));
+      execute(connection,
+          "INSERT INTO organisation.legal_entity_version(tenant_id,legal_entity_id,name,effective_from,effective_to,approval_status,version_sequence,created_by,updated_by) VALUES ('"
+              + TENANT_A + "','" + LEGAL_A + "','Future draft','2027-01-01','2028-01-01','DRAFT',3,'test','test')");
+    }
+    try (Connection runtime = app()) {
+      setTenant(runtime, TENANT_A);
+      assertSqlState("42501", () -> execute(runtime,
+          "UPDATE organisation.legal_entity_version SET name='Rewritten' WHERE id='" + LEGAL_VERSION_A + "'"));
+      assertSqlState("42501", () -> execute(runtime,
+          "DELETE FROM organisation.legal_entity_version WHERE id='" + LEGAL_VERSION_A + "'"));
+    }
+  }
+
   private String inboxInsert(String tenantId, String messageId, String consumerName) {
     return "INSERT INTO integration.inbox_message(tenant_id,message_id,consumer_name,payload_hash) VALUES ('"
         + tenantId + "','" + messageId + "','" + consumerName + "',repeat('a',64))";
@@ -161,12 +186,14 @@ class RowLevelSecurityIT {
 
   private void seedImmutableChain() throws Exception {
     try (Connection c = admin(); Statement s = c.createStatement()) {
-      s.execute("INSERT INTO organisation.payroll_statutory_unit(id,tenant_id,legal_entity_id,code,name,effective_from,created_by,updated_by) VALUES ('20000000-0000-0000-0000-000000000001','" + TENANT_A + "','" + LEGAL_A + "','PSU','Synthetic','2026-01-01','test','test')");
-      s.execute("INSERT INTO organisation.establishment(id,tenant_id,statutory_unit_id,code,name,state_code,effective_from,created_by,updated_by) VALUES ('21000000-0000-0000-0000-000000000001','" + TENANT_A + "','20000000-0000-0000-0000-000000000001','EST','Synthetic','KA','2026-01-01','test','test')");
+      s.execute("INSERT INTO organisation.payroll_statutory_unit(id,tenant_id,code,created_by,updated_by) VALUES ('20000000-0000-0000-0000-000000000011','" + TENANT_A + "','PSU','test','test')");
+      s.execute("INSERT INTO organisation.payroll_statutory_unit_version(id,tenant_id,payroll_statutory_unit_id,legal_entity_version_id,name,effective_from,created_by,updated_by) VALUES ('20000000-0000-0000-0000-000000000001','" + TENANT_A + "','20000000-0000-0000-0000-000000000011','" + LEGAL_VERSION_A + "','Synthetic','2026-01-01','test','test')");
+      s.execute("INSERT INTO organisation.establishment(id,tenant_id,code,created_by,updated_by) VALUES ('21000000-0000-0000-0000-000000000011','" + TENANT_A + "','EST','test','test')");
+      s.execute("INSERT INTO organisation.establishment_version(id,tenant_id,establishment_id,payroll_statutory_unit_version_id,name,state_code,effective_from,created_by,updated_by) VALUES ('21000000-0000-0000-0000-000000000001','" + TENANT_A + "','21000000-0000-0000-0000-000000000011','20000000-0000-0000-0000-000000000001','Synthetic','KA','2026-01-01','test','test')");
       s.execute("INSERT INTO organisation.payroll_calendar(id,tenant_id,code,name,frequency,created_by,updated_by) VALUES ('30000000-0000-0000-0000-000000000001','" + TENANT_A + "','CAL','Synthetic','MONTHLY','test','test')");
       s.execute("INSERT INTO organisation.pay_period(id,tenant_id,calendar_id,period_code,period_start,period_end,payment_date,created_by,updated_by) VALUES ('31000000-0000-0000-0000-000000000001','" + TENANT_A + "','30000000-0000-0000-0000-000000000001','2026-07','2026-07-01','2026-07-31','2026-07-31','test','test')");
       s.execute("INSERT INTO organisation.pay_group(id,tenant_id,statutory_unit_id,calendar_id,code,name,effective_from,created_by,updated_by) VALUES ('32000000-0000-0000-0000-000000000001','" + TENANT_A + "','20000000-0000-0000-0000-000000000001','30000000-0000-0000-0000-000000000001','PG','Synthetic','2026-01-01','test','test')");
-      s.execute("INSERT INTO employee_payroll.payroll_relationship(id,tenant_id,external_employee_id,employee_number,legal_entity_id,relationship_start,created_by,updated_by) VALUES ('40000000-0000-0000-0000-000000000001','" + TENANT_A + "','SYNTHETIC','SYN001','" + LEGAL_A + "','2026-01-01','test','test')");
+      s.execute("INSERT INTO employee_payroll.payroll_relationship(id,tenant_id,external_employee_id,employee_number,legal_entity_id,relationship_start,created_by,updated_by) VALUES ('40000000-0000-0000-0000-000000000001','" + TENANT_A + "','SYNTHETIC','SYN001','" + LEGAL_VERSION_A + "','2026-01-01','test','test')");
       s.execute("INSERT INTO employee_payroll.payroll_assignment(id,tenant_id,payroll_relationship_id,establishment_id,assignment_number,assignment_start,created_by,updated_by) VALUES ('50000000-0000-0000-0000-000000000001','" + TENANT_A + "','40000000-0000-0000-0000-000000000001','21000000-0000-0000-0000-000000000001','ASN001','2026-01-01','test','test')");
       s.execute("INSERT INTO payroll_ops.payroll_cycle(id,tenant_id,pay_group_id,pay_period_id,created_by,updated_by) VALUES ('60000000-0000-0000-0000-000000000001','" + TENANT_A + "','32000000-0000-0000-0000-000000000001','31000000-0000-0000-0000-000000000001','test','test')");
       s.execute("INSERT INTO payroll_ops.population_member(tenant_id,payroll_cycle_id,payroll_assignment_id,inclusion_reason,created_by,updated_by) VALUES ('" + TENANT_A + "','60000000-0000-0000-0000-000000000001','50000000-0000-0000-0000-000000000001','synthetic','test','test')");

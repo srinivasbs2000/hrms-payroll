@@ -41,8 +41,11 @@ class ArchitectureRulesTest {
     classes().that().haveSimpleNameEndingWith("Repository")
         .should().resideInAnyPackage("..infrastructure..")
         .allowEmptyShould(true).check(classesUnderTest);
-    noClasses().that().resideOutsideOfPackage("..infrastructure..")
-        .should().dependOnClassesThat().haveSimpleNameEndingWith("Repository")
-        .allowEmptyShould(true).check(classesUnderTest);
+    for (String module : MODULES) {
+      noClasses().that().resideOutsideOfPackage("com.acme.hrms.payroll." + module + "..")
+          .should().dependOnClassesThat().resideInAnyPackage(
+              "com.acme.hrms.payroll." + module + "..infrastructure..")
+          .allowEmptyShould(true).check(classesUnderTest);
+    }
   }
 }

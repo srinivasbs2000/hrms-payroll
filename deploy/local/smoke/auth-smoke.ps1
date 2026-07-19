@@ -59,6 +59,7 @@ try {
   if ($claims.tenant_id -ne $local.KEYCLOAK_SMOKE_TENANT_ID) { throw 'Unexpected tenant_id claim.' }
   Assert-Contains $claims.realm_access.roles 'PAYROLL_OPERATOR' 'realm_access.roles'
   Assert-Contains $claims.permissions 'payroll.read' 'permissions'
+  Assert-Contains $claims.permissions 'organisation.read' 'permissions'
 
   $correlationId = [guid]::NewGuid().ToString()
   $response = Invoke-WebRequest -UseBasicParsing -Method Get -Uri "$ApplicationBaseUrl/internal/baseline/auth-smoke" -Headers @{
@@ -70,6 +71,13 @@ try {
   if ($body.tenantId -ne $local.KEYCLOAK_SMOKE_TENANT_ID) { throw 'The application used an unexpected tenant context.' }
   if ([string]$response.Headers['X-Correlation-ID'] -ne $correlationId) { throw 'The application did not preserve the correlation ID.' }
 
+  $hierarchyResponse = Invoke-WebRequest -UseBasicParsing -Method Get -Uri "$ApplicationBaseUrl/api/v1/organisation-hierarchy" -Headers @{
+    Authorization = "Bearer $accessToken"
+    'X-Correlation-ID' = $correlationId
+  }
+  if ($hierarchyResponse.StatusCode -ne 200) { throw 'The secured organisation endpoint did not succeed.' }
+  if ([string]$hierarchyResponse.Headers['X-Correlation-ID'] -ne $correlationId) { throw 'The organisation endpoint did not preserve the correlation ID.' }
+
   [pscustomobject]@{
     Result = 'PASS'
     Issuer = $claims.iss
@@ -77,7 +85,7 @@ try {
     TenantId = $claims.tenant_id
     Roles = (@($claims.realm_access.roles) -join ',')
     Permissions = (@($claims.permissions) -join ',')
-    SecuredEndpoint = '/internal/baseline/auth-smoke (HTTP 200)'
+    SecuredEndpoints = '/internal/baseline/auth-smoke, /api/v1/organisation-hierarchy (HTTP 200)'
     CorrelationIdReused = $true
     RawTokenPrintedOrPersisted = $false
   } | Format-List
