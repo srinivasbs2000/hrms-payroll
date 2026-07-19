@@ -2,6 +2,8 @@ package com.acme.hrms.payroll.platform;
 
 import java.time.Clock;
 import java.util.Map;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +23,20 @@ public final class DomainEventFactory {
       String aggregateType,
       UUID aggregateId,
       Map<String, Object> payload) {
+    return create(eventType, eventVersion, tenantId, causationId, aggregateType, aggregateId, 1, payload);
+  }
+
+  public DomainEvent create(
+      String eventType,
+      int eventVersion,
+      UUID tenantId,
+      UUID causationId,
+      String aggregateType,
+      UUID aggregateId,
+      long aggregateVersion,
+      Map<String, Object> payload) {
     return new DomainEvent(UUID.randomUUID(), eventType, eventVersion, tenantId, clock.instant(),
-        CorrelationContext.require(), causationId, aggregateType, aggregateId, Map.copyOf(payload));
+        CorrelationContext.require(), causationId, aggregateType, aggregateId, aggregateVersion,
+        Collections.unmodifiableMap(new LinkedHashMap<>(payload)));
   }
 }
