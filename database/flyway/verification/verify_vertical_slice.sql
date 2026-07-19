@@ -71,7 +71,10 @@ BEGIN
     END IF;
     mutable_expected := tenant_table.nspname NOT IN ('audit', 'payroll_calc')
       AND NOT (tenant_table.nspname = 'payroll_ops' AND tenant_table.relname = 'input_snapshot')
-      AND NOT (tenant_table.nspname = 'documents' AND tenant_table.relname = 'draft_payslip');
+      AND NOT (tenant_table.nspname = 'documents' AND tenant_table.relname = 'draft_payslip')
+      AND NOT (tenant_table.nspname = 'organisation' AND tenant_table.relname IN (
+        'legal_entity','legal_entity_version','payroll_statutory_unit','payroll_statutory_unit_version',
+        'establishment','establishment_version'));
     IF has_table_privilege('payroll_app', tenant_table.relation, 'UPDATE') <> mutable_expected
        OR has_table_privilege('payroll_app', tenant_table.relation, 'DELETE') <> mutable_expected THEN
       RAISE EXCEPTION 'payroll_app UPDATE/DELETE grants do not match baseline for %', tenant_table.relation;
@@ -87,6 +90,21 @@ BEGIN
                    AND tgfoid = 'platform.reject_mutation()'::regprocedure)
       THEN RAISE EXCEPTION 'immutable relation % lacks reject_mutation trigger', immutable; END IF;
   END LOOP;
+
+  FOREACH immutable IN ARRAY ARRAY['organisation.legal_entity_version'::regclass,
+    'organisation.payroll_statutory_unit_version'::regclass,
+    'organisation.establishment_version'::regclass] LOOP
+    IF has_table_privilege('payroll_app', immutable, 'UPDATE') OR has_table_privilege('payroll_app', immutable, 'DELETE')
+      THEN RAISE EXCEPTION 'payroll_app can directly mutate organisation history %', immutable; END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid = immutable AND NOT tgisinternal
+                   AND tgfoid = 'platform.reject_uncontrolled_version_mutation()'::regprocedure)
+      THEN RAISE EXCEPTION 'organisation version % lacks controlled-mutation trigger', immutable; END IF;
+  END LOOP;
+
+  IF NOT has_function_privilege('payroll_app', 'organisation.approve_version(character varying,uuid,uuid,character varying,timestamp with time zone)', 'EXECUTE')
+     OR NOT has_function_privilege('payroll_app', 'organisation.end_date_version(character varying,uuid,uuid,date,bigint,character varying,timestamp with time zone)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'payroll_app lacks controlled organisation lifecycle function grants';
+  END IF;
 END $$;
 
 SELECT n.nspname AS schema_name, c.relname AS table_name, c.relrowsecurity AS rls_enabled,

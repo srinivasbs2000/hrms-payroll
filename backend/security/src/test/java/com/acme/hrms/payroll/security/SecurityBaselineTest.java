@@ -91,10 +91,14 @@ class SecurityBaselineTest {
         .expiresAt(Instant.parse("2026-07-19T01:00:00Z"))
         .claim("tenant_id", TENANT_A)
         .claim("realm_access", Map.of("roles", List.of("PAYROLL_OPERATOR")))
-        .claim("permissions", List.of("payroll.read")).build();
+        .claim("permissions", List.of("payroll.read", "organisation.read", "organisation.create",
+            "organisation.version.create", "organisation.version.correct",
+            "organisation.version.end-date", "organisation.approve", "audit.read")).build();
     var authentication = new PayrollJwtAuthenticationConverter().convert(token);
     assertThat(authentication.getAuthorities()).extracting("authority")
-        .containsExactlyInAnyOrder("ROLE_PAYROLL_OPERATOR", "payroll.read");
+        .containsExactlyInAnyOrder("ROLE_PAYROLL_OPERATOR", "payroll.read", "organisation.read",
+            "organisation.create", "organisation.version.create", "organisation.version.correct",
+            "organisation.version.end-date", "organisation.approve", "audit.read");
   }
 
   @Test

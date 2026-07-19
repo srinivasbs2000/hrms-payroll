@@ -83,6 +83,15 @@
       "attributes": {
         "tenant_id": [
           "00000000-0000-0000-0000-000000000001"
+        ],
+        "permissions": [
+          "organisation.read",
+          "organisation.create",
+          "organisation.version.create",
+          "organisation.version.correct",
+          "organisation.version.end-date",
+          "organisation.approve",
+          "audit.read"
         ]
       }
     },
@@ -109,7 +118,8 @@
           "00000000-0000-0000-0000-000000000001"
         ],
         "permissions": [
-          "payroll.read"
+          "payroll.read",
+          "organisation.read"
         ]
       }
     }

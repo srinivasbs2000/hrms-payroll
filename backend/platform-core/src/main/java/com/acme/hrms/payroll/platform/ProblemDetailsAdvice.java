@@ -19,4 +19,29 @@ public class ProblemDetailsAdvice {
     problem.setProperty("correlationId", CorrelationContext.require());
     return ResponseEntity.unprocessableEntity().body(problem);
   }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  ResponseEntity<ProblemDetail> notFound(ResourceNotFoundException exception) {
+    return problem(HttpStatus.NOT_FOUND, "urn:problem:not-found", "Resource not found", exception.getMessage());
+  }
+
+  @ExceptionHandler(ConflictException.class)
+  ResponseEntity<ProblemDetail> conflict(ConflictException exception) {
+    return problem(HttpStatus.CONFLICT, "urn:problem:conflict", "Conflict", exception.getMessage());
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  ResponseEntity<ProblemDetail> unprocessable(IllegalArgumentException exception) {
+    return problem(HttpStatus.UNPROCESSABLE_ENTITY, "urn:problem:unprocessable-entity",
+        "Request cannot be processed", exception.getMessage());
+  }
+
+  private ResponseEntity<ProblemDetail> problem(HttpStatus status, String type, String title, String detail) {
+    var problem = ProblemDetail.forStatus(status);
+    problem.setType(URI.create(type));
+    problem.setTitle(title);
+    problem.setDetail(detail);
+    problem.setProperty("correlationId", CorrelationContext.require());
+    return ResponseEntity.status(status).body(problem);
+  }
 }
