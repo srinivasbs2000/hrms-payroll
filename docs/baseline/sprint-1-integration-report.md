@@ -1,7 +1,7 @@
 # Sprint 1 integration report
 
-Date: 2026-07-19  
-Branch: `feature/sprint-1-organisation-foundation`  
+Date: 2026-07-19
+Branch: `feature/sprint-1-organisation-foundation`
 Baseline: `bba8a51d17147443e400f51bc9ccf769b8bd1af8`
 
 ## Outcome and scope
@@ -56,6 +56,7 @@ The React organisation setup provides effective-date hierarchy navigation, all t
 | npm audit, all and production-only | PASS; 0 vulnerabilities |
 | OWASP Dependency-Check 12.1.8 | PASS at CVSS 7 threshold |
 | CycloneDX SBOM | PASS; Maven JSON/XML and frontend JSON generated |
+| Remote GitHub Actions | PASS; all 8 jobs in run `29700681612` |
 
 The synthetic JWT claim summary was: issuer `http://127.0.0.1:8081/realms/payroll`; audience `payroll-api`; tenant `00000000-0000-0000-0000-000000000001`; role `PAYROLL_OPERATOR`; permissions `payroll.read` and `organisation.read`. The token was never printed or persisted. The same generated correlation ID was returned by `/internal/baseline/auth-smoke` and `/api/v1/organisation-hierarchy`.
 
@@ -162,6 +163,19 @@ rg -n 'Instant\.now\(' backend --glob '!**/target/**'
 rg -n '"system"' backend --glob '!**/target/**'
 git status --short --ignored
 git diff --check
+winget install --id GitHub.cli --exact --silent --accept-package-agreements --accept-source-agreements
+gh auth status
+git add <explicit Sprint 1 paths only>
+git commit -m "feat(integrations): establish event reliability gate"
+git commit -m "feat(organisation): add tenant-safe effective-dated foundation"
+git commit -m "feat(web): add organisation setup lifecycle"
+git commit -m "docs(payroll): record Sprint 1 verification evidence"
+git push -u origin feature/sprint-1-organisation-foundation
+gh pr view feature/sprint-1-organisation-foundation --json number,url,state,isDraft,title,baseRefName,headRefName
+gh pr create --draft --base main --head feature/sprint-1-organisation-foundation --title "Sprint 1: tenant-safe organisation foundation" --body-file .codex-pr-body.md
+gh pr checks 2
+gh run list --branch feature/sprint-1-organisation-foundation --limit 5 --json databaseId,name,event,status,conclusion,headSha,url,createdAt
+gh run watch 29700681612 --exit-status --interval 10
 ```
 
 Secrets were supplied from the ignored development `.env` or environment variables and are intentionally omitted from this report. No raw JWT was emitted by any command.
@@ -173,11 +187,13 @@ Secrets were supplied from the ignored development `.env` or environment variabl
 3. Database approval and end-date commands are intentionally narrow. Any future lifecycle operation requires a new reviewed command rather than restoring direct table mutation grants.
 4. Mockito emits a future-JDK dynamic-agent warning on Java 21. The suite passes, but an explicit agent should be configured before adopting a JDK that disables dynamic attachment.
 5. Local Dependency-Check lacked authenticated OSS Index access. The required CI secret is `NVD_API_KEY`; OSS Index credentials are optional unless that analyzer becomes a required policy gate.
-6. Remote CI status is pending until the reviewed Sprint 1 commits are pushed. Nothing is merged.
+6. GitHub Actions reports Node.js 20 deprecation annotations for upstream `actions/checkout@v4`, `actions/setup-node@v4`, `actions/upload-artifact@v4` and `gitleaks/gitleaks-action@v2`; the runner currently forces them onto Node 24 and all jobs pass. Track upstream major-version upgrades rather than suppressing the notices.
 
-Proposed commit sequence:
+Commit sequence:
 
-1. `feat(integrations): establish event reliability gate`
-2. `feat(organisation): add tenant-safe effective-dated foundation`
-3. `feat(web): add organisation setup lifecycle`
-4. `docs(payroll): record Sprint 1 verification evidence`
+1. `b9f6bcf feat(integrations): establish event reliability gate`
+2. `47654eb feat(organisation): add tenant-safe effective-dated foundation`
+3. `da5dad3 feat(web): add organisation setup lifecycle`
+4. `59bcea4 docs(payroll): record Sprint 1 verification evidence`
+
+Draft PR: `https://github.com/srinivasbs2000/hrms-payroll/pull/2`. Remote workflow run `29700681612` completed successfully with all required gates. The PR remains a draft and is not merged.
