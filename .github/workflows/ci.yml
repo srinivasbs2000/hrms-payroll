@@ -232,6 +232,8 @@ jobs:
           key: dependency-check-${{ runner.os }}-12.1.8-${{ steps.dependency-check-date.outputs.date }}
           restore-keys: |
             dependency-check-${{ runner.os }}-12.1.8-
+      - name: Prepare reactor artifacts for dependency analysis
+        run: ./mvnw --batch-mode -DskipTests install
       - name: OWASP Dependency-Check
         shell: bash
         run: |
