@@ -1,5 +1,93 @@
 # HRMS Payroll Repository Instructions
 
+## Model and Agent Routing Policy
+
+Use the lowest-cost agent capable of producing a complete and verified result.
+
+### Available agents
+
+Use `payroll_explorer` for bounded, read-only work such as:
+
+* locating files, classes, methods, database objects, and tests
+* tracing code paths and dependencies
+* analysing repository structure
+* reviewing documentation and OpenAPI definitions
+* summarising logs and test output
+* identifying likely files affected by a change
+
+The explorer must not modify files or run an unnecessarily broad test suite.
+
+Use `payroll_implementer` for:
+
+* normal backend and frontend implementation
+* Flyway migrations
+* OpenAPI changes
+* unit and integration tests
+* documentation accompanying implementation
+* straightforward build and CI corrections
+
+Only one write-capable implementation agent may work on a given set of files at a time.
+
+Use `payroll_critical_reviewer` after implementation when changes involve:
+
+* salary, earnings, deductions, taxes, benefits, arrears, or retroactive processing
+* currency, decimal precision, rounding, proration, or effective dating
+* payroll-run state transitions, concurrency, retries, or idempotency
+* PostgreSQL RLS or tenant isolation
+* authentication, authorization, or privilege boundaries
+* destructive, irreversible, or data-transforming migrations
+* audit trails, statutory evidence, or financial data lineage
+* payslip generation, approval, finalisation, reversal, or publication
+* a material failure that remains unresolved after two focused implementation attempts
+
+The critical reviewer is read-only and must review the completed diff rather than independently reimplementing the sprint.
+
+### Escalation rules
+
+1. Do not begin routine work with Sol merely because it is available.
+2. Use `payroll_explorer` only when repository discovery is substantial enough to justify a separate context.
+3. Use `payroll_implementer` for normal implementation.
+4. Escalate to `payroll_critical_reviewer` only when a documented high-risk condition applies.
+5. State the reason before escalating.
+6. Do not run multiple write-capable agents against overlapping files concurrently.
+7. Do not use Fast, Max, Ultra, or additional parallel agents unless explicitly requested.
+8. Keep delegated work bounded and return concise findings rather than raw logs.
+9. Passing tests is necessary but not sufficient for high-risk Payroll changes.
+10. High-risk work requires an independent critical review before completion.
+
+### Verification sequence
+
+Run verification in the following order:
+
+1. Compile or statically validate the affected module.
+2. Run targeted unit tests.
+3. Run targeted integration tests.
+4. Run migration and tenant-isolation tests when applicable.
+5. Run the required backend Maven verification.
+6. Run frontend tests and the production build when affected.
+7. Validate OpenAPI when contracts change.
+8. Run required dependency and security checks.
+9. Review the final diff.
+10. Run an independent critical review for high-risk changes.
+
+Do not repeatedly run the complete verification suite while a known targeted failure remains unresolved.
+
+### Definition of done
+
+A task is complete only when:
+
+* the approved acceptance criteria are satisfied;
+* the implementation is complete rather than illustrative;
+* relevant targeted tests pass;
+* required full verification passes;
+* the final diff has been reviewed;
+* tenant isolation, RLS, authorization, security, and audit controls remain intact;
+* high-risk changes have completed independent critical review;
+* assumptions and residual risks are documented;
+* no unrelated changes are included; and
+* no commit or merge has been performed unless explicitly requested.
+
+
 ## Scope and architecture
 
 This repository is the organisation-to-draft-payslip vertical-slice baseline. It is a Java 21 Spring Boot modular monolith with a React 18 SPA, PostgreSQL, Flyway, and Keycloak/OIDC. Keep code grouped by payroll capability under `backend/`; the composition root is `backend/payroll-boot`. Only a module's public API may be consumed by another module. Do not add cross-module JPA relationships, repository access, or internal-package imports.
