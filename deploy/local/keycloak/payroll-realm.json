@@ -1,127 +1,136 @@
 {
-  "realm": "payroll",
-  "enabled": true,
-  "clients": [
-    {
-      "clientId": "payroll-web",
-      "publicClient": true,
-      "directAccessGrantsEnabled": true,
-      "redirectUris": [
-        "http://localhost:5173/*"
-      ],
-      "webOrigins": [
-        "http://localhost:5173"
-      ],
-      "protocolMappers": [
-        {
-          "name": "tenant_id",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "config": {
-            "user.attribute": "tenant_id",
-            "claim.name": "tenant_id",
-            "jsonType.label": "String",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "true"
-          }
-        },
-        {
-          "name": "payroll-api-audience",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-audience-mapper",
-          "config": {
-            "included.client.audience": "payroll-api",
-            "access.token.claim": "true",
-            "id.token.claim": "false"
-          }
-        },
-        {
-          "name": "permissions",
-          "protocol": "openid-connect",
-          "protocolMapper": "oidc-usermodel-attribute-mapper",
-          "config": {
-            "user.attribute": "permissions",
-            "claim.name": "permissions",
-            "jsonType.label": "String",
-            "multivalued": "true",
-            "id.token.claim": "false",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "true"
-          }
-        }
-      ]
-    }
-  ],
-  "roles": {
-    "realm": [
-      {
-        "name": "PAYROLL_ADMIN"
-      },
-      {
-        "name": "PAYROLL_OPERATOR"
-      },
-      {
-        "name": "PAYROLL_REVIEWER"
-      }
-    ]
-  },
-  "users": [
-    {
-      "username": "payroll.admin",
-      "enabled": true,
-      "credentials": [
-        {
-          "type": "password",
-          "value": "change-me",
-          "temporary": true
-        }
-      ],
-      "realmRoles": [
-        "PAYROLL_ADMIN"
-      ],
-      "attributes": {
-        "tenant_id": [
-          "00000000-0000-0000-0000-000000000001"
-        ],
-        "permissions": [
-          "organisation.read",
-          "organisation.create",
-          "organisation.version.create",
-          "organisation.version.correct",
-          "organisation.version.end-date",
-          "organisation.approve",
-          "audit.read"
-        ]
-      }
-    },
-    {
-      "username": "payroll.smoke",
-      "enabled": true,
-      "firstName": "Payroll",
-      "lastName": "Smoke",
-      "email": "payroll.smoke@example.invalid",
-      "emailVerified": true,
-      "requiredActions": [],
-      "credentials": [
-        {
-          "type": "password",
-          "value": "change-me",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [
-        "PAYROLL_OPERATOR"
-      ],
-      "attributes": {
-        "tenant_id": [
-          "00000000-0000-0000-0000-000000000001"
-        ],
-        "permissions": [
-          "payroll.read",
-          "organisation.read"
-        ]
-      }
-    }
-  ]
+    "realm":  "payroll",
+    "enabled":  true,
+    "clients":  [
+                    {
+                        "clientId":  "payroll-web",
+                        "publicClient":  true,
+                        "directAccessGrantsEnabled":  true,
+                        "redirectUris":  [
+                                             "http://localhost:5173/*"
+                                         ],
+                        "webOrigins":  [
+                                           "http://localhost:5173"
+                                       ],
+                        "protocolMappers":  [
+                                                {
+                                                    "name":  "tenant_id",
+                                                    "protocol":  "openid-connect",
+                                                    "protocolMapper":  "oidc-usermodel-attribute-mapper",
+                                                    "config":  {
+                                                                   "user.attribute":  "tenant_id",
+                                                                   "claim.name":  "tenant_id",
+                                                                   "jsonType.label":  "String",
+                                                                   "id.token.claim":  "true",
+                                                                   "access.token.claim":  "true",
+                                                                   "userinfo.token.claim":  "true"
+                                                               }
+                                                },
+                                                {
+                                                    "name":  "payroll-api-audience",
+                                                    "protocol":  "openid-connect",
+                                                    "protocolMapper":  "oidc-audience-mapper",
+                                                    "config":  {
+                                                                   "included.client.audience":  "payroll-api",
+                                                                   "access.token.claim":  "true",
+                                                                   "id.token.claim":  "false"
+                                                               }
+                                                },
+                                                {
+                                                    "name":  "permissions",
+                                                    "protocol":  "openid-connect",
+                                                    "protocolMapper":  "oidc-usermodel-attribute-mapper",
+                                                    "config":  {
+                                                                   "user.attribute":  "permissions",
+                                                                   "claim.name":  "permissions",
+                                                                   "jsonType.label":  "String",
+                                                                   "multivalued":  "true",
+                                                                   "id.token.claim":  "false",
+                                                                   "access.token.claim":  "true",
+                                                                   "userinfo.token.claim":  "true"
+                                                               }
+                                                }
+                                            ]
+                    }
+                ],
+    "roles":  {
+                  "realm":  [
+                                {
+                                    "name":  "PAYROLL_ADMIN"
+                                },
+                                {
+                                    "name":  "PAYROLL_OPERATOR"
+                                },
+                                {
+                                    "name":  "PAYROLL_REVIEWER"
+                                }
+                            ]
+              },
+    "users":  [
+                  {
+                      "username":  "payroll.admin",
+                      "enabled":  true,
+                      "credentials":  [
+                                          {
+                                              "type":  "password",
+                                              "value":  "change-me",
+                                              "temporary":  true
+                                          }
+                                      ],
+                      "realmRoles":  [
+                                         "PAYROLL_ADMIN"
+                                     ],
+                      "attributes":  {
+                                         "tenant_id":  [
+                                                           "00000000-0000-0000-0000-000000000001"
+                                                       ],
+                                         "permissions":  [
+                                                             "organisation.read",
+                                                             "organisation.create",
+                                                             "organisation.version.create",
+                                                             "organisation.version.correct",
+                                                             "organisation.version.end-date",
+                                                             "organisation.approve",
+                                                             "audit.read",
+                                                             "pay-group.read",
+                                                             "pay-group.create",
+                                                             "pay-group.version.create",
+                                                             "pay-group.version.correct",
+                                                             "pay-group.version.end-date",
+                                                             "pay-group.approve"
+                                                         ]
+                                     }
+                  },
+                  {
+                      "username":  "payroll.smoke",
+                      "enabled":  true,
+                      "firstName":  "Payroll",
+                      "lastName":  "Smoke",
+                      "email":  "payroll.smoke@example.invalid",
+                      "emailVerified":  true,
+                      "requiredActions":  [
+
+                                          ],
+                      "credentials":  [
+                                          {
+                                              "type":  "password",
+                                              "value":  "change-me",
+                                              "temporary":  false
+                                          }
+                                      ],
+                      "realmRoles":  [
+                                         "PAYROLL_OPERATOR"
+                                     ],
+                      "attributes":  {
+                                         "tenant_id":  [
+                                                           "00000000-0000-0000-0000-000000000001"
+                                                       ],
+                                         "permissions":  [
+                                                             "payroll.read",
+                                                             "organisation.read",
+                                                             "pay-group.read"
+                                                         ]
+                                     }
+                  }
+              ]
 }
