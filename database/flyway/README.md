@@ -1,6 +1,6 @@
 # Payroll vertical-slice Flyway package
 
-`sql/` is the canonical source for the ordered V001-V016 migrations. The Maven `backend/database-migrations` module packages these files at `db/migration` and exposes the Flyway Maven plugin; do not create a second migration copy in the module.
+`sql/` is the canonical source for the ordered V001-V018 migrations. The Maven `backend/database-migrations` module packages these files at `db/migration` and exposes the Flyway Maven plugin; do not create a second migration copy in the module.
 
 Apply `bootstrap/001_admin_bootstrap.sql` once as a database administrator, then run Flyway as `payroll_migrator`. Application traffic uses `payroll_app`, which is non-owner and has no `BYPASSRLS` privilege.
 
@@ -31,5 +31,6 @@ Migration order:
 15. legal-entity, payroll-statutory-unit and establishment identity/version model
 16. tenant-safe hierarchy range checks and controlled approval/end-date commands
 17. pay-group identity/version history, dependency checks and controlled lifecycle commands
+18. controlled monthly payroll calendars, deterministic periods and cycle-calendar lineage
 
 All effective ranges are half-open: `[effective_from, effective_to)`. The application sets `app.tenant_id` with `SET LOCAL` at every transaction boundary. The seed is synthetic and development-only; it is deliberately not included in the automatic Flyway location. Local and CI migration tests use PostgreSQL 17 under ADR-003.

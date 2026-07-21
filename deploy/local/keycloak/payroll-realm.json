@@ -97,7 +97,10 @@
                                                              "pay-group.version.create",
                                                              "pay-group.version.correct",
                                                              "pay-group.version.end-date",
-                                                             "pay-group.approve"
+                                                             "pay-group.approve",
+                                                             "calendar.read",
+                                                             "calendar.create",
+                                                             "calendar.period.generate"
                                                          ]
                                      }
                   },
@@ -128,7 +131,8 @@
                                          "permissions":  [
                                                              "payroll.read",
                                                              "organisation.read",
-                                                             "pay-group.read"
+                                                             "pay-group.read",
+                                                             "calendar.read"
                                                          ]
                                      }
                   }
