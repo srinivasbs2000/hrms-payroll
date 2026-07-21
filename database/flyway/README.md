@@ -30,5 +30,6 @@ Migration order:
 14. event reliability and write-idempotency gate
 15. legal-entity, payroll-statutory-unit and establishment identity/version model
 16. tenant-safe hierarchy range checks and controlled approval/end-date commands
+17. pay-group identity/version history, dependency checks and controlled lifecycle commands
 
 All effective ranges are half-open: `[effective_from, effective_to)`. The application sets `app.tenant_id` with `SET LOCAL` at every transaction boundary. The seed is synthetic and development-only; it is deliberately not included in the automatic Flyway location. Local and CI migration tests use PostgreSQL 17 under ADR-003.
