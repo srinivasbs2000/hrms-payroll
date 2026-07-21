@@ -210,7 +210,7 @@ jobs:
     timeout-minutes: 30
     env:
       DEPENDENCY_CHECK_VERSION: '12.2.2'
-      DEPENDENCY_CHECK_DATA: ${{ runner.temp }}/dependency-check-data
+      DEPENDENCY_CHECK_DATA: .dependency-check-data
       NVD_API_KEY: ${{ secrets.NVD_API_KEY || '' }}
     steps:
       - uses: actions/checkout@v6
