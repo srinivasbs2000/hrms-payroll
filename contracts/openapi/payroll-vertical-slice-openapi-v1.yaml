@@ -160,29 +160,19 @@ paths:
           $ref: '#/components/responses/Problem'
       summary: List Pay Periods
   /pay-groups:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Calendar
-      operationId: createPayGroup
-      x-permission: pay-group.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PayGroupCreate'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Pay Group
+    $ref: '#/components/pathItems/PayGroupCollection'
+  /pay-groups/{identityId}:
+    $ref: '#/components/pathItems/PayGroupIdentity'
+  /pay-groups/{identityId}/versions:
+    $ref: '#/components/pathItems/PayGroupVersions'
+  /pay-groups/{identityId}/versions/{versionId}/corrections:
+    $ref: '#/components/pathItems/PayGroupCorrection'
+  /pay-groups/{identityId}/versions/{versionId}/end-date:
+    $ref: '#/components/pathItems/PayGroupEndDate'
+  /pay-groups/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/PayGroupApproval'
+  /pay-groups/{identityId}/audit:
+    $ref: '#/components/pathItems/PayGroupAudit'
   /pay-components:
     parameters:
     - $ref: '#/components/parameters/CorrelationId'
@@ -692,6 +682,181 @@ components:
                 schema: {type: array, items: {$ref: '#/components/schemas/AuditEvent'}}
           '401': {$ref: '#/components/responses/Unauthorized'}
           '403': {$ref: '#/components/responses/Forbidden'}
+    PayGroupCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayGroups
+        tags: [Calendar]
+        summary: List approved pay groups effective on a date
+        x-permission: pay-group.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            description: Effective pay groups
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '429': {$ref: '#/components/responses/TooManyRequests'}
+          '500': {$ref: '#/components/responses/InternalServerError'}
+          '503': {$ref: '#/components/responses/ServiceUnavailable'}
+      post:
+        operationId: createPayGroup
+        tags: [Calendar]
+        summary: Create a stable pay-group identity and first draft version
+        x-permission: pay-group.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayGroupWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayGroupIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: getPayGroup
+        tags: [Calendar]
+        summary: Get the current or as-of approved pay-group version
+        x-permission: pay-group.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+    PayGroupVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayGroupVersions
+        tags: [Calendar]
+        summary: Read complete pay-group version history
+        x-permission: pay-group.read
+        responses:
+          '200':
+            description: Ordered pay-group version history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+      post:
+        operationId: createPayGroupVersion
+        tags: [Calendar]
+        summary: Append a future effective-dated pay-group version
+        x-permission: pay-group.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayGroupWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayGroupCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: correctPayGroupVersion
+        tags: [Calendar]
+        summary: Supersede an eligible future draft without rewriting it
+        x-permission: pay-group.version.correct
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayGroupWriteRequest'}
+        responses:
+          '200': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayGroupEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: endDatePayGroupVersion
+        tags: [Calendar]
+        summary: End-date a pay-group version through optimistic concurrency
+        x-permission: pay-group.version.end-date
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PayGroupEndDate'}
+        responses:
+          '200': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayGroupApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: approvePayGroupVersion
+        tags: [Calendar]
+        summary: Approve a non-superseded pay-group draft version
+        x-permission: pay-group.approve
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        responses:
+          '200': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    PayGroupAudit:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayGroupAuditEvents
+        tags: [Calendar]
+        summary: Read immutable audit evidence for a pay-group identity
+        x-permission: audit.read
+        responses:
+          '200':
+            description: Audit event history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/AuditEvent'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
   requestBodies:
     OrganisationWriteRequest:
       required: true
@@ -699,6 +864,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/OrganisationWrite'
+    PayGroupWriteRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PayGroupWrite'
   responses:
     Unauthorized:
       description: Authentication is missing or invalid
@@ -742,6 +913,16 @@ components:
       content:
         application/json:
           schema: {$ref: '#/components/schemas/OrganisationVersion'}
+    PayGroupVersion:
+      description: Pay-group identity and exact effective-dated version
+      headers:
+        X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+        ETag:
+          description: Numeric optimistic-concurrency version
+          schema: {type: string}
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/PayGroupVersion'}
     Problem:
       description: Problem Details
       headers:
@@ -910,34 +1091,75 @@ components:
         paymentDate:
           type: string
           format: date
-    PayGroupCreate:
+    PayGroupWrite:
       type: object
-      required:
-      - statutoryUnitId
-      - calendarId
-      - code
-      - name
-      - effectiveFrom
+      additionalProperties: false
+      required: [name, payrollStatutoryUnitVersionId, calendarId, effectiveFrom]
       properties:
-        statutoryUnitId:
+        code:
+          type: [string, 'null']
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+          description: Required only when creating a stable pay-group identity.
+        name: {type: string, minLength: 1, maxLength: 160}
+        payrollStatutoryUnitVersionId:
           type: string
           format: uuid
+          description: Exact approved payroll statutory unit version used for lineage.
         calendarId:
           type: string
           format: uuid
-        code:
-          type: string
-        name:
-          type: string
+          description: Same-tenant monthly payroll calendar.
         currency:
-          type: string
+          type: [string, 'null']
+          const: INR
           default: INR
         prorationMethod:
-          type: string
+          type: [string, 'null']
           const: CALENDAR_DAYS
-        effectiveFrom:
-          type: string
-          format: date
+          default: CALENDAR_DAYS
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    PayGroupEndDate:
+      type: object
+      additionalProperties: false
+      required: [effectiveTo]
+      properties:
+        effectiveTo: {type: string, format: date}
+    PayGroupVersion:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - identityStatus
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - payrollStatutoryUnitVersionId
+      - calendarId
+      - currency
+      - prorationMethod
+      - effectiveFrom
+      - approvalStatus
+      - superseded
+      properties:
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        name: {type: string}
+        payrollStatutoryUnitVersionId: {type: string, format: uuid}
+        calendarId: {type: string, format: uuid}
+        currency: {type: string, const: INR}
+        prorationMethod: {type: string, const: CALENDAR_DAYS}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        supersedesVersionId: {type: [string, 'null'], format: uuid}
+        superseded: {type: boolean}
     PayComponentCreate:
       type: object
       required:
