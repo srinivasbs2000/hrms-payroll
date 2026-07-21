@@ -240,25 +240,72 @@ jobs:
           set -euo pipefail
           mkdir -p "$DEPENDENCY_CHECK_DATA"
 
-          valid_db="$(
-            find "$DEPENDENCY_CHECK_DATA" \
-              -type f \
-              -name 'odc.mv.db' \
-              -size +10M \
-              -print \
-              -quit 2>/dev/null || true
-          )"
+          database="$(find "$DEPENDENCY_CHECK_DATA" -type f -name 'odc.mv.db' -size +10M -print -quit 2>/dev/null || true)"
+          marker="$DEPENDENCY_CHECK_DATA/.last-successful-update"
+          valid=false
 
-          if [[ -n "$valid_db" ]]; then
-            echo "valid=true" >> "$GITHUB_OUTPUT"
-            echo "Valid Dependency-Check database restored: $valid_db"
-          else
+          if [[ -n "$database" && -s "$marker" ]]; then
+            marker_epoch="$(date -u -d "$(cat "$marker")" +%s 2>/dev/null || echo 0)"
+            now_epoch="$(date -u +%s)"
+            if [[ "$marker_epoch" -gt 0 ]]; then
+              age_days="$(( (now_epoch - marker_epoch) / 86400 ))"
+              if [[ "$age_days" -le 7 ]]; then
+                valid=true
+                echo "Validated Dependency-Check cache age: ${age_days} day(s)."
+              else
+                echo "Dependency-Check cache is stale: ${age_days} day(s)."
+              fi
+            fi
+          fi
+
+          echo "valid=$valid" >> "$GITHUB_OUTPUT"
+          if [[ "$valid" != "true" ]]; then
+            find "$DEPENDENCY_CHECK_DATA" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+          fi
+
+      - name: Validate NVD API key when cache refresh is required
+        id: nvd-key
+        if: steps.dependency-check-data.outputs.valid != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${NVD_API_KEY//[[:space:]]/}" ]]; then
             echo "valid=false" >> "$GITHUB_OUTPUT"
-            echo "No valid Dependency-Check database was restored."
-            find "$DEPENDENCY_CHECK_DATA" \
-              -mindepth 1 \
-              -maxdepth 1 \
-              -exec rm -rf {} +
+            echo "::error::NVD_API_KEY is missing. Request, activate and store a valid NVD API key."
+            exit 0
+          fi
+
+          headers="$(mktemp)"
+          body="$(mktemp)"
+          trap 'rm -f "$headers" "$body"' EXIT
+
+          status="$(curl --silent --show-error --location --max-time 30 \
+            --output "$body" --dump-header "$headers" --write-out '%{http_code}' \
+            --header "apiKey: ${NVD_API_KEY}" \
+            'https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=1' || true)"
+
+          if [[ "$status" == "200" ]] && grep -q '"resultsPerPage"' "$body"; then
+            echo "valid=true" >> "$GITHUB_OUTPUT"
+            echo "NVD API key validation succeeded."
+          else
+            message="$(awk 'BEGIN {IGNORECASE=1} /^message:/ {sub(/\r$/, ""); sub(/^[^:]+:[[:space:]]*/, ""); print; exit}' "$headers")"
+            echo "valid=false" >> "$GITHUB_OUTPUT"
+            echo "::error::NVD API key validation failed with HTTP ${status}. ${message:-Replace the NVD_API_KEY repository secret with a newly activated key.}"
+          fi
+
+      - name: Select Dependency-Check scan mode
+        id: dependency-check-mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ steps.dependency-check-data.outputs.valid }}" == "true" ]]; then
+            echo "mode=offline-cache" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ steps.nvd-key.outputs.valid }}" == "true" ]]; then
+            echo "mode=online-refresh" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Dependency-Check cannot run: no fresh validated cache and no valid NVD API key."
+            exit 1
           fi
 
       - name: Prepare reactor artifacts for dependency analysis
@@ -268,13 +315,8 @@ jobs:
         id: owasp
         shell: bash
         run: |
-          set -uo pipefail
+          set -euo pipefail
           mkdir -p target
-
-          nvd_args=()
-          if [[ -n "${NVD_API_KEY}" ]]; then
-            nvd_args+=("-DnvdApiKeyEnvironmentVariable=NVD_API_KEY")
-          fi
 
           common_args=(
             --batch-mode
@@ -284,43 +326,28 @@ jobs:
             "-Dformats=JSON,HTML"
           )
 
-          echo "Running one online Dependency-Check analysis..."
-          if ./mvnw "${common_args[@]}" "${nvd_args[@]}" \
-              2>&1 | tee target/dependency-check-online.log; then
-            echo "mode=online" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ steps.dependency-check-data.outputs.valid }}" == "true" ]]; then
-            echo "::warning::Online NVD update failed; retrying once with the previously validated cached database."
-            if ./mvnw "${common_args[@]}" -DautoUpdate=false \
-                2>&1 | tee target/dependency-check-offline.log; then
-              echo "mode=offline-cache" >> "$GITHUB_OUTPUT"
-            else
-              echo "::error::Dependency-Check failed with both online and validated cached data."
-              exit 1
-            fi
+          if [[ "${{ steps.dependency-check-mode.outputs.mode }}" == "offline-cache" ]]; then
+            ./mvnw "${common_args[@]}" -DautoUpdate=false \
+              2>&1 | tee target/dependency-check-offline.log
           else
-            echo "::error::Dependency-Check could not update NVD data and no valid cached database is available."
-            exit 1
+            ./mvnw "${common_args[@]}" \
+              -DnvdApiKeyEnvironmentVariable=NVD_API_KEY \
+              2>&1 | tee target/dependency-check-online.log
+            date -u +%FT%TZ > "$DEPENDENCY_CHECK_DATA/.last-successful-update"
+            echo "cache_refreshed=true" >> "$GITHUB_OUTPUT"
           fi
 
-          report="$(
-            find . \
-              -path '*/target/dependency-check-report.json' \
-              -type f \
-              -size +0c \
-              -print \
-              -quit
-          )"
-
+          report="$(find . -path '*/target/dependency-check-report.json' -type f -size +0c -print -quit)"
           if [[ -z "$report" ]]; then
-            echo "::error::Dependency-Check completed without producing a JSON report."
+            echo "::error::Dependency-Check completed without producing a non-empty JSON report."
             exit 1
           fi
 
           echo "report_generated=true" >> "$GITHUB_OUTPUT"
           echo "Dependency-Check report: $report"
 
-      - name: Save validated Dependency-Check vulnerability data
-        if: steps.owasp.outputs.report_generated == 'true' && steps.dependency-check-cache.outputs.cache-hit != 'true'
+      - name: Save refreshed Dependency-Check vulnerability data
+        if: steps.owasp.outputs.cache_refreshed == 'true'
         uses: actions/cache/save@v5
         with:
           path: ${{ env.DEPENDENCY_CHECK_DATA }}
@@ -331,7 +358,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: dependency-scan-reports-${{ github.run_attempt }}
-          if-no-files-found: warn
+          if-no-files-found: error
           path: |
             **/target/dependency-check-report.*
             target/dependency-check-*.log
