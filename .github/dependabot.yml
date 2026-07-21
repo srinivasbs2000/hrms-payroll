@@ -1,0 +1,63 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "02:00"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - java
+    groups:
+      spring-and-testing:
+        patterns:
+          - "org.springframework*"
+          - "org.junit*"
+          - "org.testcontainers*"
+      build-plugins:
+        dependency-type: development
+        patterns:
+          - "org.apache.maven.plugins:*"
+          - "org.codehaus.mojo:*"
+
+  - package-ecosystem: npm
+    directory: /frontend/payroll-web
+    schedule:
+      interval: weekly
+      day: monday
+      time: "02:30"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - frontend
+    groups:
+      react-and-testing:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-router-dom"
+          - "@testing-library/*"
+          - "vitest"
+          - "vite"
+      typescript-tooling:
+        dependency-type: development
+        patterns:
+          - "typescript"
+          - "@types/*"
+          - "@vitejs/*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "03:00"
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - ci
