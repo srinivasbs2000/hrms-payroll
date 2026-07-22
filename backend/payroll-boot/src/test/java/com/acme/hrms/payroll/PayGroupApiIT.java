@@ -308,6 +308,59 @@ class PayGroupApiIT {
         .andExpect(jsonPath("$").isEmpty());
   }
 
+
+  @Test
+  void idempotencyKeyReuseWithDifferentPayloadIsConflict()
+      throws Exception {
+    String firstRequest =
+        """
+        {
+          "code":"MONTHLY_ALT",
+          "name":"Monthly Alternative",
+          "payrollStatutoryUnitVersionId":"%s",
+          "calendarId":"%s",
+          "currency":"INR",
+          "prorationMethod":"CALENDAR_DAYS",
+          "effectiveFrom":"2026-01-01",
+          "effectiveTo":"2028-01-01"
+        }
+        """.formatted(PSU_VERSION_ID, CALENDAR_ID);
+    String changedRequest =
+        """
+        {
+          "code":"MONTHLY_ALT",
+          "name":"Changed Alternative",
+          "payrollStatutoryUnitVersionId":"%s",
+          "calendarId":"%s",
+          "currency":"INR",
+          "prorationMethod":"CALENDAR_DAYS",
+          "effectiveFrom":"2026-01-01",
+          "effectiveTo":"2028-01-01"
+        }
+        """.formatted(PSU_VERSION_ID, CALENDAR_ID);
+
+    mvc.perform(
+            post("/api/v1/pay-groups")
+                .with(token(TENANT_A, "pay-group.create"))
+                .header(
+                    "Idempotency-Key",
+                    "create-pay-group-different-payload")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(firstRequest))
+        .andExpect(status().isCreated());
+
+    mvc.perform(
+            post("/api/v1/pay-groups")
+                .with(token(TENANT_A, "pay-group.create"))
+                .header(
+                    "Idempotency-Key",
+                    "create-pay-group-different-payload")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(changedRequest))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409));
+  }
+
   @Test
   void missingPayGroupPermissionIsForbidden()
       throws Exception {

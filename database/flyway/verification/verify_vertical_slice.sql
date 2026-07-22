@@ -174,6 +174,63 @@ BEGIN
   END LOOP;
 END $$;
 
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid = 'organisation.legal_entity_version'::regclass
+      AND tgname = 'legal_entity_version_organisation_dependents'
+      AND NOT tgisinternal
+      AND tgfoid =
+        'organisation.guard_organisation_parent_end_date()'::regprocedure
+  ) THEN
+    RAISE EXCEPTION
+      'legal-entity versions lack the V022 organisation-dependent end-date guard';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid =
+        'organisation.payroll_statutory_unit_version'::regclass
+      AND tgname = 'psu_version_organisation_dependents'
+      AND NOT tgisinternal
+      AND tgfoid =
+        'organisation.guard_organisation_parent_end_date()'::regprocedure
+  ) THEN
+    RAISE EXCEPTION
+      'payroll-statutory-unit versions lack the V022 child end-date guard';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid = 'payroll_ops.payroll_cycle'::regclass
+      AND tgname = 'payroll_cycle_pay_group_range'
+      AND NOT tgisinternal
+      AND tgfoid =
+        'payroll_ops.assert_payroll_cycle_pay_group_range()'::regprocedure
+  ) THEN
+    RAISE EXCEPTION
+      'payroll cycles lack the V022 pay-group range trigger';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid = 'organisation.pay_group_version'::regclass
+      AND tgname = 'pay_group_version_payroll_cycle_dependents'
+      AND NOT tgisinternal
+      AND tgfoid =
+        'payroll_ops.guard_pay_group_version_end_date()'::regprocedure
+  ) THEN
+    RAISE EXCEPTION
+      'pay-group versions lack the V022 payroll-cycle end-date guard';
+  END IF;
+END $$;
+
 SELECT n.nspname AS schema_name, c.relname AS table_name, c.relrowsecurity AS rls_enabled,
        c.relforcerowsecurity AS rls_forced, p.polname AS policy_name
   FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
