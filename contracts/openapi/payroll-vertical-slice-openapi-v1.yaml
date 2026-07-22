@@ -243,29 +243,19 @@ paths:
   /pay-components/{identityId}/audit:
     $ref: '#/components/pathItems/PayComponentAudit'
   /salary-structures:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Compensation
-      operationId: createSalaryStructure
-      x-permission: compensation.structure.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SalaryStructureCreate'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Salary Structure
+    $ref: '#/components/pathItems/SalaryStructureCollection'
+  /salary-structures/{identityId}:
+    $ref: '#/components/pathItems/SalaryStructureIdentity'
+  /salary-structures/{identityId}/versions:
+    $ref: '#/components/pathItems/SalaryStructureVersions'
+  /salary-structures/{identityId}/versions/{versionId}/corrections:
+    $ref: '#/components/pathItems/SalaryStructureCorrection'
+  /salary-structures/{identityId}/versions/{versionId}/end-date:
+    $ref: '#/components/pathItems/SalaryStructureEndDate'
+  /salary-structures/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/SalaryStructureApproval'
+  /salary-structures/{identityId}/audit:
+    $ref: '#/components/pathItems/SalaryStructureAudit'
   /payroll-relationships:
     parameters:
     - $ref: '#/components/parameters/CorrelationId'
@@ -1077,6 +1067,181 @@ components:
                   items: {$ref: '#/components/schemas/AuditEvent'}
           '401': {$ref: '#/components/responses/Unauthorized'}
           '403': {$ref: '#/components/responses/Forbidden'}
+    SalaryStructureCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listSalaryStructures
+        tags: [Compensation]
+        summary: List approved salary structures effective on a date
+        x-permission: compensation.structure.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            description: Effective salary structures with exact component-version lines
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '429': {$ref: '#/components/responses/TooManyRequests'}
+          '500': {$ref: '#/components/responses/InternalServerError'}
+          '503': {$ref: '#/components/responses/ServiceUnavailable'}
+      post:
+        operationId: createSalaryStructure
+        tags: [Compensation]
+        summary: Create a stable salary-structure identity and first complete draft version
+        x-permission: compensation.structure.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/SalaryStructureWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    SalaryStructureIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: getSalaryStructure
+        tags: [Compensation]
+        summary: Get the current or as-of approved salary-structure version
+        x-permission: compensation.structure.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+    SalaryStructureVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listSalaryStructureVersions
+        tags: [Compensation]
+        summary: Read complete salary-structure version history
+        x-permission: compensation.structure.read
+        responses:
+          '200':
+            description: Ordered salary-structure version history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+      post:
+        operationId: createSalaryStructureVersion
+        tags: [Compensation]
+        summary: Append a complete future effective-dated salary-structure version
+        x-permission: compensation.structure.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/SalaryStructureWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    SalaryStructureCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: correctSalaryStructureVersion
+        tags: [Compensation]
+        summary: Supersede an eligible future complete draft without rewriting it
+        x-permission: compensation.structure.version.correct
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/SalaryStructureWriteRequest'}
+        responses:
+          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    SalaryStructureEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: endDateSalaryStructureVersion
+        tags: [Compensation]
+        summary: End-date an unused salary-structure version through optimistic concurrency
+        x-permission: compensation.structure.version.end-date
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SalaryStructureEndDate'}
+        responses:
+          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    SalaryStructureApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: approveSalaryStructureVersion
+        tags: [Compensation]
+        summary: Approve a complete non-superseded salary-structure draft
+        x-permission: compensation.structure.approve
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        responses:
+          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    SalaryStructureAudit:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listSalaryStructureAuditEvents
+        tags: [Compensation]
+        summary: Read immutable audit evidence for a salary-structure identity
+        x-permission: audit.read
+        responses:
+          '200':
+            description: Audit event history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/AuditEvent'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
   requestBodies:
     OrganisationWriteRequest:
       required: true
@@ -1096,6 +1261,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/PayComponentWrite'
+    SalaryStructureWriteRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SalaryStructureWrite'
   responses:
     Unauthorized:
       description: Authentication is missing or invalid
@@ -1159,6 +1330,16 @@ components:
       content:
         application/json:
           schema: {$ref: '#/components/schemas/PayComponentVersion'}
+    SalaryStructureVersion:
+      description: Salary-structure identity, exact version and immutable component lines
+      headers:
+        X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+        ETag:
+          description: Numeric optimistic-concurrency version
+          schema: {type: string}
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/SalaryStructureVersion'}
     Problem:
       description: Problem Details
       headers:
@@ -1491,51 +1672,130 @@ components:
         approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
         supersedesVersionId: {type: [string, 'null'], format: uuid}
         superseded: {type: boolean}
-    SalaryStructureCreate:
+    SalaryStructureWrite:
       type: object
-      required:
-      - code
-      - name
-      - effectiveFrom
-      - lines
+      additionalProperties: false
+      required: [name, effectiveFrom, lines]
       properties:
         code:
-          type: string
+          type: [string, 'null']
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+          description: Required only when creating a stable salary-structure identity.
         name:
           type: string
+          minLength: 1
+          maxLength: 160
         currency:
-          type: string
+          type: [string, 'null']
+          const: INR
           default: INR
-        effectiveFrom:
-          type: string
-          format: date
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
         lines:
           type: array
           minItems: 1
-          items:
-            $ref: '#/components/schemas/SalaryStructureLine'
-    SalaryStructureLine:
+          items: {$ref: '#/components/schemas/SalaryStructureLineWrite'}
+    SalaryStructureLineWrite:
       type: object
-      required:
-      - componentCode
-      - sequence
+      additionalProperties: false
+      required: [componentVersionId, sequenceNo]
       properties:
-        componentCode:
+        componentVersionId:
           type: string
-        sequence:
+          format: uuid
+          description: Exact approved pay-component version used for calculation lineage.
+        sequenceNo:
           type: integer
-        fixedAmount:
-          type:
-          - string
-          - 'null'
-        percentage:
-          type:
-          - string
-          - 'null'
-        baseComponentCode:
-          type:
-          - string
-          - 'null'
+          minimum: 1
+        targetAmount:
+          type: [number, 'null']
+          minimum: 0
+          multipleOf: 0.0001
+        targetPercentage:
+          type: [number, 'null']
+          exclusiveMinimum: 0
+          maximum: 100
+          multipleOf: 0.000001
+        percentageBaseCode:
+          type: [string, 'null']
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+    SalaryStructureEndDate:
+      type: object
+      additionalProperties: false
+      required: [effectiveTo]
+      properties:
+        effectiveTo: {type: string, format: date}
+    SalaryStructureLineView:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - componentVersionId
+      - componentCode
+      - componentName
+      - componentType
+      - componentFormulaType
+      - sequenceNo
+      - effectiveFrom
+      properties:
+        id: {type: string, format: uuid}
+        componentVersionId: {type: string, format: uuid}
+        componentCode: {type: string}
+        componentName: {type: string}
+        componentType:
+          type: string
+          enum: [EARNING, DEDUCTION, INFORMATION]
+        componentFormulaType:
+          type: string
+          enum: [FIXED, PERCENTAGE_OF_COMPONENT, RESIDUAL]
+        sequenceNo: {type: integer, minimum: 1}
+        targetAmount:
+          type: [number, 'null']
+          minimum: 0
+          multipleOf: 0.0001
+        targetPercentage:
+          type: [number, 'null']
+          exclusiveMinimum: 0
+          maximum: 100
+          multipleOf: 0.000001
+        percentageBaseCode:
+          type: [string, 'null']
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    SalaryStructureVersion:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - identityStatus
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - currency
+      - effectiveFrom
+      - approvalStatus
+      - superseded
+      - lines
+      properties:
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        name: {type: string}
+        currency: {type: string, const: INR}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        supersedesVersionId: {type: [string, 'null'], format: uuid}
+        superseded: {type: boolean}
+        lines:
+          type: array
+          minItems: 1
+          items: {$ref: '#/components/schemas/SalaryStructureLineView'}
     PayrollRelationshipCreate:
       type: object
       required:
@@ -1564,14 +1824,15 @@ components:
     SalaryAssignmentCreate:
       type: object
       required:
-      - salaryStructureId
+      - salaryStructureVersionId
       - monthlyAmount
       - currency
       - effectiveFrom
       properties:
-        salaryStructureId:
+        salaryStructureVersionId:
           type: string
           format: uuid
+          description: Exact approved salary-structure version assigned to the employee.
         payGroupId:
           type: string
           format: uuid

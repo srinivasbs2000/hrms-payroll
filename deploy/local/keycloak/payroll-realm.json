@@ -106,7 +106,13 @@
                                                              "compensation.component.version.create",
                                                              "compensation.component.version.correct",
                                                              "compensation.component.version.end-date",
-                                                             "compensation.component.approve"
+                                                             "compensation.component.approve",
+                                                             "compensation.structure.read",
+                                                             "compensation.structure.create",
+                                                             "compensation.structure.version.create",
+                                                             "compensation.structure.version.correct",
+                                                             "compensation.structure.version.end-date",
+                                                             "compensation.structure.approve"
                                                          ]
                                      }
                   },
@@ -139,7 +145,8 @@
                                                              "organisation.read",
                                                              "pay-group.read",
                                                              "calendar.read",
-                                                             "compensation.component.read"
+                                                             "compensation.component.read",
+                                                             "compensation.structure.read"
                                                          ]
                                      }
                   }
