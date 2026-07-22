@@ -100,7 +100,13 @@
                                                              "pay-group.approve",
                                                              "calendar.read",
                                                              "calendar.create",
-                                                             "calendar.period.generate"
+                                                             "calendar.period.generate",
+                                                             "compensation.component.read",
+                                                             "compensation.component.create",
+                                                             "compensation.component.version.create",
+                                                             "compensation.component.version.correct",
+                                                             "compensation.component.version.end-date",
+                                                             "compensation.component.approve"
                                                          ]
                                      }
                   },
@@ -132,7 +138,8 @@
                                                              "payroll.read",
                                                              "organisation.read",
                                                              "pay-group.read",
-                                                             "calendar.read"
+                                                             "calendar.read",
+                                                             "compensation.component.read"
                                                          ]
                                      }
                   }
