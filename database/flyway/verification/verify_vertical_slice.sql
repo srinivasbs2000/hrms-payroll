@@ -42,7 +42,8 @@ BEGIN
 END $$;
 
 DO $$
-DECLARE violation text; immutable regclass; tenant_table record; mutable_expected boolean;
+DECLARE violation text; immutable regclass; tenant_table record; controlled record;
+  insert_expected boolean; mutable_expected boolean; lifecycle_signature text; lifecycle_oid oid;
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'payroll_app' AND (rolsuper OR rolcreaterole OR rolcreatedb OR rolreplication OR rolbypassrls))
     THEN RAISE EXCEPTION 'payroll_app has an administrative or BYPASSRLS role attribute'; END IF;
@@ -65,16 +66,29 @@ BEGIN
       JOIN pg_attribute a ON a.attrelid = c.oid AND a.attname = 'tenant_id' AND NOT a.attisdropped
      WHERE c.relkind = 'r'
   LOOP
-    IF NOT has_table_privilege('payroll_app', tenant_table.relation, 'SELECT')
-       OR NOT has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') THEN
-      RAISE EXCEPTION 'payroll_app lacks SELECT/INSERT runtime grants on %', tenant_table.relation;
+    IF NOT has_table_privilege('payroll_app', tenant_table.relation, 'SELECT') THEN
+      RAISE EXCEPTION 'payroll_app lacks SELECT on %', tenant_table.relation;
+    END IF;
+    insert_expected := NOT (
+      tenant_table.nspname = 'organisation'
+      AND tenant_table.relname IN ('payroll_calendar', 'pay_period'));
+    IF has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') <> insert_expected THEN
+      RAISE EXCEPTION 'payroll_app INSERT grant does not match baseline for %', tenant_table.relation;
     END IF;
     mutable_expected := tenant_table.nspname NOT IN ('audit', 'payroll_calc')
       AND NOT (tenant_table.nspname = 'payroll_ops' AND tenant_table.relname = 'input_snapshot')
       AND NOT (tenant_table.nspname = 'documents' AND tenant_table.relname = 'draft_payslip')
       AND NOT (tenant_table.nspname = 'organisation' AND tenant_table.relname IN (
         'legal_entity','legal_entity_version','payroll_statutory_unit','payroll_statutory_unit_version',
-        'establishment','establishment_version'));
+        'establishment','establishment_version','payroll_calendar','pay_period',
+        'pay_group','pay_group_version'))
+      AND NOT (tenant_table.nspname = 'compensation' AND tenant_table.relname IN (
+        'pay_component','pay_component_version','salary_structure',
+        'salary_structure_version','salary_structure_line'))
+      AND NOT (tenant_table.nspname = 'employee_payroll' AND tenant_table.relname IN (
+        'payroll_relationship','payroll_relationship_version',
+        'payroll_assignment','payroll_assignment_version',
+        'employee_payroll_profile','pay_group_assignment','salary_assignment'));
     IF has_table_privilege('payroll_app', tenant_table.relation, 'UPDATE') <> mutable_expected
        OR has_table_privilege('payroll_app', tenant_table.relation, 'DELETE') <> mutable_expected THEN
       RAISE EXCEPTION 'payroll_app UPDATE/DELETE grants do not match baseline for %', tenant_table.relation;
@@ -101,10 +115,63 @@ BEGIN
       THEN RAISE EXCEPTION 'organisation version % lacks controlled-mutation trigger', immutable; END IF;
   END LOOP;
 
-  IF NOT has_function_privilege('payroll_app', 'organisation.approve_version(character varying,uuid,uuid,character varying,timestamp with time zone)', 'EXECUTE')
-     OR NOT has_function_privilege('payroll_app', 'organisation.end_date_version(character varying,uuid,uuid,date,bigint,character varying,timestamp with time zone)', 'EXECUTE') THEN
-    RAISE EXCEPTION 'payroll_app lacks controlled organisation lifecycle function grants';
-  END IF;
+  FOR controlled IN
+    SELECT * FROM (VALUES
+      ('organisation.pay_group_version'::regclass,
+       'organisation.reject_uncontrolled_pay_group_version_mutation()'::regprocedure),
+      ('compensation.pay_component_version'::regclass,
+       'compensation.reject_uncontrolled_pay_component_version_mutation()'::regprocedure),
+      ('compensation.salary_structure_version'::regclass,
+       'compensation.reject_uncontrolled_salary_structure_mutation()'::regprocedure),
+      ('compensation.salary_structure_line'::regclass,
+       'compensation.reject_uncontrolled_salary_structure_mutation()'::regprocedure),
+      ('employee_payroll.payroll_relationship_version'::regclass,
+       'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure),
+      ('employee_payroll.payroll_assignment_version'::regclass,
+       'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure),
+      ('employee_payroll.pay_group_assignment'::regclass,
+       'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure),
+      ('employee_payroll.salary_assignment'::regclass,
+       'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure)
+    ) expected(relation, trigger_function)
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_trigger
+       WHERE tgrelid = controlled.relation
+         AND NOT tgisinternal
+         AND tgfoid = controlled.trigger_function) THEN
+      RAISE EXCEPTION 'controlled relation % lacks expected mutation trigger', controlled.relation;
+    END IF;
+  END LOOP;
+
+  FOREACH lifecycle_signature IN ARRAY ARRAY[
+    'organisation.approve_version(character varying,uuid,uuid,character varying,timestamp with time zone)',
+    'organisation.end_date_version(character varying,uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'organisation.approve_pay_group_version(uuid,uuid,character varying,timestamp with time zone)',
+    'organisation.end_date_pay_group_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'organisation.create_monthly_payroll_calendar(uuid,character varying,character varying,character varying,character varying,timestamp with time zone)',
+    'organisation.generate_monthly_pay_periods(uuid,uuid,integer,integer,character varying,timestamp with time zone)',
+    'compensation.approve_pay_component_version(uuid,uuid,character varying,timestamp with time zone)',
+    'compensation.end_date_pay_component_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'compensation.approve_salary_structure_version(uuid,uuid,character varying,timestamp with time zone)',
+    'compensation.end_date_salary_structure_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'employee_payroll.approve_payroll_relationship_version(uuid,uuid,character varying,timestamp with time zone)',
+    'employee_payroll.end_date_payroll_relationship_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'employee_payroll.approve_payroll_assignment_version(uuid,uuid,character varying,timestamp with time zone)',
+    'employee_payroll.end_date_payroll_assignment_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'employee_payroll.approve_pay_group_assignment(uuid,uuid,character varying,timestamp with time zone)',
+    'employee_payroll.end_date_pay_group_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'employee_payroll.approve_salary_assignment(uuid,uuid,character varying,timestamp with time zone)',
+    'employee_payroll.end_date_salary_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'employee_payroll.update_employee_payroll_profile_status(uuid,uuid,character varying,bigint,character varying,timestamp with time zone)'
+  ]
+  LOOP
+    lifecycle_oid := to_regprocedure(lifecycle_signature);
+    IF lifecycle_oid IS NULL
+       OR NOT has_function_privilege('payroll_app', lifecycle_oid, 'EXECUTE') THEN
+      RAISE EXCEPTION 'payroll_app lacks controlled lifecycle function: %', lifecycle_signature;
+    END IF;
+  END LOOP;
 END $$;
 
 SELECT n.nspname AS schema_name, c.relname AS table_name, c.relrowsecurity AS rls_enabled,
@@ -116,7 +183,7 @@ SELECT n.nspname AS schema_name, c.relname AS table_name, c.relrowsecurity AS rl
 
 SELECT con.conrelid::regclass AS child_table, con.conname, pg_get_constraintdef(con.oid) AS tenant_safe_definition
   FROM pg_constraint con WHERE con.contype = 'f' AND pg_get_constraintdef(con.oid) LIKE '%tenant_id%'
- ORDER BY con.conrelid::regclass::text, con.conname;
+  ORDER BY con.conrelid::regclass::text, con.conname;
 
 SELECT rolname, rolsuper, rolcreaterole, rolcreatedb, rolbypassrls
   FROM pg_roles WHERE rolname IN ('payroll_owner', 'payroll_migrator', 'payroll_app') ORDER BY rolname;
