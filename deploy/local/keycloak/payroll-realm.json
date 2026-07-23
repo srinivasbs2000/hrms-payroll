@@ -112,7 +112,32 @@
                                                              "compensation.structure.version.create",
                                                              "compensation.structure.version.correct",
                                                              "compensation.structure.version.end-date",
-                                                             "compensation.structure.approve"
+                                                             "compensation.structure.approve",
+                                                             "employee-payroll.relationship.read",
+                                                             "employee-payroll.relationship.create",
+                                                             "employee-payroll.relationship.version.create",
+                                                             "employee-payroll.relationship.version.correct",
+                                                             "employee-payroll.relationship.version.end-date",
+                                                             "employee-payroll.relationship.approve",
+                                                             "employee-payroll.assignment.read",
+                                                             "employee-payroll.assignment.create",
+                                                             "employee-payroll.assignment.version.create",
+                                                             "employee-payroll.assignment.version.correct",
+                                                             "employee-payroll.assignment.version.end-date",
+                                                             "employee-payroll.assignment.approve",
+                                                             "employee-payroll.profile.read",
+                                                             "employee-payroll.profile.create",
+                                                             "employee-payroll.profile.status.update",
+                                                             "employee-payroll.pay-group-assignment.read",
+                                                             "employee-payroll.pay-group-assignment.create",
+                                                             "employee-payroll.pay-group-assignment.correct",
+                                                             "employee-payroll.pay-group-assignment.end-date",
+                                                             "employee-payroll.pay-group-assignment.approve",
+                                                             "employee-payroll.salary-assignment.read",
+                                                             "employee-payroll.salary-assignment.create",
+                                                             "employee-payroll.salary-assignment.correct",
+                                                             "employee-payroll.salary-assignment.end-date",
+                                                             "employee-payroll.salary-assignment.approve"
                                                          ]
                                      }
                   },
@@ -146,7 +171,12 @@
                                                              "pay-group.read",
                                                              "calendar.read",
                                                              "compensation.component.read",
-                                                             "compensation.structure.read"
+                                                             "compensation.structure.read",
+                                                             "employee-payroll.relationship.read",
+                                                             "employee-payroll.assignment.read",
+                                                             "employee-payroll.profile.read",
+                                                             "employee-payroll.pay-group-assignment.read",
+                                                             "employee-payroll.salary-assignment.read"
                                                          ]
                                      }
                   }
