@@ -257,54 +257,63 @@ paths:
   /salary-structures/{identityId}/audit:
     $ref: '#/components/pathItems/SalaryStructureAudit'
   /payroll-relationships:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Employee Payroll
-      operationId: createPayrollRelationship
-      x-permission: employee-payroll.relationship.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PayrollRelationshipCreate'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Payroll Relationship
-  /payroll-assignments/{assignmentId}/salary-assignments:
-    parameters:
-    - $ref: '#/components/parameters/AssignmentId'
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Employee Payroll
-      operationId: assignSalary
-      x-permission: employee-payroll.salary.assign
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SalaryAssignmentCreate'
-      responses:
-        '201':
-          description: Assigned
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Assign Salary
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipCollection'
+  /payroll-relationships/{identityId}:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipIdentity'
+  /payroll-relationships/{identityId}/versions:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipVersions'
+  /payroll-relationships/{identityId}/versions/{versionId}/corrections:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipCorrection'
+  /payroll-relationships/{identityId}/versions/{versionId}/end-date:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipEndDate'
+  /payroll-relationships/{identityId}/versions/{versionId}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipApproval'
+  /payroll-relationships/{identityId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipAudit'
+  /payroll-assignments:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentCollection'
+  /payroll-assignments/{identityId}:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentIdentity'
+  /payroll-assignments/{identityId}/versions:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentVersions'
+  /payroll-assignments/{identityId}/versions/{versionId}/corrections:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentCorrection'
+  /payroll-assignments/{identityId}/versions/{versionId}/end-date:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentEndDate'
+  /payroll-assignments/{identityId}/versions/{versionId}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentApproval'
+  /payroll-assignments/{identityId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentAudit'
+  /employee-payroll-profiles:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileCollection'
+  /employee-payroll-profiles/{profileId}:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileIdentity'
+  /payroll-relationships/{relationshipId}/profile:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileByRelationship'
+  /employee-payroll-profiles/{profileId}/status:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileStatus'
+  /employee-payroll-profiles/{profileId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileAudit'
+  /pay-group-assignments:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentCollection'
+  /pay-group-assignments/{assignmentId}/corrections:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentCorrection'
+  /pay-group-assignments/{assignmentId}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentApproval'
+  /pay-group-assignments/{assignmentId}/end-date:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentEndDate'
+  /pay-group-assignments/{assignmentId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentAudit'
+  /salary-assignments:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentCollection'
+  /salary-assignments/{assignmentId}/corrections:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentCorrection'
+  /salary-assignments/{assignmentId}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentApproval'
+  /salary-assignments/{assignmentId}/end-date:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentEndDate'
+  /salary-assignments/{assignmentId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentAudit'
   /payroll-cycles:
     parameters:
     - $ref: '#/components/parameters/CorrelationId'
@@ -485,13 +494,6 @@ components:
         format: uuid
     CalendarId:
       name: calendarId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-    AssignmentId:
-      name: assignmentId
       in: path
       required: true
       schema:
@@ -1796,59 +1798,6 @@ components:
           type: array
           minItems: 1
           items: {$ref: '#/components/schemas/SalaryStructureLineView'}
-    PayrollRelationshipCreate:
-      type: object
-      required:
-      - externalEmployeeId
-      - employeeNumber
-      - legalEntityId
-      - establishmentId
-      - assignmentNumber
-      - relationshipStart
-      properties:
-        externalEmployeeId:
-          type: string
-        employeeNumber:
-          type: string
-        legalEntityId:
-          type: string
-          format: uuid
-        establishmentId:
-          type: string
-          format: uuid
-        assignmentNumber:
-          type: string
-        relationshipStart:
-          type: string
-          format: date
-    SalaryAssignmentCreate:
-      type: object
-      required:
-      - salaryStructureVersionId
-      - monthlyAmount
-      - currency
-      - effectiveFrom
-      properties:
-        salaryStructureVersionId:
-          type: string
-          format: uuid
-          description: Exact approved salary-structure version assigned to the employee.
-        payGroupId:
-          type: string
-          format: uuid
-        monthlyAmount:
-          type: string
-        currency:
-          type: string
-          default: INR
-        effectiveFrom:
-          type: string
-          format: date
-        effectiveTo:
-          type:
-          - string
-          - 'null'
-          format: date
     PayrollCycleCreate:
       type: object
       required:
