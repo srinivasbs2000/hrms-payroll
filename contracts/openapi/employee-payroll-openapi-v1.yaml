@@ -1,0 +1,1139 @@
+parameters:
+  CorrelationId:
+    name: X-Correlation-ID
+    in: header
+    required: false
+    schema: {type: string, format: uuid}
+  IdentityId:
+    name: identityId
+    in: path
+    required: true
+    schema: {type: string, format: uuid}
+  VersionId:
+    name: versionId
+    in: path
+    required: true
+    schema: {type: string, format: uuid}
+  AssignmentId:
+    name: assignmentId
+    in: path
+    required: true
+    schema: {type: string, format: uuid}
+  ProfileId:
+    name: profileId
+    in: path
+    required: true
+    schema: {type: string, format: uuid}
+  RelationshipId:
+    name: relationshipId
+    in: path
+    required: true
+    schema: {type: string, format: uuid}
+  IdempotencyKey:
+    name: Idempotency-Key
+    in: header
+    required: true
+    schema: {type: string, minLength: 8, maxLength: 120}
+  IfMatch:
+    name: If-Match
+    in: header
+    required: true
+    description: Numeric version ETag used for optimistic concurrency.
+    schema: {type: string, pattern: '^(W/)?"?[0-9]+"?$'}
+  AsOf:
+    name: asOf
+    in: query
+    required: false
+    schema: {type: string, format: date}
+  PayrollRelationshipIdQuery:
+    name: payrollRelationshipId
+    in: query
+    required: true
+    schema: {type: string, format: uuid}
+  PayrollAssignmentVersionIdQuery:
+    name: payrollAssignmentVersionId
+    in: query
+    required: true
+    schema: {type: string, format: uuid}
+
+responses:
+  Problem:
+    description: Request rejected
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  Unauthorized:
+    description: Authentication is required or invalid
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  Forbidden:
+    description: The caller lacks the required permission
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  NotFound:
+    description: Resource not found in the current tenant
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  Conflict:
+    description: Lifecycle, idempotency or optimistic-concurrency conflict
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  UnprocessableEntity:
+    description: Validation or business-rule failure
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+
+pathItems:
+  PayrollRelationshipCollection:
+    parameters:
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: List approved payroll relationships effective on a date
+      operationId: listPayrollRelationships
+      x-permission: employee-payroll.relationship.read
+      parameters:
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective payroll relationships
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayrollRelationship'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Employee Payroll]
+      summary: Create a payroll relationship identity and first draft version
+      operationId: createPayrollRelationship
+      x-permission: employee-payroll.relationship.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollRelationshipWrite'}
+      responses:
+        '201':
+          description: Payroll relationship created
+          headers:
+            ETag: {schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollRelationship'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollRelationshipIdentity:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Get the current or as-of approved relationship version
+      operationId: getPayrollRelationship
+      x-permission: employee-payroll.relationship.read
+      parameters:
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective payroll relationship
+          headers:
+            ETag: {schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollRelationship'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollRelationshipVersions:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Read payroll relationship version history
+      operationId: listPayrollRelationshipVersions
+      x-permission: employee-payroll.relationship.read
+      responses:
+        '200':
+          description: Ordered version history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayrollRelationship'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Employee Payroll]
+      summary: Append a payroll relationship version
+      operationId: createPayrollRelationshipVersion
+      x-permission: employee-payroll.relationship.version.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollRelationshipWrite'}
+      responses:
+        '201':
+          description: Version created
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollRelationship'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollRelationshipCorrection:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Supersede an eligible future relationship draft
+      operationId: correctPayrollRelationshipVersion
+      x-permission: employee-payroll.relationship.version.correct
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollRelationshipWrite'}
+      responses:
+        '200':
+          description: Corrected version
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollRelationship'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollRelationshipEndDate:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: End-date a payroll relationship version
+      operationId: endDatePayrollRelationshipVersion
+      x-permission: employee-payroll.relationship.version.end-date
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollRelationshipEndDate'}
+      responses:
+        '200':
+          description: End-dated version
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollRelationship'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollRelationshipApproval:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Approve a payroll relationship draft
+      operationId: approvePayrollRelationshipVersion
+      x-permission: employee-payroll.relationship.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Approved version
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollRelationship'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+  PayrollRelationshipAudit:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Read payroll relationship audit history
+      operationId: listPayrollRelationshipAudit
+      x-permission: audit.read
+      responses:
+        '200':
+          description: Audit history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/AuditEvent'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+
+  PayrollAssignmentCollection:
+    parameters:
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: List approved payroll assignments for a relationship
+      operationId: listPayrollAssignments
+      x-permission: employee-payroll.assignment.read
+      parameters:
+      - $ref: '#/parameters/PayrollRelationshipIdQuery'
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective payroll assignments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayrollAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Employee Payroll]
+      summary: Create a payroll assignment identity and first draft version
+      operationId: createPayrollAssignment
+      x-permission: employee-payroll.assignment.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollAssignmentWrite'}
+      responses:
+        '201':
+          description: Payroll assignment created
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollAssignmentIdentity:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Get the current or as-of approved assignment version
+      operationId: getPayrollAssignment
+      x-permission: employee-payroll.assignment.read
+      parameters:
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective payroll assignment
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollAssignmentVersions:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Read payroll assignment version history
+      operationId: listPayrollAssignmentVersions
+      x-permission: employee-payroll.assignment.read
+      responses:
+        '200':
+          description: Ordered assignment history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayrollAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Employee Payroll]
+      summary: Append a payroll assignment version
+      operationId: createPayrollAssignmentVersion
+      x-permission: employee-payroll.assignment.version.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollAssignmentWrite'}
+      responses:
+        '201':
+          description: Version created
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollAssignmentCorrection:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Supersede an eligible future assignment draft
+      operationId: correctPayrollAssignmentVersion
+      x-permission: employee-payroll.assignment.version.correct
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollAssignmentWrite'}
+      responses:
+        '200':
+          description: Corrected version
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollAssignmentEndDate:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: End-date a payroll assignment version
+      operationId: endDatePayrollAssignmentVersion
+      x-permission: employee-payroll.assignment.version.end-date
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollAssignmentEndDate'}
+      responses:
+        '200':
+          description: End-dated version
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollAssignmentApproval:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Approve a payroll assignment draft
+      operationId: approvePayrollAssignmentVersion
+      x-permission: employee-payroll.assignment.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Approved version
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+  PayrollAssignmentAudit:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Read payroll assignment audit history
+      operationId: listPayrollAssignmentAudit
+      x-permission: audit.read
+      responses:
+        '200':
+          description: Audit history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/AuditEvent'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+
+  EmployeePayrollProfileCollection:
+    parameters:
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Create an INCOMPLETE employee payroll profile
+      operationId: createEmployeePayrollProfile
+      x-permission: employee-payroll.profile.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/EmployeePayrollProfileWrite'}
+      responses:
+        '201':
+          description: Profile created
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/EmployeePayrollProfile'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeePayrollProfileIdentity:
+    parameters:
+    - $ref: '#/parameters/ProfileId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Get an employee payroll profile
+      operationId: getEmployeePayrollProfile
+      x-permission: employee-payroll.profile.read
+      responses:
+        '200':
+          description: Employee payroll profile
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/EmployeePayrollProfile'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  EmployeePayrollProfileByRelationship:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Get the profile for a payroll relationship identity
+      operationId: getEmployeePayrollProfileByRelationship
+      x-permission: employee-payroll.profile.read
+      responses:
+        '200':
+          description: Employee payroll profile
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/EmployeePayrollProfile'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  EmployeePayrollProfileStatus:
+    parameters:
+    - $ref: '#/parameters/ProfileId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Transition employee payroll profile status
+      operationId: updateEmployeePayrollProfileStatus
+      x-permission: employee-payroll.profile.status.update
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/EmployeePayrollProfileStatusWrite'}
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/EmployeePayrollProfile'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeePayrollProfileAudit:
+    parameters:
+    - $ref: '#/parameters/ProfileId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Read employee payroll profile audit history
+      operationId: listEmployeePayrollProfileAudit
+      x-permission: audit.read
+      responses:
+        '200':
+          description: Audit history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/AuditEvent'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+
+  PayGroupAssignmentCollection:
+    parameters:
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: List pay-group assignments for an exact assignment version
+      operationId: listPayGroupAssignments
+      x-permission: employee-payroll.pay-group-assignment.read
+      parameters:
+      - $ref: '#/parameters/PayrollAssignmentVersionIdQuery'
+      responses:
+        '200':
+          description: Pay-group assignment history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayGroupAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Employee Payroll]
+      summary: Create a draft pay-group assignment
+      operationId: createPayGroupAssignment
+      x-permission: employee-payroll.pay-group-assignment.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayGroupAssignmentWrite'}
+      responses:
+        '201':
+          description: Pay-group assignment created
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayGroupAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayGroupAssignmentCorrection:
+    parameters:
+    - $ref: '#/parameters/AssignmentId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Supersede an eligible future pay-group assignment draft
+      operationId: correctPayGroupAssignment
+      x-permission: employee-payroll.pay-group-assignment.correct
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayGroupAssignmentWrite'}
+      responses:
+        '200':
+          description: Corrected pay-group assignment
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayGroupAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayGroupAssignmentApproval:
+    parameters:
+    - $ref: '#/parameters/AssignmentId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Approve a pay-group assignment draft
+      operationId: approvePayGroupAssignment
+      x-permission: employee-payroll.pay-group-assignment.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Approved pay-group assignment
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayGroupAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+  PayGroupAssignmentEndDate:
+    parameters:
+    - $ref: '#/parameters/AssignmentId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: End-date a pay-group assignment
+      operationId: endDatePayGroupAssignment
+      x-permission: employee-payroll.pay-group-assignment.end-date
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/EffectiveEndDate'}
+      responses:
+        '200':
+          description: End-dated pay-group assignment
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayGroupAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayGroupAssignmentAudit:
+    parameters:
+    - $ref: '#/parameters/AssignmentId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Read pay-group assignment audit history
+      operationId: listPayGroupAssignmentAudit
+      x-permission: audit.read
+      responses:
+        '200':
+          description: Audit history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/AuditEvent'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+
+  SalaryAssignmentCollection:
+    parameters:
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: List salary assignments for an exact assignment version
+      operationId: listSalaryAssignments
+      x-permission: employee-payroll.salary-assignment.read
+      parameters:
+      - $ref: '#/parameters/PayrollAssignmentVersionIdQuery'
+      responses:
+        '200':
+          description: Salary assignment history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/SalaryAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Employee Payroll]
+      summary: Create a draft salary assignment
+      operationId: createSalaryAssignment
+      x-permission: employee-payroll.salary-assignment.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/SalaryAssignmentWrite'}
+      responses:
+        '201':
+          description: Salary assignment created
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/SalaryAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  SalaryAssignmentCorrection:
+    parameters:
+    - $ref: '#/parameters/AssignmentId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Supersede an eligible future salary assignment draft
+      operationId: correctSalaryAssignment
+      x-permission: employee-payroll.salary-assignment.correct
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/SalaryAssignmentWrite'}
+      responses:
+        '200':
+          description: Corrected salary assignment
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/SalaryAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  SalaryAssignmentApproval:
+    parameters:
+    - $ref: '#/parameters/AssignmentId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: Approve a salary assignment draft
+      operationId: approveSalaryAssignment
+      x-permission: employee-payroll.salary-assignment.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Approved salary assignment
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/SalaryAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+  SalaryAssignmentEndDate:
+    parameters:
+    - $ref: '#/parameters/AssignmentId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Employee Payroll]
+      summary: End-date a salary assignment
+      operationId: endDateSalaryAssignment
+      x-permission: employee-payroll.salary-assignment.end-date
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/EffectiveEndDate'}
+      responses:
+        '200':
+          description: End-dated salary assignment
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/SalaryAssignment'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  SalaryAssignmentAudit:
+    parameters:
+    - $ref: '#/parameters/AssignmentId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      summary: Read salary assignment audit history
+      operationId: listSalaryAssignmentAudit
+      x-permission: audit.read
+      responses:
+        '200':
+          description: Audit history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/AuditEvent'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+
+schemas:
+  Problem:
+    type: object
+    properties:
+      type: {type: string, format: uri}
+      title: {type: string}
+      status: {type: integer}
+      detail: {type: string}
+      instance: {type: string, format: uri-reference}
+  AuditEvent:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - occurredAt
+    - actor
+    - action
+    - objectType
+    - objectId
+    - correlationId
+    properties:
+      id: {type: string, format: uuid}
+      occurredAt: {type: string, format: date-time}
+      actor: {type: string}
+      action: {type: string}
+      objectType: {type: string}
+      objectId: {type: string, format: uuid}
+      correlationId: {type: string, format: uuid}
+      beforeState: {type: [string, 'null']}
+      afterState: {type: [string, 'null']}
+      metadata: {type: [string, 'null']}
+  PayrollRelationshipWrite:
+    type: object
+    additionalProperties: false
+    required: [legalEntityVersionId, relationshipStart]
+    properties:
+      externalEmployeeId:
+        type: [string, 'null']
+        maxLength: 100
+        description: Required when creating the stable relationship identity.
+      employeeNumber:
+        type: [string, 'null']
+        maxLength: 60
+        description: Required when creating the stable relationship identity.
+      legalEntityVersionId: {type: string, format: uuid}
+      relationshipStart: {type: string, format: date}
+      relationshipEnd: {type: [string, 'null'], format: date}
+  PayrollRelationshipEndDate:
+    type: object
+    additionalProperties: false
+    required: [relationshipEnd]
+    properties:
+      relationshipEnd: {type: string, format: date}
+  PayrollRelationship:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - externalEmployeeId
+    - employeeNumber
+    - identityStatus
+    - versionId
+    - versionSequence
+    - versionNo
+    - legalEntityVersionId
+    - relationshipStart
+    - approvalStatus
+    - superseded
+    properties:
+      identityId: {type: string, format: uuid}
+      externalEmployeeId: {type: string}
+      employeeNumber: {type: string}
+      identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
+      versionId: {type: string, format: uuid}
+      versionSequence: {type: integer, minimum: 1}
+      versionNo: {type: integer, format: int64, minimum: 0}
+      legalEntityVersionId: {type: string, format: uuid}
+      relationshipStart: {type: string, format: date}
+      relationshipEnd: {type: [string, 'null'], format: date}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesVersionId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+  PayrollAssignmentWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - payrollRelationshipVersionId
+    - establishmentVersionId
+    - assignmentStart
+    properties:
+      payrollRelationshipId:
+        type: [string, 'null']
+        format: uuid
+        description: Required when creating the stable assignment identity.
+      assignmentNumber:
+        type: [string, 'null']
+        maxLength: 60
+        description: Required when creating the stable assignment identity.
+      payrollRelationshipVersionId: {type: string, format: uuid}
+      establishmentVersionId: {type: string, format: uuid}
+      assignmentStart: {type: string, format: date}
+      assignmentEnd: {type: [string, 'null'], format: date}
+  PayrollAssignmentEndDate:
+    type: object
+    additionalProperties: false
+    required: [assignmentEnd]
+    properties:
+      assignmentEnd: {type: string, format: date}
+  PayrollAssignment:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - payrollRelationshipId
+    - assignmentNumber
+    - identityStatus
+    - versionId
+    - versionSequence
+    - versionNo
+    - payrollRelationshipVersionId
+    - establishmentVersionId
+    - assignmentStart
+    - approvalStatus
+    - superseded
+    properties:
+      identityId: {type: string, format: uuid}
+      payrollRelationshipId: {type: string, format: uuid}
+      assignmentNumber: {type: string}
+      identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
+      versionId: {type: string, format: uuid}
+      versionSequence: {type: integer, minimum: 1}
+      versionNo: {type: integer, format: int64, minimum: 0}
+      payrollRelationshipVersionId: {type: string, format: uuid}
+      establishmentVersionId: {type: string, format: uuid}
+      assignmentStart: {type: string, format: date}
+      assignmentEnd: {type: [string, 'null'], format: date}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesVersionId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+  EmployeePayrollProfileWrite:
+    type: object
+    additionalProperties: false
+    required: [payrollRelationshipId]
+    properties:
+      payrollRelationshipId: {type: string, format: uuid}
+      currency: {type: [string, 'null'], const: INR, default: INR}
+  EmployeePayrollProfileStatusWrite:
+    type: object
+    additionalProperties: false
+    required: [payrollStatus]
+    properties:
+      payrollStatus:
+        type: string
+        enum: [INCOMPLETE, READY, ON_HOLD, INACTIVE]
+  EmployeePayrollProfile:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payrollRelationshipId
+    - employeeNumber
+    - currency
+    - payrollStatus
+    - versionNo
+    properties:
+      id: {type: string, format: uuid}
+      payrollRelationshipId: {type: string, format: uuid}
+      employeeNumber: {type: string}
+      currency: {type: string, const: INR}
+      payrollStatus:
+        type: string
+        enum: [INCOMPLETE, READY, ON_HOLD, INACTIVE]
+      versionNo: {type: integer, format: int64, minimum: 0}
+  PayGroupAssignmentWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - payrollAssignmentVersionId
+    - payGroupVersionId
+    - effectiveFrom
+    properties:
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      payGroupVersionId: {type: string, format: uuid}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+  EffectiveEndDate:
+    type: object
+    additionalProperties: false
+    required: [effectiveTo]
+    properties:
+      effectiveTo: {type: string, format: date}
+  PayGroupAssignment:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payrollAssignmentVersionId
+    - payGroupVersionId
+    - effectiveFrom
+    - approvalStatus
+    - superseded
+    - versionNo
+    properties:
+      id: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      payGroupVersionId: {type: string, format: uuid}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesAssignmentId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+      versionNo: {type: integer, format: int64, minimum: 0}
+  SalaryAssignmentWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - payrollAssignmentVersionId
+    - salaryStructureVersionId
+    - monthlyAmount
+    - effectiveFrom
+    properties:
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      salaryStructureVersionId: {type: string, format: uuid}
+      monthlyAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      currency: {type: [string, 'null'], const: INR, default: INR}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+  SalaryAssignment:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payrollAssignmentVersionId
+    - salaryStructureVersionId
+    - monthlyAmount
+    - currency
+    - effectiveFrom
+    - approvalStatus
+    - superseded
+    - versionNo
+    properties:
+      id: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      salaryStructureVersionId: {type: string, format: uuid}
+      monthlyAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      currency: {type: string, const: INR}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesAssignmentId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+      versionNo: {type: integer, format: int64, minimum: 0}

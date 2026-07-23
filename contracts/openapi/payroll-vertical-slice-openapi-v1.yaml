@@ -95,10 +95,12 @@ paths:
     parameters:
     - $ref: '#/components/parameters/CorrelationId'
     post:
-      tags:
-      - Calendar
+      tags: [Calendar]
+      summary: Create monthly payroll calendar
       operationId: createPayrollCalendar
       x-permission: calendar.create
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
@@ -107,23 +109,43 @@ paths:
               $ref: '#/components/schemas/PayrollCalendarCreate'
       responses:
         '201':
-          description: Created
+          description: Calendar created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Payroll Calendar
+                $ref: '#/components/schemas/PayrollCalendar'
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    get:
+      tags: [Calendar]
+      summary: List payroll calendars
+      operationId: listPayrollCalendars
+      x-permission: calendar.read
+      responses:
+        '200':
+          description: Tenant payroll calendars
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PayrollCalendar'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
   /payroll-calendars/{calendarId}/periods:
     parameters:
     - $ref: '#/components/parameters/CalendarId'
     - $ref: '#/components/parameters/CorrelationId'
     post:
-      tags:
-      - Calendar
+      tags: [Calendar]
+      summary: Generate deterministic monthly periods
       operationId: generatePayPeriods
       x-permission: calendar.period.generate
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
         required: true
         content:
@@ -132,154 +154,166 @@ paths:
               $ref: '#/components/schemas/GeneratePeriodsRequest'
       responses:
         '201':
-          description: Generated
+          description: Twelve generated or replayed monthly periods
           content:
             application/json:
               schema:
                 type: array
+                minItems: 12
+                maxItems: 12
                 items:
                   $ref: '#/components/schemas/PayPeriod'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Generate Pay Periods
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/UnprocessableEntity'}
     get:
-      tags:
-      - Calendar
+      tags: [Calendar]
+      summary: List payroll periods
       operationId: listPayPeriods
       x-permission: calendar.read
+      parameters:
+      - name: year
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 2020
+          maximum: 2100
       responses:
         '200':
-          description: Periods
+          description: Calendar periods ordered by start date
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/PayPeriod'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: List Pay Periods
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/UnprocessableEntity'}
+  /payroll-calendars/{calendarId}/audit:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Calendar]
+      summary: Read payroll-calendar audit history
+      operationId: getPayrollCalendarAudit
+      x-permission: audit.read
+      responses:
+        '200':
+          description: Calendar audit events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditEvent'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
   /pay-groups:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Calendar
-      operationId: createPayGroup
-      x-permission: pay-group.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PayGroupCreate'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Pay Group
+    $ref: '#/components/pathItems/PayGroupCollection'
+  /pay-groups/{identityId}:
+    $ref: '#/components/pathItems/PayGroupIdentity'
+  /pay-groups/{identityId}/versions:
+    $ref: '#/components/pathItems/PayGroupVersions'
+  /pay-groups/{identityId}/versions/{versionId}/corrections:
+    $ref: '#/components/pathItems/PayGroupCorrection'
+  /pay-groups/{identityId}/versions/{versionId}/end-date:
+    $ref: '#/components/pathItems/PayGroupEndDate'
+  /pay-groups/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/PayGroupApproval'
+  /pay-groups/{identityId}/audit:
+    $ref: '#/components/pathItems/PayGroupAudit'
   /pay-components:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Compensation
-      operationId: createPayComponent
-      x-permission: compensation.component.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PayComponentCreate'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Pay Component
+    $ref: '#/components/pathItems/PayComponentCollection'
+  /pay-components/{identityId}:
+    $ref: '#/components/pathItems/PayComponentIdentity'
+  /pay-components/{identityId}/versions:
+    $ref: '#/components/pathItems/PayComponentVersions'
+  /pay-components/{identityId}/versions/{versionId}/corrections:
+    $ref: '#/components/pathItems/PayComponentCorrection'
+  /pay-components/{identityId}/versions/{versionId}/end-date:
+    $ref: '#/components/pathItems/PayComponentEndDate'
+  /pay-components/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/PayComponentApproval'
+  /pay-components/{identityId}/audit:
+    $ref: '#/components/pathItems/PayComponentAudit'
   /salary-structures:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Compensation
-      operationId: createSalaryStructure
-      x-permission: compensation.structure.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SalaryStructureCreate'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Salary Structure
+    $ref: '#/components/pathItems/SalaryStructureCollection'
+  /salary-structures/{identityId}:
+    $ref: '#/components/pathItems/SalaryStructureIdentity'
+  /salary-structures/{identityId}/versions:
+    $ref: '#/components/pathItems/SalaryStructureVersions'
+  /salary-structures/{identityId}/versions/{versionId}/corrections:
+    $ref: '#/components/pathItems/SalaryStructureCorrection'
+  /salary-structures/{identityId}/versions/{versionId}/end-date:
+    $ref: '#/components/pathItems/SalaryStructureEndDate'
+  /salary-structures/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/SalaryStructureApproval'
+  /salary-structures/{identityId}/audit:
+    $ref: '#/components/pathItems/SalaryStructureAudit'
   /payroll-relationships:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Employee Payroll
-      operationId: createPayrollRelationship
-      x-permission: employee-payroll.relationship.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PayrollRelationshipCreate'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Payroll Relationship
-  /payroll-assignments/{assignmentId}/salary-assignments:
-    parameters:
-    - $ref: '#/components/parameters/AssignmentId'
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Employee Payroll
-      operationId: assignSalary
-      x-permission: employee-payroll.salary.assign
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SalaryAssignmentCreate'
-      responses:
-        '201':
-          description: Assigned
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Assign Salary
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipCollection'
+  /payroll-relationships/{identityId}:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipIdentity'
+  /payroll-relationships/{identityId}/versions:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipVersions'
+  /payroll-relationships/{identityId}/versions/{versionId}/corrections:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipCorrection'
+  /payroll-relationships/{identityId}/versions/{versionId}/end-date:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipEndDate'
+  /payroll-relationships/{identityId}/versions/{versionId}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipApproval'
+  /payroll-relationships/{identityId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipAudit'
+  /payroll-assignments:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentCollection'
+  /payroll-assignments/{identityId}:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentIdentity'
+  /payroll-assignments/{identityId}/versions:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentVersions'
+  /payroll-assignments/{identityId}/versions/{versionId}/corrections:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentCorrection'
+  /payroll-assignments/{identityId}/versions/{versionId}/end-date:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentEndDate'
+  /payroll-assignments/{identityId}/versions/{versionId}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentApproval'
+  /payroll-assignments/{identityId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollAssignmentAudit'
+  /employee-payroll-profiles:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileCollection'
+  /employee-payroll-profiles/{profileId}:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileIdentity'
+  /payroll-relationships/{relationshipId}/profile:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileByRelationship'
+  /employee-payroll-profiles/{profileId}/status:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileStatus'
+  /employee-payroll-profiles/{profileId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollProfileAudit'
+  /pay-group-assignments:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentCollection'
+  /pay-group-assignments/{assignmentId}/corrections:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentCorrection'
+  /pay-group-assignments/{assignmentId}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentApproval'
+  /pay-group-assignments/{assignmentId}/end-date:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentEndDate'
+  /pay-group-assignments/{assignmentId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentAudit'
+  /salary-assignments:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentCollection'
+  /salary-assignments/{assignmentId}/corrections:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentCorrection'
+  /salary-assignments/{assignmentId}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentApproval'
+  /salary-assignments/{assignmentId}/end-date:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentEndDate'
+  /salary-assignments/{assignmentId}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentAudit'
   /payroll-cycles:
     parameters:
     - $ref: '#/components/parameters/CorrelationId'
@@ -460,13 +494,6 @@ components:
         format: uuid
     CalendarId:
       name: calendarId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-    AssignmentId:
-      name: assignmentId
       in: path
       required: true
       schema:
@@ -692,6 +719,531 @@ components:
                 schema: {type: array, items: {$ref: '#/components/schemas/AuditEvent'}}
           '401': {$ref: '#/components/responses/Unauthorized'}
           '403': {$ref: '#/components/responses/Forbidden'}
+    PayGroupCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayGroups
+        tags: [Calendar]
+        summary: List approved pay groups effective on a date
+        x-permission: pay-group.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            description: Effective pay groups
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '429': {$ref: '#/components/responses/TooManyRequests'}
+          '500': {$ref: '#/components/responses/InternalServerError'}
+          '503': {$ref: '#/components/responses/ServiceUnavailable'}
+      post:
+        operationId: createPayGroup
+        tags: [Calendar]
+        summary: Create a stable pay-group identity and first draft version
+        x-permission: pay-group.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayGroupWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayGroupIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: getPayGroup
+        tags: [Calendar]
+        summary: Get the current or as-of approved pay-group version
+        x-permission: pay-group.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+    PayGroupVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayGroupVersions
+        tags: [Calendar]
+        summary: Read complete pay-group version history
+        x-permission: pay-group.read
+        responses:
+          '200':
+            description: Ordered pay-group version history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+      post:
+        operationId: createPayGroupVersion
+        tags: [Calendar]
+        summary: Append a future effective-dated pay-group version
+        x-permission: pay-group.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayGroupWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayGroupCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: correctPayGroupVersion
+        tags: [Calendar]
+        summary: Supersede an eligible future draft without rewriting it
+        x-permission: pay-group.version.correct
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayGroupWriteRequest'}
+        responses:
+          '200': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayGroupEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: endDatePayGroupVersion
+        tags: [Calendar]
+        summary: End-date a pay-group version through optimistic concurrency
+        x-permission: pay-group.version.end-date
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PayGroupEndDate'}
+        responses:
+          '200': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayGroupApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: approvePayGroupVersion
+        tags: [Calendar]
+        summary: Approve a non-superseded pay-group draft version
+        x-permission: pay-group.approve
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        responses:
+          '200': {$ref: '#/components/responses/PayGroupVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    PayGroupAudit:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayGroupAuditEvents
+        tags: [Calendar]
+        summary: Read immutable audit evidence for a pay-group identity
+        x-permission: audit.read
+        responses:
+          '200':
+            description: Audit event history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/AuditEvent'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+    PayComponentCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayComponents
+        tags: [Compensation]
+        summary: List approved pay components effective on a date
+        x-permission: compensation.component.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            description: Effective pay components
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/PayComponentVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '429': {$ref: '#/components/responses/TooManyRequests'}
+          '500': {$ref: '#/components/responses/InternalServerError'}
+          '503': {$ref: '#/components/responses/ServiceUnavailable'}
+      post:
+        operationId: createPayComponent
+        tags: [Compensation]
+        summary: Create a stable pay-component identity and first draft version
+        x-permission: compensation.component.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayComponentWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/PayComponentVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayComponentIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: getPayComponent
+        tags: [Compensation]
+        summary: Get the current or as-of approved pay-component version
+        x-permission: compensation.component.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200': {$ref: '#/components/responses/PayComponentVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+    PayComponentVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayComponentVersions
+        tags: [Compensation]
+        summary: Read complete pay-component version history
+        x-permission: compensation.component.read
+        responses:
+          '200':
+            description: Ordered pay-component version history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/PayComponentVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+      post:
+        operationId: createPayComponentVersion
+        tags: [Compensation]
+        summary: Append a future effective-dated pay-component version
+        x-permission: compensation.component.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayComponentWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/PayComponentVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayComponentCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: correctPayComponentVersion
+        tags: [Compensation]
+        summary: Supersede an eligible future draft without rewriting it
+        x-permission: compensation.component.version.correct
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayComponentWriteRequest'}
+        responses:
+          '200': {$ref: '#/components/responses/PayComponentVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayComponentEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: endDatePayComponentVersion
+        tags: [Compensation]
+        summary: End-date a pay-component version through optimistic concurrency
+        x-permission: compensation.component.version.end-date
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PayComponentEndDate'}
+        responses:
+          '200': {$ref: '#/components/responses/PayComponentVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayComponentApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: approvePayComponentVersion
+        tags: [Compensation]
+        summary: Approve a non-superseded pay-component draft version
+        x-permission: compensation.component.approve
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        responses:
+          '200': {$ref: '#/components/responses/PayComponentVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    PayComponentAudit:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayComponentAuditEvents
+        tags: [Compensation]
+        summary: Read immutable audit evidence for a pay-component identity
+        x-permission: audit.read
+        responses:
+          '200':
+            description: Audit event history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/AuditEvent'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+    SalaryStructureCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listSalaryStructures
+        tags: [Compensation]
+        summary: List approved salary structures effective on a date
+        x-permission: compensation.structure.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            description: Effective salary structures with exact component-version lines
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '429': {$ref: '#/components/responses/TooManyRequests'}
+          '500': {$ref: '#/components/responses/InternalServerError'}
+          '503': {$ref: '#/components/responses/ServiceUnavailable'}
+      post:
+        operationId: createSalaryStructure
+        tags: [Compensation]
+        summary: Create a stable salary-structure identity and first complete draft version
+        x-permission: compensation.structure.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/SalaryStructureWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    SalaryStructureIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: getSalaryStructure
+        tags: [Compensation]
+        summary: Get the current or as-of approved salary-structure version
+        x-permission: compensation.structure.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+    SalaryStructureVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listSalaryStructureVersions
+        tags: [Compensation]
+        summary: Read complete salary-structure version history
+        x-permission: compensation.structure.read
+        responses:
+          '200':
+            description: Ordered salary-structure version history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+      post:
+        operationId: createSalaryStructureVersion
+        tags: [Compensation]
+        summary: Append a complete future effective-dated salary-structure version
+        x-permission: compensation.structure.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/SalaryStructureWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    SalaryStructureCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: correctSalaryStructureVersion
+        tags: [Compensation]
+        summary: Supersede an eligible future complete draft without rewriting it
+        x-permission: compensation.structure.version.correct
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/SalaryStructureWriteRequest'}
+        responses:
+          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    SalaryStructureEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: endDateSalaryStructureVersion
+        tags: [Compensation]
+        summary: End-date an unused salary-structure version through optimistic concurrency
+        x-permission: compensation.structure.version.end-date
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SalaryStructureEndDate'}
+        responses:
+          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    SalaryStructureApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: approveSalaryStructureVersion
+        tags: [Compensation]
+        summary: Approve a complete non-superseded salary-structure draft
+        x-permission: compensation.structure.approve
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        responses:
+          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    SalaryStructureAudit:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listSalaryStructureAuditEvents
+        tags: [Compensation]
+        summary: Read immutable audit evidence for a salary-structure identity
+        x-permission: audit.read
+        responses:
+          '200':
+            description: Audit event history
+            headers:
+              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/AuditEvent'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
   requestBodies:
     OrganisationWriteRequest:
       required: true
@@ -699,6 +1251,24 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/OrganisationWrite'
+    PayGroupWriteRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PayGroupWrite'
+    PayComponentWriteRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PayComponentWrite'
+    SalaryStructureWriteRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SalaryStructureWrite'
   responses:
     Unauthorized:
       description: Authentication is missing or invalid
@@ -742,6 +1312,36 @@ components:
       content:
         application/json:
           schema: {$ref: '#/components/schemas/OrganisationVersion'}
+    PayGroupVersion:
+      description: Pay-group identity and exact effective-dated version
+      headers:
+        X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+        ETag:
+          description: Numeric optimistic-concurrency version
+          schema: {type: string}
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/PayGroupVersion'}
+    PayComponentVersion:
+      description: Pay-component identity and exact effective-dated version
+      headers:
+        X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+        ETag:
+          description: Numeric optimistic-concurrency version
+          schema: {type: string}
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/PayComponentVersion'}
+    SalaryStructureVersion:
+      description: Salary-structure identity, exact version and immutable component lines
+      headers:
+        X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+        ETag:
+          description: Numeric optimistic-concurrency version
+          schema: {type: string}
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/SalaryStructureVersion'}
     Problem:
       description: Problem Details
       headers:
@@ -859,227 +1459,345 @@ components:
           pattern: ^[A-Z]{3}$
     PayrollCalendarCreate:
       type: object
-      required:
-      - code
-      - name
-      - timezone
+      additionalProperties: false
+      required: [code, name]
       properties:
         code:
           type: string
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
         name:
           type: string
+          minLength: 1
+          maxLength: 160
         frequency:
-          type: string
+          type: [string, 'null']
           const: MONTHLY
+          default: MONTHLY
         timezone:
-          type: string
+          type: [string, 'null']
           default: Asia/Kolkata
+    PayrollCalendar:
+      type: object
+      additionalProperties: false
+      required: [id, code, name, frequency, timezone]
+      properties:
+        id: {type: string, format: uuid}
+        code: {type: string}
+        name: {type: string}
+        frequency: {type: string, const: MONTHLY}
+        timezone: {type: string}
     GeneratePeriodsRequest:
       type: object
-      required:
-      - year
+      additionalProperties: false
+      required: [year]
       properties:
         year:
           type: integer
           minimum: 2020
           maximum: 2100
         paymentDay:
-          type: integer
+          type: [integer, 'null']
           minimum: 1
           maximum: 31
+          default: 31
     PayPeriod:
       type: object
+      additionalProperties: false
       required:
       - id
+      - calendarId
       - periodCode
       - periodStart
       - periodEnd
       - paymentDate
+      - status
       properties:
-        id:
-          type: string
-          format: uuid
+        id: {type: string, format: uuid}
+        calendarId: {type: string, format: uuid}
         periodCode:
           type: string
-        periodStart:
-          type: string
-          format: date
-        periodEnd:
-          type: string
-          format: date
-        paymentDate:
-          type: string
-          format: date
-    PayGroupCreate:
+          pattern: '^[0-9]{4}-[0-9]{2}$'
+        periodStart: {type: string, format: date}
+        periodEnd: {type: string, format: date}
+        paymentDate: {type: string, format: date}
+        status: {type: string, enum: [OPEN, CLOSED]}
+    PayGroupWrite:
       type: object
-      required:
-      - statutoryUnitId
-      - calendarId
-      - code
-      - name
-      - effectiveFrom
+      additionalProperties: false
+      required: [name, payrollStatutoryUnitVersionId, calendarId, effectiveFrom]
       properties:
-        statutoryUnitId:
+        code:
+          type: [string, 'null']
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+          description: Required only when creating a stable pay-group identity.
+        name: {type: string, minLength: 1, maxLength: 160}
+        payrollStatutoryUnitVersionId:
           type: string
           format: uuid
+          description: Exact approved payroll statutory unit version used for lineage.
         calendarId:
           type: string
           format: uuid
-        code:
-          type: string
-        name:
-          type: string
+          description: Same-tenant monthly payroll calendar.
         currency:
-          type: string
+          type: [string, 'null']
+          const: INR
           default: INR
         prorationMethod:
-          type: string
+          type: [string, 'null']
           const: CALENDAR_DAYS
-        effectiveFrom:
-          type: string
-          format: date
-    PayComponentCreate:
+          default: CALENDAR_DAYS
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    PayGroupEndDate:
       type: object
+      additionalProperties: false
+      required: [effectiveTo]
+      properties:
+        effectiveTo: {type: string, format: date}
+    PayGroupVersion:
+      type: object
+      additionalProperties: false
       required:
+      - identityId
+      - code
+      - identityStatus
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - payrollStatutoryUnitVersionId
+      - calendarId
+      - currency
+      - prorationMethod
+      - effectiveFrom
+      - approvalStatus
+      - superseded
+      properties:
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        name: {type: string}
+        payrollStatutoryUnitVersionId: {type: string, format: uuid}
+        calendarId: {type: string, format: uuid}
+        currency: {type: string, const: INR}
+        prorationMethod: {type: string, const: CALENDAR_DAYS}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        supersedesVersionId: {type: [string, 'null'], format: uuid}
+        superseded: {type: boolean}
+    PayComponentWrite:
+      type: object
+      additionalProperties: false
+      required: [formulaType, effectiveFrom]
+      properties:
+        code:
+          type: [string, 'null']
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+          description: Required only when creating a stable pay-component identity.
+        name:
+          type: [string, 'null']
+          minLength: 1
+          maxLength: 160
+          description: Required only when creating a stable pay-component identity.
+        componentType:
+          type: [string, 'null']
+          enum: [EARNING, DEDUCTION, INFORMATION, null]
+          description: Required only when creating a stable pay-component identity.
+        formulaType:
+          type: string
+          enum: [FIXED, PERCENTAGE_OF_COMPONENT, RESIDUAL]
+        formulaExpression:
+          type: [string, 'null']
+          maxLength: 1000
+        fixedAmount:
+          type: [number, 'null']
+          minimum: 0
+          multipleOf: 0.0001
+        roundingScale:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 4
+          default: 2
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    PayComponentEndDate:
+      type: object
+      additionalProperties: false
+      required: [effectiveTo]
+      properties:
+        effectiveTo: {type: string, format: date}
+    PayComponentVersion:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
       - code
       - name
       - componentType
+      - versionId
+      - versionSequence
+      - versionNo
+      - formulaType
+      - roundingScale
       - effectiveFrom
-      - formula
+      - approvalStatus
+      - superseded
       properties:
-        code:
-          type: string
-        name:
-          type: string
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        name: {type: string}
         componentType:
           type: string
-          enum:
-          - EARNING
-        effectiveFrom:
+          enum: [EARNING, DEDUCTION, INFORMATION]
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        formulaType:
           type: string
-          format: date
-        formula:
-          $ref: '#/components/schemas/Formula'
-    Formula:
-      type: object
-      required:
-      - type
-      properties:
-        type:
-          type: string
-          enum:
-          - FIXED
-          - PERCENTAGE_OF_COMPONENT
-          - RESIDUAL
+          enum: [FIXED, PERCENTAGE_OF_COMPONENT, RESIDUAL]
+        formulaExpression: {type: [string, 'null']}
         fixedAmount:
-          type:
-          - string
-          - 'null'
-        percentage:
-          type:
-          - string
-          - 'null'
-        baseComponentCode:
-          type:
-          - string
-          - 'null'
-    SalaryStructureCreate:
+          type: [number, 'null']
+          minimum: 0
+          multipleOf: 0.0001
+        roundingScale:
+          type: integer
+          minimum: 0
+          maximum: 4
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        supersedesVersionId: {type: [string, 'null'], format: uuid}
+        superseded: {type: boolean}
+    SalaryStructureWrite:
       type: object
-      required:
-      - code
-      - name
-      - effectiveFrom
-      - lines
+      additionalProperties: false
+      required: [name, effectiveFrom, lines]
       properties:
         code:
-          type: string
+          type: [string, 'null']
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+          description: Required only when creating a stable salary-structure identity.
         name:
           type: string
+          minLength: 1
+          maxLength: 160
         currency:
-          type: string
+          type: [string, 'null']
+          const: INR
           default: INR
-        effectiveFrom:
-          type: string
-          format: date
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
         lines:
           type: array
           minItems: 1
-          items:
-            $ref: '#/components/schemas/SalaryStructureLine'
-    SalaryStructureLine:
+          items: {$ref: '#/components/schemas/SalaryStructureLineWrite'}
+    SalaryStructureLineWrite:
       type: object
-      required:
-      - componentCode
-      - sequence
+      additionalProperties: false
+      required: [componentVersionId, sequenceNo]
       properties:
-        componentCode:
+        componentVersionId:
           type: string
-        sequence:
+          format: uuid
+          description: Exact approved pay-component version used for calculation lineage.
+        sequenceNo:
           type: integer
-        fixedAmount:
-          type:
-          - string
-          - 'null'
-        percentage:
-          type:
-          - string
-          - 'null'
-        baseComponentCode:
-          type:
-          - string
-          - 'null'
-    PayrollRelationshipCreate:
+          minimum: 1
+        targetAmount:
+          type: [number, 'null']
+          minimum: 0
+          multipleOf: 0.0001
+        targetPercentage:
+          type: [number, 'null']
+          exclusiveMinimum: 0
+          maximum: 100
+          multipleOf: 0.000001
+        percentageBaseCode:
+          type: [string, 'null']
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+    SalaryStructureEndDate:
       type: object
-      required:
-      - externalEmployeeId
-      - employeeNumber
-      - legalEntityId
-      - establishmentId
-      - assignmentNumber
-      - relationshipStart
+      additionalProperties: false
+      required: [effectiveTo]
       properties:
-        externalEmployeeId:
-          type: string
-        employeeNumber:
-          type: string
-        legalEntityId:
-          type: string
-          format: uuid
-        establishmentId:
-          type: string
-          format: uuid
-        assignmentNumber:
-          type: string
-        relationshipStart:
-          type: string
-          format: date
-    SalaryAssignmentCreate:
+        effectiveTo: {type: string, format: date}
+    SalaryStructureLineView:
       type: object
+      additionalProperties: false
       required:
-      - salaryStructureId
-      - monthlyAmount
-      - currency
+      - id
+      - componentVersionId
+      - componentCode
+      - componentName
+      - componentType
+      - componentFormulaType
+      - sequenceNo
       - effectiveFrom
       properties:
-        salaryStructureId:
+        id: {type: string, format: uuid}
+        componentVersionId: {type: string, format: uuid}
+        componentCode: {type: string}
+        componentName: {type: string}
+        componentType:
           type: string
-          format: uuid
-        payGroupId:
+          enum: [EARNING, DEDUCTION, INFORMATION]
+        componentFormulaType:
           type: string
-          format: uuid
-        monthlyAmount:
-          type: string
-        currency:
-          type: string
-          default: INR
-        effectiveFrom:
-          type: string
-          format: date
-        effectiveTo:
-          type:
-          - string
-          - 'null'
-          format: date
+          enum: [FIXED, PERCENTAGE_OF_COMPONENT, RESIDUAL]
+        sequenceNo: {type: integer, minimum: 1}
+        targetAmount:
+          type: [number, 'null']
+          minimum: 0
+          multipleOf: 0.0001
+        targetPercentage:
+          type: [number, 'null']
+          exclusiveMinimum: 0
+          maximum: 100
+          multipleOf: 0.000001
+        percentageBaseCode:
+          type: [string, 'null']
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    SalaryStructureVersion:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - identityStatus
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - currency
+      - effectiveFrom
+      - approvalStatus
+      - superseded
+      - lines
+      properties:
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        name: {type: string}
+        currency: {type: string, const: INR}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        supersedesVersionId: {type: [string, 'null'], format: uuid}
+        superseded: {type: boolean}
+        lines:
+          type: array
+          minItems: 1
+          items: {$ref: '#/components/schemas/SalaryStructureLineView'}
     PayrollCycleCreate:
       type: object
       required:
