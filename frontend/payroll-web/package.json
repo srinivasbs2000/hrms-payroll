@@ -14,7 +14,7 @@
     "lint": "oxlint -D correctness --react-plugin --vitest-plugin -A vitest/require-mock-type-parameters src"
   },
   "dependencies": {
-    "@tanstack/react-query": "5.90.2",
+    "@tanstack/react-query": "5.101.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "7.18.1",
