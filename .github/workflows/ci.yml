@@ -24,7 +24,7 @@ jobs:
         run: ./mvnw --batch-mode verify
       - name: Upload Maven test reports
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: maven-test-reports-${{ github.run_attempt }}
           if-no-files-found: warn
@@ -51,7 +51,7 @@ jobs:
       - run: npm audit --audit-level=high
       - name: Upload React build diagnostics
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: react-build-${{ github.run_attempt }}
           if-no-files-found: warn
@@ -71,7 +71,7 @@ jobs:
         run: npx --yes --package=@redocly/cli@2.39.0 redocly lint contracts/openapi/payroll-vertical-slice-openapi-v1.yaml 2>&1 | tee openapi-validation.log
       - name: Upload OpenAPI diagnostics
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: openapi-validation-${{ github.run_attempt }}
           path: openapi-validation.log
@@ -90,7 +90,7 @@ jobs:
         run: ./mvnw --batch-mode -pl backend/database-migrations -am verify
       - name: Upload migration and RLS test reports
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: flyway-rls-reports-${{ github.run_attempt }}
           if-no-files-found: warn
@@ -180,7 +180,7 @@ jobs:
           docker compose --env-file deploy/local/.env -f deploy/local/compose.yaml logs --no-color > target/auth-smoke-compose.log 2>&1 || true
       - name: Upload authentication smoke diagnostics
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: auth-smoke-diagnostics-${{ github.run_attempt }}
           if-no-files-found: warn
@@ -247,7 +247,7 @@ jobs:
         working-directory: frontend/payroll-web
       - name: Upload SBOMs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: payroll-sboms-${{ github.run_attempt }}
           if-no-files-found: warn
