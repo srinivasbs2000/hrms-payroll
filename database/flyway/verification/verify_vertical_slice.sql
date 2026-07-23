@@ -76,7 +76,8 @@ BEGIN
        AND tenant_table.relname IN (
          'payroll_cycle','population_member',
          'population_resolution','population_decision','input_snapshot'
-       )));
+       ))
+      OR (tenant_table.nspname = 'payroll_calc'));
     IF has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') <> insert_expected THEN
       RAISE EXCEPTION 'payroll_app INSERT grant does not match baseline for %', tenant_table.relation;
     END IF;
@@ -127,6 +128,8 @@ BEGIN
     SELECT * FROM (VALUES
       ('payroll_ops.payroll_cycle'::regclass,
        'payroll_ops.reject_uncontrolled_population_mutation()'::regprocedure),
+      ('payroll_calc.calculation_request'::regclass,
+       'payroll_calc.reject_uncontrolled_calculation_mutation()'::regprocedure),
       ('payroll_ops.population_member'::regclass,
        'payroll_ops.reject_uncontrolled_population_mutation()'::regprocedure),
       ('payroll_ops.population_resolution'::regclass,
@@ -180,7 +183,8 @@ BEGIN
     'employee_payroll.update_employee_payroll_profile_status(uuid,uuid,character varying,bigint,character varying,timestamp with time zone)',
     'payroll_ops.create_regular_payroll_cycle(uuid,uuid,uuid,character varying,timestamp with time zone)',
     'payroll_ops.resolve_payroll_population(uuid,uuid,bigint,character varying,timestamp with time zone)',
-    'payroll_ops.seal_payroll_inputs(uuid,uuid,bigint,character varying,timestamp with time zone)'
+    'payroll_ops.seal_payroll_inputs(uuid,uuid,bigint,character varying,timestamp with time zone)',
+    'payroll_calc.calculate_sealed_payroll(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)'
   ]
   LOOP
     lifecycle_oid := to_regprocedure(lifecycle_signature);
@@ -258,6 +262,112 @@ BEGIN
   ) THEN
     RAISE EXCEPTION
       'sealed payroll cycles lack complete V024 seal metadata';
+  END IF;
+END $$;
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  SELECT string_agg(required.column_name, ', ' ORDER BY required.column_name)
+  INTO missing
+  FROM (VALUES
+    ('request_schema_version'),
+    ('expected_cycle_version'),
+    ('input_snapshot_set_hash'),
+    ('started_at'),
+    ('completed_at'),
+    ('completed_cycle_version'),
+    ('result_count'),
+    ('result_set_hash')
+  ) required(column_name)
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns column_info
+    WHERE column_info.table_schema = 'payroll_calc'
+      AND column_info.table_name = 'calculation_request'
+      AND column_info.column_name = required.column_name
+  );
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION
+      'calculation requests lack required V025 columns: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.payroll_result'::regclass
+      AND conname = 'payroll_result_snapshot_lineage_fk'
+      AND contype = 'f'
+  ) THEN
+    RAISE EXCEPTION
+      'payroll results lack the V025 exact input-snapshot lineage foreign key';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.payroll_result'::regclass
+      AND conname = 'payroll_result_schema1_shape_ck'
+      AND contype = 'c'
+  ) THEN
+    RAISE EXCEPTION
+      'payroll results lack the V025 deterministic result-shape constraint';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.payroll_result result
+    WHERE result.result_schema_version = 1
+      AND result.result_hash <> encode(
+        public.digest(result.result_payload::text, 'sha256'::text),
+        'hex'
+      )
+  ) THEN
+    RAISE EXCEPTION 'schema-version-1 payroll-result hashes are inconsistent';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.component_result component
+    WHERE component.component_schema_version = 1
+      AND component.component_hash <> encode(
+        public.digest(component.component_payload::text, 'sha256'::text),
+        'hex'
+      )
+  ) THEN
+    RAISE EXCEPTION 'schema-version-1 component-result hashes are inconsistent';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.calculation_trace trace
+    WHERE trace.trace_schema_version = 1
+      AND trace.trace_hash <> encode(
+        public.digest(trace.trace_payload::text, 'sha256'::text),
+        'hex'
+      )
+  ) THEN
+    RAISE EXCEPTION 'schema-version-1 calculation-trace hashes are inconsistent';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.payroll_cycle cycle
+    WHERE cycle.status = 'CALCULATED'
+      AND (
+        cycle.active_calculation_request_id IS NULL
+        OR cycle.calculated_at IS NULL
+        OR cycle.calculated_by IS NULL
+        OR cycle.calculation_result_count IS NULL
+        OR cycle.calculation_result_set_hash IS NULL
+        OR cycle.gross_total IS NULL
+        OR cycle.deduction_total IS NULL
+        OR cycle.net_total IS NULL
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'calculated payroll cycles lack complete V025 calculation metadata';
   END IF;
 END $$;
 

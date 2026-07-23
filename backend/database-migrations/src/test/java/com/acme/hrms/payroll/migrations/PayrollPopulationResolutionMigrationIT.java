@@ -487,6 +487,262 @@ class PayrollPopulationResolutionMigrationIT {
   }
 
   @Test
+  void deterministicCalculationPersistsImmutableResultAndTrace()
+      throws Exception {
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        tenant(statement, TENANT_A);
+        UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+        resolve(statement, TENANT_A, cycleId, 0);
+        seal(statement, TENANT_A, cycleId, 1);
+
+        String requestHash = "d".repeat(64);
+        CalculationSummary calculated = calculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            2,
+            "calculation-test-one",
+            requestHash);
+
+        assertThat(calculated.resultCount()).isOne();
+        assertThat(calculated.grossTotal()).isEqualTo("75000.0000");
+        assertThat(calculated.deductionTotal()).isEqualTo("0.0000");
+        assertThat(calculated.netTotal()).isEqualTo("75000.0000");
+        assertThat(calculated.resultSetHash()).matches("[0-9a-f]{64}");
+        assertThat(calculated.cycleVersionNo()).isEqualTo(3);
+
+        try (ResultSet result = statement.executeQuery("""
+            SELECT c.status,c.version_no,c.control_total,
+                   c.active_calculation_request_id,
+                   c.calculation_result_count,
+                   c.calculation_result_set_hash,
+                   r.status AS request_status,
+                   r.request_schema_version,
+                   p.result_schema_version,p.result_hash,
+                   encode(
+                     digest(p.result_payload::text,'sha256'),
+                     'hex'
+                   ) AS calculated_result_hash,
+                   p.gross_amount,p.deduction_amount,p.net_amount,
+                   p.component_count,
+                   component.component_schema_version,
+                   component.component_code,
+                   component.formula_type,
+                   component.calculated_amount,
+                   trace.trace_schema_version,
+                   trace.step_type,
+                   trace.output_value
+            FROM payroll_ops.payroll_cycle c
+            JOIN payroll_calc.calculation_request r
+              ON r.tenant_id=c.tenant_id
+             AND r.id=c.active_calculation_request_id
+            JOIN payroll_calc.payroll_result p
+              ON p.tenant_id=r.tenant_id
+             AND p.calculation_request_id=r.id
+            JOIN payroll_calc.component_result component
+              ON component.tenant_id=p.tenant_id
+             AND component.payroll_result_id=p.id
+            JOIN payroll_calc.calculation_trace trace
+              ON trace.tenant_id=component.tenant_id
+             AND trace.component_result_id=component.id
+            WHERE c.id='%s'
+            """.formatted(cycleId))) {
+          assertThat(result.next()).isTrue();
+          assertThat(result.getString("status")).isEqualTo("CALCULATED");
+          assertThat(result.getLong("version_no")).isEqualTo(3);
+          assertThat(result.getBigDecimal("control_total"))
+              .isEqualByComparingTo("75000.0000");
+          assertThat(result.getObject(
+              "active_calculation_request_id",
+              UUID.class)).isEqualTo(calculated.requestId());
+          assertThat(result.getInt("calculation_result_count")).isOne();
+          assertThat(result.getString("calculation_result_set_hash"))
+              .isEqualTo(calculated.resultSetHash());
+          assertThat(result.getString("request_status"))
+              .isEqualTo("COMPLETED");
+          assertThat(result.getInt("request_schema_version")).isOne();
+          assertThat(result.getInt("result_schema_version")).isOne();
+          assertThat(result.getString("result_hash"))
+              .isEqualTo(result.getString("calculated_result_hash"));
+          assertThat(result.getBigDecimal("gross_amount"))
+              .isEqualByComparingTo("75000.0000");
+          assertThat(result.getBigDecimal("deduction_amount"))
+              .isEqualByComparingTo("0.0000");
+          assertThat(result.getBigDecimal("net_amount"))
+              .isEqualByComparingTo("75000.0000");
+          assertThat(result.getInt("component_count")).isOne();
+          assertThat(result.getInt("component_schema_version")).isOne();
+          assertThat(result.getString("component_code")).isEqualTo("BASIC");
+          assertThat(result.getString("formula_type")).isEqualTo("FIXED");
+          assertThat(result.getBigDecimal("calculated_amount"))
+              .isEqualByComparingTo("75000.0000");
+          assertThat(result.getInt("trace_schema_version")).isOne();
+          assertThat(result.getString("step_type"))
+              .isEqualTo("FIXED_COMPONENT");
+          assertThat(result.getBigDecimal("output_value"))
+              .isEqualByComparingTo("75000.000000");
+          assertThat(result.next()).isFalse();
+        }
+
+        CalculationSummary replay = calculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            2,
+            "calculation-test-one",
+            requestHash);
+        assertThat(replay).isEqualTo(calculated);
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.calculation_request "
+                + "WHERE payroll_cycle_id='" + cycleId + "'"))
+            .isOne();
+      }
+      connection.rollback();
+    }
+  }
+
+  @Test
+  void calculationRejectsStaleVersionAndTenantMismatch()
+      throws Exception {
+    assertSqlState("40001", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+          resolve(statement, TENANT_A, cycleId, 0);
+          seal(statement, TENANT_A, cycleId, 1);
+          calculate(
+              statement,
+              TENANT_A,
+              cycleId,
+              99,
+              "calculation-stale",
+              "e".repeat(64));
+        }
+      }
+    });
+
+    assertSqlState("42501", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          calculate(
+              statement,
+              TENANT_B,
+              LEGACY_CYCLE_ID,
+              2,
+              "calculation-tenant",
+              "f".repeat(64));
+        }
+      }
+    });
+  }
+
+  @Test
+  void calculationRejectsUnsealedAndLegacySnapshots()
+      throws Exception {
+    assertSqlState("23514", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+          calculate(
+              statement,
+              TENANT_A,
+              cycleId,
+              0,
+              "calculation-unsealed",
+              "1".repeat(64));
+        }
+      }
+    });
+
+    assertSqlState("23514", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          long version = queryLong(
+              statement,
+              "SELECT version_no FROM payroll_ops.payroll_cycle "
+                  + "WHERE id='" + LEGACY_CYCLE_ID + "'");
+          calculate(
+              statement,
+              TENANT_A,
+              LEGACY_CYCLE_ID,
+              version,
+              "calculation-legacy",
+              "2".repeat(64));
+        }
+      }
+    });
+  }
+
+  @Test
+  void calculationWritesRequireControlledCommandAndRemainTenantSafe()
+      throws Exception {
+    assertSqlState("42501", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          statement.execute("""
+              INSERT INTO payroll_calc.calculation_request(
+                tenant_id,payroll_cycle_id,idempotency_key,
+                request_hash,created_by,updated_by
+              ) VALUES (
+                '%s','%s','forbidden-request',repeat('a',64),
+                'test','test'
+              )
+              """.formatted(TENANT_A, LEGACY_CYCLE_ID));
+        }
+      }
+    });
+
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        tenant(statement, TENANT_A);
+        UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+        resolve(statement, TENANT_A, cycleId, 0);
+        seal(statement, TENANT_A, cycleId, 1);
+        calculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            2,
+            "calculation-tenant-read",
+            "3".repeat(64));
+
+        tenant(statement, TENANT_B);
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.calculation_request"))
+            .isZero();
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.payroll_result"))
+            .isZero();
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.component_result"))
+            .isZero();
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.calculation_trace"))
+            .isZero();
+      }
+      connection.rollback();
+    }
+  }
+
+  @Test
   void cycleCreationRejectsClosedPeriodAndDuplicateCycle() throws Exception {
     assertSqlState("23514", () -> {
       try (Connection connection = app()) {
@@ -508,6 +764,48 @@ class PayrollPopulationResolutionMigrationIT {
       }
     });
   }
+
+  private static CalculationSummary calculate(
+      Statement statement,
+      UUID requestedTenant,
+      UUID cycleId,
+      long expectedVersion,
+      String idempotencyKey,
+      String requestHash) throws Exception {
+    try (ResultSet result = statement.executeQuery("""
+        SELECT calculation_request_id,result_count,
+               gross_total,deduction_total,net_total,
+               result_set_hash,cycle_version_no
+        FROM payroll_calc.calculate_sealed_payroll(
+          '%s','%s',%d,'%s','%s','calculation-test',
+          clock_timestamp()
+        )
+        """.formatted(
+            requestedTenant,
+            cycleId,
+            expectedVersion,
+            idempotencyKey,
+            requestHash))) {
+      assertThat(result.next()).isTrue();
+      return new CalculationSummary(
+          result.getObject("calculation_request_id", UUID.class),
+          result.getInt("result_count"),
+          result.getBigDecimal("gross_total").toPlainString(),
+          result.getBigDecimal("deduction_total").toPlainString(),
+          result.getBigDecimal("net_total").toPlainString(),
+          result.getString("result_set_hash"),
+          result.getLong("cycle_version_no"));
+    }
+  }
+
+  private record CalculationSummary(
+      UUID requestId,
+      int resultCount,
+      String grossTotal,
+      String deductionTotal,
+      String netTotal,
+      String resultSetHash,
+      long cycleVersionNo) {}
 
   private static UUID createCycle(
       Statement statement, UUID requestedTenant, UUID periodId)
