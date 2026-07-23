@@ -1,0 +1,401 @@
+parameters:
+  CorrelationId:
+    name: X-Correlation-ID
+    in: header
+    required: false
+    schema: {type: string, format: uuid}
+  CycleId:
+    name: cycleId
+    in: path
+    required: true
+    schema: {type: string, format: uuid}
+  ResolutionId:
+    name: resolutionId
+    in: query
+    required: false
+    description: Resolution attempt to inspect; defaults to the active attempt.
+    schema: {type: string, format: uuid}
+  IdempotencyKey:
+    name: Idempotency-Key
+    in: header
+    required: true
+    schema: {type: string, minLength: 8, maxLength: 120}
+  IfMatch:
+    name: If-Match
+    in: header
+    required: true
+    description: Numeric payroll-cycle version ETag.
+    schema: {type: string, pattern: '^(W/)?"?[0-9]+"?$'}
+
+responses:
+  Problem:
+    description: Request rejected
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  Unauthorized:
+    description: Authentication is required or invalid
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  Forbidden:
+    description: The caller lacks the required permission
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  NotFound:
+    description: Resource not found in the current tenant
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  Conflict:
+    description: Idempotency or optimistic-concurrency conflict
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  UnprocessableEntity:
+    description: Validation or payroll lifecycle failure
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+
+pathItems:
+  PayrollCycleCollection:
+    parameters:
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Payroll Operations]
+      summary: List tenant payroll cycles
+      operationId: listPayrollCycles
+      x-permission: payroll-cycle.read
+      responses:
+        '200':
+          description: Payroll cycles ordered by period
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayrollCycle'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Payroll Operations]
+      summary: Create a regular payroll cycle
+      operationId: createPayrollCycle
+      x-permission: payroll-cycle.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollCycleCreate'}
+      responses:
+        '201':
+          description: Regular payroll cycle created
+          headers:
+            ETag: {schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollCycle'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollCycleIdentity:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Payroll Operations]
+      summary: Get one payroll cycle
+      operationId: getPayrollCycle
+      x-permission: payroll-cycle.read
+      responses:
+        '200':
+          description: Payroll cycle
+          headers:
+            ETag: {schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollCycle'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollCyclePopulationResolution:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Payroll Operations]
+      summary: Resolve payroll population before input sealing
+      operationId: resolvePayrollPopulation
+      x-permission: payroll-cycle.population.resolve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      responses:
+        '200':
+          description: Completed population-resolution attempt
+          headers:
+            ETag: {schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PopulationResolutionResult'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollCyclePopulation:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Payroll Operations]
+      summary: List active included payroll population
+      operationId: listPayrollPopulation
+      x-permission: payroll-cycle.read
+      responses:
+        '200':
+          description: Active included members
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PopulationMember'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollCyclePopulationResolutions:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Payroll Operations]
+      summary: List immutable population-resolution attempts
+      operationId: listPopulationResolutions
+      x-permission: payroll-cycle.read
+      responses:
+        '200':
+          description: Resolution attempts ordered newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PopulationResolution'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollCyclePopulationDecisions:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Payroll Operations]
+      summary: List immutable population decisions
+      operationId: listPopulationDecisions
+      x-permission: payroll-cycle.read
+      parameters:
+      - $ref: '#/parameters/ResolutionId'
+      responses:
+        '200':
+          description: Inclusion and exclusion decisions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PopulationDecision'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollCycleAudit:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Payroll Operations]
+      summary: Read payroll-cycle audit history
+      operationId: getPayrollCycleAudit
+      x-permission: audit.read
+      responses:
+        '200':
+          description: Payroll-cycle audit events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/AuditEvent'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+
+schemas:
+  Problem:
+    type: object
+    additionalProperties: true
+    required: [type, title, status]
+    properties:
+      type: {type: string}
+      title: {type: string}
+      status: {type: integer}
+      detail: {type: [string, 'null']}
+      instance: {type: [string, 'null']}
+  AuditEvent:
+    type: object
+    additionalProperties: true
+  PayrollCycleCreate:
+    type: object
+    additionalProperties: false
+    required: [payGroupVersionId, payPeriodId]
+    properties:
+      payGroupVersionId:
+        type: string
+        format: uuid
+        description: Exact approved pay-group version for the cycle.
+      payPeriodId:
+        type: string
+        format: uuid
+  PayrollCycle:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payGroupVersionId
+    - payGroupCode
+    - payGroupName
+    - payPeriodId
+    - periodCode
+    - periodStart
+    - periodEnd
+    - paymentDate
+    - cycleType
+    - status
+    - versionNo
+    properties:
+      id: {type: string, format: uuid}
+      payGroupVersionId: {type: string, format: uuid}
+      payGroupCode: {type: string}
+      payGroupName: {type: string}
+      payPeriodId: {type: string, format: uuid}
+      periodCode: {type: string}
+      periodStart: {type: string, format: date}
+      periodEnd: {type: string, format: date}
+      paymentDate: {type: string, format: date}
+      cycleType: {type: string, const: REGULAR}
+      status:
+        type: string
+        enum:
+        - DRAFT
+        - POPULATION_RESOLVED
+        - INPUTS_SEALED
+        - CALCULATING
+        - CALCULATED
+        - FAILED
+      activePopulationResolutionId:
+        type: [string, 'null']
+        format: uuid
+      controlTotal:
+        type: [number, 'null']
+        multipleOf: 0.0001
+      versionNo: {type: integer, format: int64, minimum: 0}
+  PopulationResolutionResult:
+    type: object
+    additionalProperties: false
+    required:
+    - resolutionId
+    - cycleId
+    - attemptNo
+    - includedCount
+    - excludedCount
+    - cycleVersionNo
+    properties:
+      resolutionId: {type: string, format: uuid}
+      cycleId: {type: string, format: uuid}
+      attemptNo: {type: integer, minimum: 1}
+      includedCount: {type: integer, minimum: 0}
+      excludedCount: {type: integer, minimum: 0}
+      cycleVersionNo: {type: integer, format: int64, minimum: 1}
+  PopulationResolution:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - cycleId
+    - attemptNo
+    - status
+    - includedCount
+    - excludedCount
+    - resolvedAt
+    - resolvedBy
+    - versionNo
+    properties:
+      id: {type: string, format: uuid}
+      cycleId: {type: string, format: uuid}
+      attemptNo: {type: integer, minimum: 1}
+      status: {type: string, enum: [BUILDING, COMPLETED, FAILED]}
+      includedCount: {type: integer, minimum: 0}
+      excludedCount: {type: integer, minimum: 0}
+      resolvedAt: {type: string, format: date-time}
+      resolvedBy: {type: string, minLength: 1}
+      versionNo: {type: integer, format: int64, minimum: 0}
+  PopulationMember:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - cycleId
+    - populationResolutionId
+    - payrollAssignmentVersionId
+    - assignmentNumber
+    - payrollRelationshipVersionId
+    - employeeNumber
+    - employeePayrollProfileId
+    - payGroupAssignmentId
+    - salaryAssignmentId
+    - inclusionReason
+    - status
+    properties:
+      id: {type: string, format: uuid}
+      cycleId: {type: string, format: uuid}
+      populationResolutionId: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      assignmentNumber: {type: string}
+      payrollRelationshipVersionId: {type: string, format: uuid}
+      employeeNumber: {type: string}
+      employeePayrollProfileId: {type: string, format: uuid}
+      payGroupAssignmentId: {type: string, format: uuid}
+      salaryAssignmentId: {type: string, format: uuid}
+      inclusionReason: {type: string}
+      status: {type: string, const: INCLUDED}
+  PopulationDecision:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - populationResolutionId
+    - cycleId
+    - payrollAssignmentVersionId
+    - assignmentNumber
+    - payrollRelationshipVersionId
+    - employeeNumber
+    - decision
+    - reasonCode
+    - reasonDetail
+    properties:
+      id: {type: string, format: uuid}
+      populationResolutionId: {type: string, format: uuid}
+      cycleId: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      assignmentNumber: {type: string}
+      payrollRelationshipVersionId: {type: string, format: uuid}
+      employeeNumber: {type: string}
+      employeePayrollProfileId: {type: [string, 'null'], format: uuid}
+      payGroupAssignmentId: {type: [string, 'null'], format: uuid}
+      salaryAssignmentId: {type: [string, 'null'], format: uuid}
+      salaryStructureVersionId: {type: [string, 'null'], format: uuid}
+      decision: {type: string, enum: [INCLUDED, EXCLUDED]}
+      reasonCode:
+        type: string
+        pattern: ^[A-Z][A-Z0-9_]{1,79}$
+      reasonDetail: {type: string, minLength: 1}

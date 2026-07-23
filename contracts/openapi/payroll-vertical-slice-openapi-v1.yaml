@@ -315,48 +315,19 @@ paths:
   /salary-assignments/{assignmentId}/audit:
     $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentAudit'
   /payroll-cycles:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Payroll Operations
-      operationId: createPayrollCycle
-      x-permission: payroll-cycle.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PayrollCycleCreate'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Payroll Cycle
-  /payroll-cycles/{cycleId}/resolve-population:
-    parameters:
-    - $ref: '#/components/parameters/CycleId'
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Payroll Operations
-      operationId: resolvePopulation
-      x-permission: payroll-cycle.population.resolve
-      responses:
-        '200':
-          description: Population
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PopulationSummary'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Resolve Population
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleCollection'
+  /payroll-cycles/{cycleId}:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleIdentity'
+  /payroll-cycles/{cycleId}/population-resolution:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCyclePopulationResolution'
+  /payroll-cycles/{cycleId}/population:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCyclePopulation'
+  /payroll-cycles/{cycleId}/population-resolutions:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCyclePopulationResolutions'
+  /payroll-cycles/{cycleId}/population-decisions:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCyclePopulationDecisions'
+  /payroll-cycles/{cycleId}/audit:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleAudit'
   /payroll-cycles/{cycleId}/seal-inputs:
     parameters:
     - $ref: '#/components/parameters/CycleId'
@@ -1437,14 +1408,6 @@ components:
         beforeState: {type: [string, 'null']}
         afterState: {type: [string, 'null']}
         metadata: {type: string}
-    EntityId:
-      type: object
-      required:
-      - id
-      properties:
-        id:
-          type: string
-          format: uuid
     Money:
       type: object
       required:
@@ -1798,34 +1761,6 @@ components:
           type: array
           minItems: 1
           items: {$ref: '#/components/schemas/SalaryStructureLineView'}
-    PayrollCycleCreate:
-      type: object
-      required:
-      - payGroupId
-      - payPeriodId
-      properties:
-        payGroupId:
-          type: string
-          format: uuid
-        payPeriodId:
-          type: string
-          format: uuid
-        cycleType:
-          type: string
-          const: REGULAR
-    PopulationSummary:
-      type: object
-      required:
-      - cycleId
-      - includedCount
-      properties:
-        cycleId:
-          type: string
-          format: uuid
-        includedCount:
-          type: integer
-        excludedCount:
-          type: integer
     SnapshotSummary:
       type: object
       required:
