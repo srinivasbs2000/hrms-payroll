@@ -430,6 +430,169 @@ class PayrollOperationsApiIT {
   }
 
   @Test
+  void calculationIsIdempotentAuditedAndReadable() throws Exception {
+    MvcResult created = createCycle(
+            "test-calc-create-one", PERIOD_ID)
+        .andExpect(status().isCreated())
+        .andReturn();
+    String cycleId = objectMapper.readTree(
+        created.getResponse().getContentAsString()).get("id").asText();
+
+    resolvePopulation(cycleId, "test-calc-resolve-one", "0")
+        .andExpect(status().isOk());
+    sealInputs(cycleId, "test-calc-seal-one", "1")
+        .andExpect(status().isOk());
+
+    MvcResult calculated = calculatePayroll(
+            cycleId, "test-calc-execute-one", "2")
+        .andExpect(status().isOk())
+        .andExpect(header().string("ETag", "\"3\""))
+        .andExpect(jsonPath("$.cycleId").value(cycleId))
+        .andExpect(jsonPath("$.resultCount").value(1))
+        .andExpect(jsonPath("$.grossTotal").value(90000.0))
+        .andExpect(jsonPath("$.deductionTotal").value(0.0))
+        .andExpect(jsonPath("$.netTotal").value(90000.0))
+        .andExpect(jsonPath("$.resultSetHash").isString())
+        .andExpect(jsonPath("$.completedAt").isString())
+        .andReturn();
+
+    String requestId = objectMapper.readTree(
+        calculated.getResponse().getContentAsString())
+        .get("calculationRequestId").asText();
+
+    calculatePayroll(cycleId, "test-calc-execute-one", "2")
+        .andExpect(status().isOk())
+        .andExpect(header().string("ETag", "\"3\""))
+        .andExpect(jsonPath("$.calculationRequestId").value(requestId));
+
+    mvc.perform(
+            get(
+                    "/api/v1/payroll-cycles/{cycleId}/calculation-requests",
+                    cycleId)
+                .with(token(TENANT_A, "payroll-result.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value(requestId))
+        .andExpect(jsonPath("$[0].status").value("COMPLETED"))
+        .andExpect(jsonPath("$[0].resultCount").value(1));
+
+    MvcResult listed = mvc.perform(
+            get("/api/v1/payroll-cycles/{cycleId}/results", cycleId)
+                .with(token(TENANT_A, "payroll-result.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].employeeNumber").value("EMP-001"))
+        .andExpect(jsonPath("$[0].assignmentNumber").value("ASN-001"))
+        .andExpect(jsonPath("$[0].grossAmount").value(90000.0))
+        .andExpect(jsonPath("$[0].netAmount").value(90000.0))
+        .andReturn();
+
+    String resultId = objectMapper.readTree(
+        listed.getResponse().getContentAsString()).get(0).get("id").asText();
+
+    mvc.perform(
+            get(
+                    "/api/v1/payroll-cycles/{cycleId}/results/{resultId}",
+                    cycleId,
+                    resultId)
+                .with(token(TENANT_A, "payroll-result.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.resultSchemaVersion").value(1))
+        .andExpect(jsonPath("$.resultPayload.schemaVersion").value(1))
+        .andExpect(jsonPath("$.components[0].componentCode").value("BASIC"))
+        .andExpect(jsonPath("$.components[0].formulaType").value("FIXED"));
+
+    mvc.perform(
+            get(
+                    "/api/v1/payroll-cycles/{cycleId}/results/{resultId}/trace",
+                    cycleId,
+                    resultId)
+                .with(token(TENANT_A, "payroll-result.trace.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].stepType").value("FIXED_COMPONENT"))
+        .andExpect(jsonPath("$[0].traceSchemaVersion").value(1))
+        .andExpect(jsonPath("$[0].tracePayload.schemaVersion").value(1));
+
+    mvc.perform(
+            get("/api/v1/payroll-cycles/{cycleId}", cycleId)
+                .with(token(TENANT_A, "payroll-cycle.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CALCULATED"))
+        .andExpect(jsonPath("$.controlTotal").value(90000.0))
+        .andExpect(jsonPath("$.versionNo").value(3));
+
+    mvc.perform(
+            get("/api/v1/payroll-cycles/{cycleId}/audit", cycleId)
+                .with(token(TENANT_A, "audit.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[3].action").value("CALCULATED"))
+        .andExpect(jsonPath("$[4]").doesNotExist());
+  }
+
+  @Test
+  void staleCalculationVersionIsConflict() throws Exception {
+    MvcResult created = createCycle(
+            "test-calc-create-two", PERIOD_ID)
+        .andExpect(status().isCreated())
+        .andReturn();
+    String cycleId = objectMapper.readTree(
+        created.getResponse().getContentAsString()).get("id").asText();
+
+    resolvePopulation(cycleId, "test-calc-resolve-two", "0")
+        .andExpect(status().isOk());
+    sealInputs(cycleId, "test-calc-seal-two", "1")
+        .andExpect(status().isOk());
+
+    calculatePayroll(cycleId, "test-calc-execute-two", "1")
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409));
+  }
+
+  @Test
+  void missingCalculationPermissionIsForbidden() throws Exception {
+    MvcResult created = createCycle(
+            "test-calc-create-three", PERIOD_ID)
+        .andExpect(status().isCreated())
+        .andReturn();
+    String cycleId = objectMapper.readTree(
+        created.getResponse().getContentAsString()).get("id").asText();
+
+    resolvePopulation(cycleId, "test-calc-resolve-three", "0")
+        .andExpect(status().isOk());
+    sealInputs(cycleId, "test-calc-seal-three", "1")
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post(
+                    "/api/v1/payroll-cycles/{cycleId}/calculation",
+                    cycleId)
+                .with(token(TENANT_A, "payroll-result.read"))
+                .header("Idempotency-Key", "test-calc-execute-three")
+                .header("If-Match", "2"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void calculationReadsAreTenantIsolated() throws Exception {
+    MvcResult created = createCycle(
+            "test-calc-create-four", PERIOD_ID)
+        .andExpect(status().isCreated())
+        .andReturn();
+    String cycleId = objectMapper.readTree(
+        created.getResponse().getContentAsString()).get("id").asText();
+
+    resolvePopulation(cycleId, "test-calc-resolve-four", "0")
+        .andExpect(status().isOk());
+    sealInputs(cycleId, "test-calc-seal-four", "1")
+        .andExpect(status().isOk());
+    calculatePayroll(cycleId, "test-calc-execute-four", "2")
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            get("/api/v1/payroll-cycles/{cycleId}/results", cycleId)
+                .with(token(TENANT_B, "payroll-result.read")))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void missingPayrollCyclePermissionIsForbidden() throws Exception {
     mvc.perform(
             get("/api/v1/payroll-cycles")
@@ -475,6 +638,19 @@ class PayrollOperationsApiIT {
             .with(token(
                 TENANT_A,
                 "payroll-cycle.inputs.seal"))
+            .header("Idempotency-Key", key)
+            .header("If-Match", ifMatch));
+  }
+
+  private org.springframework.test.web.servlet.ResultActions calculatePayroll(
+      String cycleId, String key, String ifMatch) throws Exception {
+    return mvc.perform(
+        post(
+                "/api/v1/payroll-cycles/{cycleId}/calculation",
+                cycleId)
+            .with(token(
+                TENANT_A,
+                "payroll-calculation.execute"))
             .header("Idempotency-Key", key)
             .header("If-Match", ifMatch));
   }

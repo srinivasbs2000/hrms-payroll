@@ -1,0 +1,389 @@
+parameters:
+  CorrelationId:
+    name: X-Correlation-ID
+    in: header
+    required: false
+    schema: {type: string, format: uuid}
+  CycleId:
+    name: cycleId
+    in: path
+    required: true
+    schema: {type: string, format: uuid}
+  ResultId:
+    name: resultId
+    in: path
+    required: true
+    schema: {type: string, format: uuid}
+  IdempotencyKey:
+    name: Idempotency-Key
+    in: header
+    required: true
+    schema: {type: string, minLength: 8, maxLength: 120}
+  IfMatch:
+    name: If-Match
+    in: header
+    required: true
+    description: Numeric payroll-cycle version ETag.
+    schema: {type: string, pattern: '^(W/)?"?[0-9]+"?$'}
+
+responses:
+  Unauthorized:
+    description: Authentication is required or invalid
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  Forbidden:
+    description: The caller lacks the required permission
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  NotFound:
+    description: Resource not found in the current tenant
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  Conflict:
+    description: Idempotency or optimistic-concurrency conflict
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+  UnprocessableEntity:
+    description: Validation or payroll lifecycle failure
+    content:
+      application/problem+json:
+        schema: {$ref: '#/schemas/Problem'}
+
+pathItems:
+  PayrollCycleCalculation:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Calculation]
+      summary: Calculate one input-sealed regular payroll cycle
+      operationId: calculateSealedPayroll
+      x-permission: payroll-calculation.execute
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      responses:
+        '200':
+          description: Deterministic calculation completed or replayed
+          headers:
+            ETag: {schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollCalculationResult'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollCycleCalculationRequests:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Calculation]
+      summary: List immutable calculation requests for a cycle
+      operationId: listPayrollCalculationRequests
+      x-permission: payroll-result.read
+      responses:
+        '200':
+          description: Calculation requests ordered newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayrollCalculationRequest'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollCycleResults:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Calculation]
+      summary: List immutable payroll results for a cycle
+      operationId: listPayrollResults
+      x-permission: payroll-result.read
+      responses:
+        '200':
+          description: Payroll result summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayrollResultSummary'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollCycleResultIdentity:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/ResultId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Calculation]
+      summary: Read one immutable payroll result and its components
+      operationId: getPayrollResult
+      x-permission: payroll-result.read
+      responses:
+        '200':
+          description: Payroll result detail
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollResultDetail'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollCycleResultTrace:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/ResultId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Calculation]
+      summary: Read immutable calculation trace for one result
+      operationId: getPayrollResultTrace
+      x-permission: payroll-result.trace.read
+      responses:
+        '200':
+          description: Ordered calculation trace
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayrollCalculationTrace'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+
+schemas:
+  Problem:
+    type: object
+    additionalProperties: true
+    required: [type, title, status]
+    properties:
+      type: {type: string}
+      title: {type: string}
+      status: {type: integer}
+      detail: {type: [string, 'null']}
+      instance: {type: [string, 'null']}
+  PayrollCalculationResult:
+    type: object
+    additionalProperties: false
+    required:
+    - cycleId
+    - calculationRequestId
+    - resultCount
+    - grossTotal
+    - deductionTotal
+    - netTotal
+    - resultSetHash
+    - cycleVersionNo
+    - completedAt
+    - completedBy
+    properties:
+      cycleId: {type: string, format: uuid}
+      calculationRequestId: {type: string, format: uuid}
+      resultCount: {type: integer, minimum: 1}
+      grossTotal: {type: number, minimum: 0, multipleOf: 0.0001}
+      deductionTotal: {type: number, minimum: 0, multipleOf: 0.0001}
+      netTotal: {type: number, minimum: 0, multipleOf: 0.0001}
+      resultSetHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+      cycleVersionNo: {type: integer, format: int64, minimum: 1}
+      completedAt: {type: string, format: date-time}
+      completedBy: {type: string, minLength: 1}
+  PayrollCalculationRequest:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - cycleId
+    - status
+    - requestSchemaVersion
+    - expectedCycleVersion
+    - inputSnapshotSetHash
+    - requestedAt
+    - versionNo
+    properties:
+      id: {type: string, format: uuid}
+      cycleId: {type: string, format: uuid}
+      status:
+        type: string
+        enum: [ACCEPTED, CALCULATING, COMPLETED, FAILED]
+      requestSchemaVersion: {type: integer, enum: [0, 1]}
+      expectedCycleVersion: {type: integer, format: int64, minimum: 0}
+      inputSnapshotSetHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+      requestedAt: {type: string, format: date-time}
+      startedAt: {type: [string, 'null'], format: date-time}
+      completedAt: {type: [string, 'null'], format: date-time}
+      completedBy: {type: [string, 'null']}
+      completedCycleVersion:
+        type: [integer, 'null']
+        format: int64
+      resultCount: {type: [integer, 'null'], minimum: 1}
+      grossTotal: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      deductionTotal: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      netTotal: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      resultSetHash:
+        type: [string, 'null']
+        pattern: '^[0-9a-f]{64}$'
+      versionNo: {type: integer, format: int64, minimum: 0}
+  PayrollResultSummary:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - calculationRequestId
+    - cycleId
+    - payrollAssignmentVersionId
+    - assignmentNumber
+    - employeeNumber
+    - inputSnapshotId
+    - resultStatus
+    - currency
+    - grossAmount
+    - deductionAmount
+    - netAmount
+    - resultHash
+    - calculatedAt
+    properties:
+      id: {type: string, format: uuid}
+      calculationRequestId: {type: string, format: uuid}
+      cycleId: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      assignmentNumber: {type: string, minLength: 1}
+      employeeNumber: {type: string, minLength: 1}
+      inputSnapshotId: {type: string, format: uuid}
+      resultStatus: {type: string, enum: [DRAFT, CALCULATED, SUPERSEDED]}
+      currency: {type: string, pattern: '^[A-Z]{3}$'}
+      grossAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      deductionAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      netAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      componentCount: {type: [integer, 'null'], minimum: 1}
+      resultHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+      calculatedAt: {type: string, format: date-time}
+  PayrollResultDetail:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - calculationRequestId
+    - cycleId
+    - payrollAssignmentVersionId
+    - assignmentNumber
+    - employeeNumber
+    - inputSnapshotId
+    - resultStatus
+    - currency
+    - grossAmount
+    - deductionAmount
+    - netAmount
+    - resultHash
+    - calculatedAt
+    - resultSchemaVersion
+    - resultPayload
+    - components
+    properties:
+      id: {type: string, format: uuid}
+      calculationRequestId: {type: string, format: uuid}
+      cycleId: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      assignmentNumber: {type: string, minLength: 1}
+      employeeNumber: {type: string, minLength: 1}
+      inputSnapshotId: {type: string, format: uuid}
+      resultStatus: {type: string, enum: [DRAFT, CALCULATED, SUPERSEDED]}
+      currency: {type: string, pattern: '^[A-Z]{3}$'}
+      grossAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      deductionAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      netAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      componentCount: {type: [integer, 'null'], minimum: 1}
+      resultHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+      calculatedAt: {type: string, format: date-time}
+      resultSchemaVersion: {type: integer, enum: [0, 1]}
+      inputSnapshotHash:
+        type: [string, 'null']
+        pattern: '^[0-9a-f]{64}$'
+      salaryStructureVersionId:
+        type: [string, 'null']
+        format: uuid
+      resultPayload:
+        type: object
+        additionalProperties: true
+      components:
+        type: array
+        items: {$ref: '#/schemas/PayrollComponentResult'}
+  PayrollComponentResult:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - componentCode
+    - sequenceNo
+    - unproratedAmount
+    - prorationFactor
+    - calculatedAmount
+    - currency
+    - componentPayload
+    properties:
+      id: {type: string, format: uuid}
+      componentCode: {type: string}
+      sequenceNo: {type: integer, minimum: 1}
+      componentType:
+        type: [string, 'null']
+        enum: [EARNING, DEDUCTION, null]
+      formulaType: {type: [string, 'null']}
+      roundingScale:
+        type: [integer, 'null']
+        minimum: 0
+        maximum: 4
+      unproratedAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      prorationFactor: {type: number, minimum: 0}
+      calculatedAmount: {type: number, minimum: 0, multipleOf: 0.0001}
+      currency: {type: string, pattern: '^[A-Z]{3}$'}
+      componentVersionId: {type: [string, 'null'], format: uuid}
+      salaryStructureLineId: {type: [string, 'null'], format: uuid}
+      salaryStructureVersionId: {type: [string, 'null'], format: uuid}
+      componentPayload:
+        type: object
+        additionalProperties: true
+      componentHash:
+        type: [string, 'null']
+        pattern: '^[0-9a-f]{64}$'
+  PayrollCalculationTrace:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payrollResultId
+    - stepNo
+    - stepType
+    - inputs
+    - traceSchemaVersion
+    - tracePayload
+    - createdAt
+    properties:
+      id: {type: string, format: uuid}
+      payrollResultId: {type: string, format: uuid}
+      componentResultId: {type: [string, 'null'], format: uuid}
+      componentCode: {type: [string, 'null']}
+      stepNo: {type: integer, minimum: 1}
+      stepType: {type: string}
+      inputs:
+        type: object
+        additionalProperties: true
+      outputValue: {type: [number, 'null']}
+      message: {type: [string, 'null']}
+      traceSchemaVersion: {type: integer, enum: [0, 1]}
+      inputSnapshotId: {type: [string, 'null'], format: uuid}
+      componentVersionId: {type: [string, 'null'], format: uuid}
+      tracePayload:
+        type: object
+        additionalProperties: true
+      traceHash:
+        type: [string, 'null']
+        pattern: '^[0-9a-f]{64}$'
+      createdAt: {type: string, format: date-time}

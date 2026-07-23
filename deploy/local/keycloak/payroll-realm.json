@@ -142,7 +142,10 @@
                                                              "payroll-cycle.create",
                                                              "payroll-cycle.population.resolve",
                                                              "payroll-cycle.inputs.read",
-                                                             "payroll-cycle.inputs.seal"
+                                                             "payroll-cycle.inputs.seal",
+                                                             "payroll-calculation.execute",
+                                                             "payroll-result.read",
+                                                             "payroll-result.trace.read"
                                                          ]
                                      }
                   },
@@ -183,7 +186,9 @@
                                                              "employee-payroll.pay-group-assignment.read",
                                                              "employee-payroll.salary-assignment.read",
                                                              "payroll-cycle.read",
-                                                             "payroll-cycle.inputs.read"
+                                                             "payroll-cycle.inputs.read",
+                                                             "payroll-result.read",
+                                                             "payroll-result.trace.read"
                                                          ]
                                      }
                   }
