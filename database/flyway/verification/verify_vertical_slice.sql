@@ -70,13 +70,20 @@ BEGIN
       RAISE EXCEPTION 'payroll_app lacks SELECT on %', tenant_table.relation;
     END IF;
     insert_expected := NOT (
-      tenant_table.nspname = 'organisation'
-      AND tenant_table.relname IN ('payroll_calendar', 'pay_period'));
+      (tenant_table.nspname = 'organisation'
+       AND tenant_table.relname IN ('payroll_calendar', 'pay_period'))
+      OR (tenant_table.nspname = 'payroll_ops'
+       AND tenant_table.relname IN (
+         'payroll_cycle','population_member',
+         'population_resolution','population_decision'
+       )));
     IF has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') <> insert_expected THEN
       RAISE EXCEPTION 'payroll_app INSERT grant does not match baseline for %', tenant_table.relation;
     END IF;
     mutable_expected := tenant_table.nspname NOT IN ('audit', 'payroll_calc')
-      AND NOT (tenant_table.nspname = 'payroll_ops' AND tenant_table.relname = 'input_snapshot')
+      AND NOT (tenant_table.nspname = 'payroll_ops' AND tenant_table.relname IN (
+        'payroll_cycle','population_member','population_resolution',
+        'population_decision','input_snapshot'))
       AND NOT (tenant_table.nspname = 'documents' AND tenant_table.relname = 'draft_payslip')
       AND NOT (tenant_table.nspname = 'organisation' AND tenant_table.relname IN (
         'legal_entity','legal_entity_version','payroll_statutory_unit','payroll_statutory_unit_version',
@@ -95,7 +102,8 @@ BEGIN
     END IF;
   END LOOP;
 
-  FOREACH immutable IN ARRAY ARRAY['audit.audit_event'::regclass, 'payroll_ops.input_snapshot'::regclass,
+  FOREACH immutable IN ARRAY ARRAY['audit.audit_event'::regclass,
+    'payroll_ops.input_snapshot'::regclass, 'payroll_ops.population_decision'::regclass,
     'payroll_calc.payroll_result'::regclass, 'payroll_calc.component_result'::regclass,
     'payroll_calc.calculation_trace'::regclass, 'documents.draft_payslip'::regclass] LOOP
     IF has_table_privilege('payroll_app', immutable, 'UPDATE') OR has_table_privilege('payroll_app', immutable, 'DELETE')
@@ -117,6 +125,12 @@ BEGIN
 
   FOR controlled IN
     SELECT * FROM (VALUES
+      ('payroll_ops.payroll_cycle'::regclass,
+       'payroll_ops.reject_uncontrolled_population_mutation()'::regprocedure),
+      ('payroll_ops.population_member'::regclass,
+       'payroll_ops.reject_uncontrolled_population_mutation()'::regprocedure),
+      ('payroll_ops.population_resolution'::regclass,
+       'payroll_ops.reject_uncontrolled_population_mutation()'::regprocedure),
       ('organisation.pay_group_version'::regclass,
        'organisation.reject_uncontrolled_pay_group_version_mutation()'::regprocedure),
       ('compensation.pay_component_version'::regclass,
@@ -163,7 +177,9 @@ BEGIN
     'employee_payroll.end_date_pay_group_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
     'employee_payroll.approve_salary_assignment(uuid,uuid,character varying,timestamp with time zone)',
     'employee_payroll.end_date_salary_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
-    'employee_payroll.update_employee_payroll_profile_status(uuid,uuid,character varying,bigint,character varying,timestamp with time zone)'
+    'employee_payroll.update_employee_payroll_profile_status(uuid,uuid,character varying,bigint,character varying,timestamp with time zone)',
+    'payroll_ops.create_regular_payroll_cycle(uuid,uuid,uuid,character varying,timestamp with time zone)',
+    'payroll_ops.resolve_payroll_population(uuid,uuid,bigint,character varying,timestamp with time zone)'
   ]
   LOOP
     lifecycle_oid := to_regprocedure(lifecycle_signature);
