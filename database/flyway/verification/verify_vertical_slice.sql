@@ -75,7 +75,7 @@ BEGIN
       OR (tenant_table.nspname = 'payroll_ops'
        AND tenant_table.relname IN (
          'payroll_cycle','population_member',
-         'population_resolution','population_decision'
+         'population_resolution','population_decision','input_snapshot'
        )));
     IF has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') <> insert_expected THEN
       RAISE EXCEPTION 'payroll_app INSERT grant does not match baseline for %', tenant_table.relation;
@@ -179,7 +179,8 @@ BEGIN
     'employee_payroll.end_date_salary_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
     'employee_payroll.update_employee_payroll_profile_status(uuid,uuid,character varying,bigint,character varying,timestamp with time zone)',
     'payroll_ops.create_regular_payroll_cycle(uuid,uuid,uuid,character varying,timestamp with time zone)',
-    'payroll_ops.resolve_payroll_population(uuid,uuid,bigint,character varying,timestamp with time zone)'
+    'payroll_ops.resolve_payroll_population(uuid,uuid,bigint,character varying,timestamp with time zone)',
+    'payroll_ops.seal_payroll_inputs(uuid,uuid,bigint,character varying,timestamp with time zone)'
   ]
   LOOP
     lifecycle_oid := to_regprocedure(lifecycle_signature);
@@ -188,6 +189,76 @@ BEGIN
       RAISE EXCEPTION 'payroll_app lacks controlled lifecycle function: %', lifecycle_signature;
     END IF;
   END LOOP;
+END $$;
+
+
+DO $$
+DECLARE missing text;
+BEGIN
+  SELECT string_agg(required.column_name, ', ' ORDER BY required.column_name)
+  INTO missing
+  FROM (VALUES
+    ('payload_schema_version'),
+    ('population_resolution_id'),
+    ('population_member_id'),
+    ('population_decision_id'),
+    ('payroll_relationship_version_id'),
+    ('employee_payroll_profile_id'),
+    ('pay_group_assignment_id'),
+    ('salary_assignment_id'),
+    ('salary_structure_version_id')
+  ) required(column_name)
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns column_info
+    WHERE column_info.table_schema = 'payroll_ops'
+      AND column_info.table_name = 'input_snapshot'
+      AND column_info.column_name = required.column_name
+      AND column_info.is_nullable = 'NO'
+  );
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION
+      'input snapshots lack required V024 non-null lineage columns: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_ops.input_snapshot'::regclass
+      AND conname = 'input_snapshot_payload_hash_ck'
+      AND contype = 'c'
+  ) THEN
+    RAISE EXCEPTION
+      'input snapshots lack the V024 canonical payload-hash constraint';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.input_snapshot snapshot
+    WHERE snapshot.snapshot_hash <> encode(
+      digest(snapshot.snapshot_payload::text, 'sha256'),
+      'hex'
+    )
+  ) THEN
+    RAISE EXCEPTION
+      'input snapshot payload hashes are inconsistent';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.payroll_cycle cycle
+    WHERE cycle.status IN ('INPUTS_SEALED', 'CALCULATING', 'CALCULATED')
+      AND (
+        cycle.input_sealed_at IS NULL
+        OR cycle.input_sealed_by IS NULL
+        OR cycle.input_snapshot_count IS NULL
+        OR cycle.input_snapshot_set_hash IS NULL
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'sealed payroll cycles lack complete V024 seal metadata';
+  END IF;
 END $$;
 
 

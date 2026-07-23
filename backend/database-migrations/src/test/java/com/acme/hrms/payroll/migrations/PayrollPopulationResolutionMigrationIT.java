@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +63,7 @@ class PayrollPopulationResolutionMigrationIT {
 
   private static final UUID LEGACY_CYCLE_ID = id("4a000000-0000-0000-0000-000000000001");
   private static final UUID LEGACY_MEMBER_ID = id("4a100000-0000-0000-0000-000000000001");
+  private static final UUID LEGACY_SNAPSHOT_ID = id("4a200000-0000-0000-0000-000000000001");
 
   @Container
   static final PostgreSQLContainer POSTGRES =
@@ -83,6 +85,15 @@ class PayrollPopulationResolutionMigrationIT {
 
     seedV022FoundationAndLegacyPopulation();
 
+    Flyway.configure()
+        .dataSource(POSTGRES.getJdbcUrl(), "payroll_migrator", MIGRATOR_PASSWORD)
+        .locations("classpath:db/migration")
+        .target(MigrationVersion.fromVersion("23"))
+        .load()
+        .migrate();
+
+    seedV023LegacyInputSnapshot();
+
     Flyway flyway = Flyway.configure()
         .dataSource(POSTGRES.getJdbcUrl(), "payroll_migrator", MIGRATOR_PASSWORD)
         .locations("classpath:db/migration")
@@ -92,18 +103,25 @@ class PayrollPopulationResolutionMigrationIT {
   }
 
   @Test
-  void legacyPopulationIsBackfilledWithExactLineage() throws Exception {
+  void legacyPopulationAndSnapshotAreBackfilledWithExactLineage() throws Exception {
     try (Connection connection = app()) {
       connection.setAutoCommit(false);
       try (Statement statement = connection.createStatement()) {
         tenant(statement, TENANT_A);
         try (ResultSet result = statement.executeQuery("""
             SELECT c.status,c.active_population_resolution_id,
+                   c.input_snapshot_count,c.input_snapshot_set_hash,
                    r.attempt_no,r.included_count,r.excluded_count,
                    m.payroll_relationship_version_id,
                    m.employee_payroll_profile_id,
                    m.pay_group_assignment_id,m.salary_assignment_id,
-                   d.decision,d.reason_code
+                   d.decision,d.reason_code,
+                   s.id AS snapshot_id,s.payload_schema_version,
+                   s.population_resolution_id,s.population_member_id,
+                   s.population_decision_id,s.salary_structure_version_id,
+                   s.snapshot_hash,
+                   encode(digest(s.snapshot_payload::text,'sha256'),'hex')
+                     AS calculated_snapshot_hash
             FROM payroll_ops.payroll_cycle c
             JOIN payroll_ops.population_resolution r
               ON r.tenant_id=c.tenant_id
@@ -116,10 +134,14 @@ class PayrollPopulationResolutionMigrationIT {
              AND d.population_resolution_id=m.population_resolution_id
              AND d.payroll_assignment_version_id=
                  m.payroll_assignment_version_id
+            JOIN payroll_ops.input_snapshot s
+              ON s.tenant_id=m.tenant_id
+             AND s.population_member_id=m.id
+             AND s.population_decision_id=d.id
             WHERE c.id='%s'
             """.formatted(LEGACY_CYCLE_ID))) {
           assertThat(result.next()).isTrue();
-          assertThat(result.getString("status")).isEqualTo("POPULATION_RESOLVED");
+          assertThat(result.getString("status")).isEqualTo("INPUTS_SEALED");
           assertThat(result.getObject("active_population_resolution_id", UUID.class))
               .isNotNull();
           assertThat(result.getInt("attempt_no")).isOne();
@@ -135,6 +157,22 @@ class PayrollPopulationResolutionMigrationIT {
               .isEqualTo(READY_SALARY_ASSIGNMENT_ID);
           assertThat(result.getString("decision")).isEqualTo("INCLUDED");
           assertThat(result.getString("reason_code")).isEqualTo("INCLUDED");
+          assertThat(result.getInt("input_snapshot_count")).isOne();
+          assertThat(result.getString("input_snapshot_set_hash"))
+              .matches("[0-9a-f]{64}");
+          assertThat(result.getObject("snapshot_id", UUID.class))
+              .isEqualTo(LEGACY_SNAPSHOT_ID);
+          assertThat(result.getInt("payload_schema_version")).isZero();
+          assertThat(result.getObject("population_resolution_id", UUID.class))
+              .isEqualTo(result.getObject("active_population_resolution_id", UUID.class));
+          assertThat(result.getObject("population_member_id", UUID.class))
+              .isEqualTo(LEGACY_MEMBER_ID);
+          assertThat(result.getObject("population_decision_id", UUID.class))
+              .isNotNull();
+          assertThat(result.getObject("salary_structure_version_id", UUID.class))
+              .isEqualTo(STRUCTURE_VERSION_ID);
+          assertThat(result.getString("snapshot_hash"))
+              .isEqualTo(result.getString("calculated_snapshot_hash"));
           assertThat(result.next()).isFalse();
         }
       }
@@ -295,6 +333,160 @@ class PayrollPopulationResolutionMigrationIT {
   }
 
   @Test
+  void sealingCreatesCanonicalSnapshotAndAdvancesCycle() throws Exception {
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        tenant(statement, TENANT_A);
+        UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+        Resolution resolution = resolve(statement, TENANT_A, cycleId, 0);
+
+        SealSummary sealed = seal(statement, TENANT_A, cycleId, 1);
+        assertThat(sealed.snapshotCount()).isOne();
+        assertThat(sealed.combinedHash()).matches("[0-9a-f]{64}");
+        assertThat(sealed.cycleVersionNo()).isEqualTo(2);
+
+        try (ResultSet result = statement.executeQuery("""
+            SELECT c.status,c.input_snapshot_count,c.input_snapshot_set_hash,
+                   s.payload_schema_version,s.population_resolution_id,
+                   s.snapshot_payload #>> '{payGroup,prorationMethod}' AS proration,
+                   s.snapshot_payload #>> '{salaryAssignment,monthlyAmount}' AS monthly_amount,
+                   s.snapshot_payload #>> '{salaryStructure,lines,0,component,code}' AS component_code,
+                   s.snapshot_hash,
+                   encode(digest(s.snapshot_payload::text,'sha256'),'hex') AS calculated_hash
+            FROM payroll_ops.payroll_cycle c
+            JOIN payroll_ops.input_snapshot s
+              ON s.tenant_id=c.tenant_id
+             AND s.payroll_cycle_id=c.id
+            WHERE c.id='%s'
+            """.formatted(cycleId))) {
+          assertThat(result.next()).isTrue();
+          assertThat(result.getString("status")).isEqualTo("INPUTS_SEALED");
+          assertThat(result.getInt("input_snapshot_count")).isOne();
+          assertThat(result.getString("input_snapshot_set_hash"))
+              .isEqualTo(sealed.combinedHash());
+          assertThat(result.getInt("payload_schema_version")).isOne();
+          assertThat(result.getObject("population_resolution_id", UUID.class))
+              .isEqualTo(resolution.resolutionId());
+          assertThat(result.getString("proration")).isEqualTo("CALENDAR_DAYS");
+          assertThat(result.getString("monthly_amount")).isEqualTo("75000.0000");
+          assertThat(result.getString("component_code")).isEqualTo("BASIC");
+          assertThat(result.getString("snapshot_hash"))
+              .isEqualTo(result.getString("calculated_hash"));
+          assertThat(result.next()).isFalse();
+        }
+
+        assertSqlState("23514", () -> seal(statement, TENANT_A, cycleId, 2));
+      }
+      connection.rollback();
+    }
+  }
+
+  @Test
+  void configurationDriftAndStaleSealAreRejected() throws Exception {
+    assertSqlState("40001", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+          resolve(statement, TENANT_A, cycleId, 0);
+          seal(statement, TENANT_A, cycleId, 99);
+        }
+      }
+    });
+
+    assertSqlState("42501", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          seal(statement, TENANT_B, LEGACY_CYCLE_ID, 2);
+        }
+      }
+    });
+
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        tenant(statement, TENANT_A);
+        UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+        resolve(statement, TENANT_A, cycleId, 0);
+        statement.execute("SELECT employee_payroll.update_employee_payroll_profile_status("
+            + "'" + TENANT_A + "','" + READY_PROFILE_ID
+            + "','ON_HOLD',1,'drift-test',clock_timestamp())");
+
+        Savepoint beforeSeal = connection.setSavepoint();
+        assertSqlState("23514", () -> seal(statement, TENANT_A, cycleId, 1));
+        connection.rollback(beforeSeal);
+        assertThat(queryLong(statement,
+            "SELECT count(*) FROM payroll_ops.input_snapshot "
+                + "WHERE payroll_cycle_id='" + cycleId + "'"))
+            .isZero();
+        try (ResultSet result = statement.executeQuery(
+            "SELECT status FROM payroll_ops.payroll_cycle WHERE id='" + cycleId + "'")) {
+          assertThat(result.next()).isTrue();
+          assertThat(result.getString(1)).isEqualTo("POPULATION_RESOLVED");
+        }
+      }
+      connection.rollback();
+    }
+  }
+
+  @Test
+  void inputSnapshotsRequireControlledSealingAndRemainImmutable() throws Exception {
+    assertSqlState("42501", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          statement.execute("""
+              INSERT INTO payroll_ops.input_snapshot(
+                tenant_id,payroll_cycle_id,payroll_assignment_version_id,
+                snapshot_hash,snapshot_payload,sealed_at,
+                created_by,updated_by,payload_schema_version,
+                population_resolution_id,population_member_id,
+                population_decision_id,payroll_relationship_version_id,
+                employee_payroll_profile_id,pay_group_assignment_id,
+                salary_assignment_id,salary_structure_version_id
+              ) VALUES (
+                '%s','%s','%s',repeat('a',64),'{}',clock_timestamp(),
+                'test','test',1,
+                (SELECT active_population_resolution_id FROM payroll_ops.payroll_cycle WHERE id='%s'),
+                '%s',(SELECT id FROM payroll_ops.population_decision WHERE payroll_cycle_id='%s' LIMIT 1),
+                '%s','%s','%s','%s','%s'
+              )
+              """.formatted(
+                  TENANT_A, LEGACY_CYCLE_ID, READY_ASSIGNMENT_VERSION_ID,
+                  LEGACY_CYCLE_ID, LEGACY_MEMBER_ID, LEGACY_CYCLE_ID,
+                  READY_RELATIONSHIP_VERSION_ID, READY_PROFILE_ID,
+                  READY_GROUP_ASSIGNMENT_ID, READY_SALARY_ASSIGNMENT_ID,
+                  STRUCTURE_VERSION_ID));
+        }
+      }
+    });
+
+    assertSqlState("P0001", () -> {
+      try (Connection connection = admin();
+          Statement statement = connection.createStatement()) {
+        statement.execute("UPDATE payroll_ops.input_snapshot "
+            + "SET updated_by='forbidden' WHERE id='" + LEGACY_SNAPSHOT_ID + "'");
+      }
+    });
+
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        tenant(statement, TENANT_B);
+        assertThat(queryLong(statement,
+            "SELECT count(*) FROM payroll_ops.input_snapshot"))
+            .isZero();
+      }
+      connection.rollback();
+    }
+  }
+
+  @Test
   void cycleCreationRejectsClosedPeriodAndDuplicateCycle() throws Exception {
     assertSqlState("23514", () -> {
       try (Connection connection = app()) {
@@ -348,6 +540,25 @@ class PayrollPopulationResolutionMigrationIT {
           result.getInt("attempt_no"),
           result.getInt("included_count"),
           result.getInt("excluded_count"),
+          result.getLong("cycle_version_no"));
+    }
+  }
+
+  private static SealSummary seal(
+      Statement statement,
+      UUID requestedTenant,
+      UUID cycleId,
+      long expectedVersion) throws Exception {
+    try (ResultSet result = statement.executeQuery("""
+        SELECT snapshot_count,combined_hash,cycle_version_no
+        FROM payroll_ops.seal_payroll_inputs(
+          '%s','%s',%d,'snapshot-test',clock_timestamp()
+        )
+        """.formatted(requestedTenant, cycleId, expectedVersion))) {
+      assertThat(result.next()).isTrue();
+      return new SealSummary(
+          result.getInt("snapshot_count"),
+          result.getString("combined_hash"),
           result.getLong("cycle_version_no"));
     }
   }
@@ -582,6 +793,27 @@ class PayrollPopulationResolutionMigrationIT {
     }
   }
 
+  private static void seedV023LegacyInputSnapshot() throws Exception {
+    try (Connection connection = admin();
+        Statement statement = connection.createStatement()) {
+      statement.execute("SET app.tenant_id='" + TENANT_A + "'");
+      statement.execute("""
+          INSERT INTO payroll_ops.input_snapshot(
+            id,tenant_id,payroll_cycle_id,
+            payroll_assignment_version_id,snapshot_hash,
+            snapshot_payload,sealed_at,created_by,updated_by
+          ) VALUES (
+            '%s','%s','%s','%s',repeat('a',64),'{}',
+            clock_timestamp(),'legacy-test','legacy-test'
+          )
+          """.formatted(
+              LEGACY_SNAPSHOT_ID,
+              TENANT_A,
+              LEGACY_CYCLE_ID,
+              READY_ASSIGNMENT_VERSION_ID));
+    }
+  }
+
   private static void insertPeriod(
       Statement statement,
       UUID id,
@@ -786,6 +1018,11 @@ class PayrollPopulationResolutionMigrationIT {
       int attemptNo,
       int includedCount,
       int excludedCount,
+      long cycleVersionNo) {}
+
+  private record SealSummary(
+      int snapshotCount,
+      String combinedHash,
       long cycleVersionNo) {}
 
   @FunctionalInterface
