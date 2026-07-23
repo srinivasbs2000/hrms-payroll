@@ -35,6 +35,10 @@ public class PayrollOperationsRepository {
              cycle.cycle_type,
              cycle.status::text status,
              cycle.active_population_resolution_id,
+             cycle.input_sealed_at,
+             cycle.input_sealed_by,
+             cycle.input_snapshot_count,
+             cycle.input_snapshot_set_hash,
              cycle.control_total,
              cycle.version_no
       from payroll_ops.payroll_cycle cycle
@@ -301,6 +305,12 @@ public class PayrollOperationsRepository {
         result.getString("cycle_type"),
         result.getString("status"),
         result.getObject("active_population_resolution_id", UUID.class),
+        result.getTimestamp("input_sealed_at") == null
+            ? null
+            : result.getTimestamp("input_sealed_at").toInstant(),
+        result.getString("input_sealed_by"),
+        result.getObject("input_snapshot_count", Integer.class),
+        result.getString("input_snapshot_set_hash"),
         result.getBigDecimal("control_total"),
         result.getLong("version_no"));
   }

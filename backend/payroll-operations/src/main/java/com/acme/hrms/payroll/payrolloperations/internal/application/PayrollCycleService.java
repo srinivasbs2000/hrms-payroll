@@ -134,7 +134,7 @@ public class PayrollCycleService {
     });
   }
 
-  private Map<String, Object> cycleState(PayrollCycleView cycle) {
+  static Map<String, Object> cycleState(PayrollCycleView cycle) {
     if (cycle == null) {
       return null;
     }
@@ -147,6 +147,10 @@ public class PayrollCycleService {
     state.put(
         "activePopulationResolutionId",
         cycle.activePopulationResolutionId());
+    state.put("inputSealedAt", cycle.inputSealedAt());
+    state.put("inputSealedBy", cycle.inputSealedBy());
+    state.put("inputSnapshotCount", cycle.inputSnapshotCount());
+    state.put("inputSnapshotSetHash", cycle.inputSnapshotSetHash());
     state.put("versionNo", cycle.versionNo());
     return state;
   }

@@ -329,24 +329,11 @@ paths:
   /payroll-cycles/{cycleId}/audit:
     $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleAudit'
   /payroll-cycles/{cycleId}/seal-inputs:
-    parameters:
-    - $ref: '#/components/parameters/CycleId'
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Payroll Operations
-      operationId: sealInputs
-      x-permission: payroll-cycle.inputs.seal
-      responses:
-        '200':
-          description: Sealed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SnapshotSummary'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Seal Inputs
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleSealInputs'
+  /payroll-cycles/{cycleId}/input-snapshots:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleInputSnapshots'
+  /payroll-cycles/{cycleId}/input-snapshots/{snapshotId}:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleInputSnapshotIdentity'
   /payroll-calculations:
     parameters:
     - $ref: '#/components/parameters/CorrelationId'
@@ -465,13 +452,6 @@ components:
         format: uuid
     CalendarId:
       name: calendarId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-    CycleId:
-      name: cycleId
       in: path
       required: true
       schema:
@@ -1761,20 +1741,6 @@ components:
           type: array
           minItems: 1
           items: {$ref: '#/components/schemas/SalaryStructureLineView'}
-    SnapshotSummary:
-      type: object
-      required:
-      - cycleId
-      - snapshotCount
-      - combinedHash
-      properties:
-        cycleId:
-          type: string
-          format: uuid
-        snapshotCount:
-          type: integer
-        combinedHash:
-          type: string
     CalculationRequest:
       type: object
       required:

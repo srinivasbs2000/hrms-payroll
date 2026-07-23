@@ -1,6 +1,7 @@
 package com.acme.hrms.payroll.payrolloperations;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -17,5 +18,9 @@ public record PayrollCycleView(
     String cycleType,
     String status,
     UUID activePopulationResolutionId,
+    Instant inputSealedAt,
+    String inputSealedBy,
+    Integer inputSnapshotCount,
+    String inputSnapshotSetHash,
     BigDecimal controlTotal,
     long versionNo) {}

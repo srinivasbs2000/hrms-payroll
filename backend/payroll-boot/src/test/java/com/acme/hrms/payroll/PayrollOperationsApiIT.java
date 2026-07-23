@@ -281,6 +281,155 @@ class PayrollOperationsApiIT {
   }
 
   @Test
+  void inputSealingIsIdempotentAuditedAndReadable() throws Exception {
+    MvcResult created = createCycle(
+            "test-input-create-one", PERIOD_ID)
+        .andExpect(status().isCreated())
+        .andReturn();
+    String cycleId = objectMapper.readTree(
+        created.getResponse().getContentAsString()).get("id").asText();
+
+    resolvePopulation(cycleId, "test-input-resolve-one", "0")
+        .andExpect(status().isOk());
+
+    MvcResult sealed = sealInputs(
+            cycleId, "test-input-seal-one", "1")
+        .andExpect(status().isOk())
+        .andExpect(header().string("ETag", "\"2\""))
+        .andExpect(jsonPath("$.cycleId").value(cycleId))
+        .andExpect(jsonPath("$.snapshotCount").value(1))
+        .andExpect(jsonPath("$.cycleVersionNo").value(2))
+        .andExpect(jsonPath("$.combinedHash").isString())
+        .andExpect(jsonPath("$.sealedAt").isString())
+        .andReturn();
+
+    JsonNode seal = objectMapper.readTree(
+        sealed.getResponse().getContentAsString());
+    String combinedHash = seal.get("combinedHash").asText();
+
+    sealInputs(cycleId, "test-input-seal-one", "1")
+        .andExpect(status().isOk())
+        .andExpect(header().string("ETag", "\"2\""))
+        .andExpect(jsonPath("$.combinedHash").value(combinedHash));
+
+    MvcResult listed = mvc.perform(
+            get(
+                    "/api/v1/payroll-cycles/{cycleId}/input-snapshots",
+                    cycleId)
+                .with(token(
+                    TENANT_A,
+                    "payroll-cycle.inputs.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].employeeNumber").value("EMP-001"))
+        .andExpect(jsonPath("$[0].assignmentNumber").value("ASN-001"))
+        .andExpect(jsonPath("$[0].payloadSchemaVersion").value(1))
+        .andExpect(jsonPath("$[0].snapshotHash").isString())
+        .andReturn();
+
+    JsonNode snapshotList = objectMapper.readTree(
+        listed.getResponse().getContentAsString());
+    String snapshotId = snapshotList.get(0).get("id").asText();
+
+    mvc.perform(
+            get(
+                    "/api/v1/payroll-cycles/{cycleId}/input-snapshots/{snapshotId}",
+                    cycleId,
+                    snapshotId)
+                .with(token(
+                    TENANT_A,
+                    "payroll-cycle.inputs.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.snapshotPayload.schemaVersion").value(1))
+        .andExpect(jsonPath(
+            "$.snapshotPayload.payrollAssignment.assignmentNumber")
+            .value("ASN-001"))
+        .andExpect(jsonPath(
+            "$.snapshotPayload.salaryStructure.lines[0].component.code")
+            .value("BASIC"));
+
+    mvc.perform(
+            get("/api/v1/payroll-cycles/{cycleId}", cycleId)
+                .with(token(TENANT_A, "payroll-cycle.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("INPUTS_SEALED"))
+        .andExpect(jsonPath("$.inputSnapshotCount").value(1))
+        .andExpect(jsonPath("$.inputSnapshotSetHash")
+            .value(combinedHash))
+        .andExpect(jsonPath("$.inputSealedAt").isString());
+
+    mvc.perform(
+            get("/api/v1/payroll-cycles/{cycleId}/audit", cycleId)
+                .with(token(TENANT_A, "audit.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[2].action").value("INPUTS_SEALED"));
+  }
+
+  @Test
+  void staleInputSealVersionIsConflict() throws Exception {
+    MvcResult created = createCycle(
+            "test-input-create-two", PERIOD_ID)
+        .andExpect(status().isCreated())
+        .andReturn();
+    String cycleId = objectMapper.readTree(
+        created.getResponse().getContentAsString()).get("id").asText();
+
+    resolvePopulation(cycleId, "test-input-resolve-two", "0")
+        .andExpect(status().isOk());
+
+    sealInputs(cycleId, "test-input-seal-two", "0")
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.status").value(409));
+  }
+
+  @Test
+  void missingInputSealPermissionIsForbidden() throws Exception {
+    MvcResult created = createCycle(
+            "test-input-create-three", PERIOD_ID)
+        .andExpect(status().isCreated())
+        .andReturn();
+    String cycleId = objectMapper.readTree(
+        created.getResponse().getContentAsString()).get("id").asText();
+
+    resolvePopulation(cycleId, "test-input-resolve-three", "0")
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            post(
+                    "/api/v1/payroll-cycles/{cycleId}/seal-inputs",
+                    cycleId)
+                .with(token(
+                    TENANT_A,
+                    "payroll-cycle.inputs.read"))
+                .header("Idempotency-Key", "test-input-seal-three")
+                .header("If-Match", "1"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void inputSnapshotReadsAreTenantIsolated() throws Exception {
+    MvcResult created = createCycle(
+            "test-input-create-four", PERIOD_ID)
+        .andExpect(status().isCreated())
+        .andReturn();
+    String cycleId = objectMapper.readTree(
+        created.getResponse().getContentAsString()).get("id").asText();
+
+    resolvePopulation(cycleId, "test-input-resolve-four", "0")
+        .andExpect(status().isOk());
+    sealInputs(cycleId, "test-input-seal-four", "1")
+        .andExpect(status().isOk());
+
+    mvc.perform(
+            get(
+                    "/api/v1/payroll-cycles/{cycleId}/input-snapshots",
+                    cycleId)
+                .with(token(
+                    TENANT_B,
+                    "payroll-cycle.inputs.read")))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void missingPayrollCyclePermissionIsForbidden() throws Exception {
     mvc.perform(
             get("/api/v1/payroll-cycles")
@@ -313,6 +462,19 @@ class PayrollOperationsApiIT {
             .with(token(
                 TENANT_A,
                 "payroll-cycle.population.resolve"))
+            .header("Idempotency-Key", key)
+            .header("If-Match", ifMatch));
+  }
+
+  private org.springframework.test.web.servlet.ResultActions sealInputs(
+      String cycleId, String key, String ifMatch) throws Exception {
+    return mvc.perform(
+        post(
+                "/api/v1/payroll-cycles/{cycleId}/seal-inputs",
+                cycleId)
+            .with(token(
+                TENANT_A,
+                "payroll-cycle.inputs.seal"))
             .header("Idempotency-Key", key)
             .header("If-Match", ifMatch));
   }

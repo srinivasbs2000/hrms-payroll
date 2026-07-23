@@ -140,7 +140,9 @@
                                                              "employee-payroll.salary-assignment.approve",
                                                              "payroll-cycle.read",
                                                              "payroll-cycle.create",
-                                                             "payroll-cycle.population.resolve"
+                                                             "payroll-cycle.population.resolve",
+                                                             "payroll-cycle.inputs.read",
+                                                             "payroll-cycle.inputs.seal"
                                                          ]
                                      }
                   },
@@ -180,7 +182,8 @@
                                                              "employee-payroll.profile.read",
                                                              "employee-payroll.pay-group-assignment.read",
                                                              "employee-payroll.salary-assignment.read",
-                                                             "payroll-cycle.read"
+                                                             "payroll-cycle.read",
+                                                             "payroll-cycle.inputs.read"
                                                          ]
                                      }
                   }

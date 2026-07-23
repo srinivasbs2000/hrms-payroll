@@ -9,6 +9,11 @@ parameters:
     in: path
     required: true
     schema: {type: string, format: uuid}
+  SnapshotId:
+    name: snapshotId
+    in: path
+    required: true
+    schema: {type: string, format: uuid}
   ResolutionId:
     name: resolutionId
     in: query
@@ -209,6 +214,70 @@ pathItems:
         '401': {$ref: '#/responses/Unauthorized'}
         '403': {$ref: '#/responses/Forbidden'}
         '404': {$ref: '#/responses/NotFound'}
+  PayrollCycleSealInputs:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Payroll Operations]
+      summary: Seal immutable payroll inputs
+      operationId: sealPayrollInputs
+      x-permission: payroll-cycle.inputs.seal
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      responses:
+        '200':
+          description: Canonical input snapshot set sealed
+          headers:
+            ETag: {schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollInputSealResult'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollCycleInputSnapshots:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Payroll Operations]
+      summary: List immutable payroll input snapshots
+      operationId: listPayrollInputSnapshots
+      x-permission: payroll-cycle.inputs.read
+      responses:
+        '200':
+          description: Snapshot summaries without the canonical JSON payload
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/schemas/PayrollInputSnapshot'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  PayrollCycleInputSnapshotIdentity:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/SnapshotId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Payroll Operations]
+      summary: Read one immutable payroll input snapshot
+      operationId: getPayrollInputSnapshot
+      x-permission: payroll-cycle.inputs.read
+      responses:
+        '200':
+          description: Snapshot lineage and canonical JSON payload
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollInputSnapshotDetail'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
   PayrollCycleAudit:
     parameters:
     - $ref: '#/parameters/CycleId'
@@ -295,10 +364,111 @@ schemas:
       activePopulationResolutionId:
         type: [string, 'null']
         format: uuid
+      inputSealedAt:
+        type: [string, 'null']
+        format: date-time
+      inputSealedBy: {type: [string, 'null']}
+      inputSnapshotCount:
+        type: [integer, 'null']
+        minimum: 1
+      inputSnapshotSetHash:
+        type: [string, 'null']
+        pattern: '^[0-9a-f]{64}$'
       controlTotal:
         type: [number, 'null']
         multipleOf: 0.0001
       versionNo: {type: integer, format: int64, minimum: 0}
+  PayrollInputSealResult:
+    type: object
+    additionalProperties: false
+    required:
+    - cycleId
+    - snapshotCount
+    - combinedHash
+    - cycleVersionNo
+    - sealedAt
+    properties:
+      cycleId: {type: string, format: uuid}
+      snapshotCount: {type: integer, minimum: 1}
+      combinedHash:
+        type: string
+        pattern: '^[0-9a-f]{64}$'
+      cycleVersionNo: {type: integer, format: int64, minimum: 1}
+      sealedAt: {type: string, format: date-time}
+  PayrollInputSnapshot:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - cycleId
+    - payrollAssignmentVersionId
+    - assignmentNumber
+    - employeeNumber
+    - populationResolutionId
+    - salaryStructureVersionId
+    - payloadSchemaVersion
+    - snapshotHash
+    - sealedAt
+    - sealedBy
+    properties:
+      id: {type: string, format: uuid}
+      cycleId: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      assignmentNumber: {type: string}
+      employeeNumber: {type: string}
+      populationResolutionId: {type: string, format: uuid}
+      salaryStructureVersionId: {type: string, format: uuid}
+      payloadSchemaVersion: {type: integer, enum: [0, 1]}
+      snapshotHash:
+        type: string
+        pattern: '^[0-9a-f]{64}$'
+      sealedAt: {type: string, format: date-time}
+      sealedBy: {type: string, minLength: 1}
+  PayrollInputSnapshotDetail:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - cycleId
+    - payrollAssignmentVersionId
+    - assignmentNumber
+    - payrollRelationshipVersionId
+    - employeeNumber
+    - populationResolutionId
+    - populationMemberId
+    - populationDecisionId
+    - employeePayrollProfileId
+    - payGroupAssignmentId
+    - salaryAssignmentId
+    - salaryStructureVersionId
+    - payloadSchemaVersion
+    - snapshotHash
+    - snapshotPayload
+    - sealedAt
+    - sealedBy
+    properties:
+      id: {type: string, format: uuid}
+      cycleId: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      assignmentNumber: {type: string}
+      payrollRelationshipVersionId: {type: string, format: uuid}
+      employeeNumber: {type: string}
+      populationResolutionId: {type: string, format: uuid}
+      populationMemberId: {type: string, format: uuid}
+      populationDecisionId: {type: string, format: uuid}
+      employeePayrollProfileId: {type: string, format: uuid}
+      payGroupAssignmentId: {type: string, format: uuid}
+      salaryAssignmentId: {type: string, format: uuid}
+      salaryStructureVersionId: {type: string, format: uuid}
+      payloadSchemaVersion: {type: integer, enum: [0, 1]}
+      snapshotHash:
+        type: string
+        pattern: '^[0-9a-f]{64}$'
+      snapshotPayload:
+        type: object
+        additionalProperties: true
+      sealedAt: {type: string, format: date-time}
+      sealedBy: {type: string, minLength: 1}
   PopulationResolutionResult:
     type: object
     additionalProperties: false
