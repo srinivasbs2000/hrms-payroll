@@ -276,7 +276,25 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/payroll-web/package-lock.json
       - name: Prepare synthetic E2E environment
-        run: cp deploy/local/.env.example deploy/local/.env
+        shell: bash
+        run: |
+          cp deploy/local/.env.example deploy/local/.env
+          synthetic_password="$(
+            sed -n \
+              's/^KEYCLOAK_SMOKE_PASSWORD=//p' \
+              deploy/local/.env
+          )"
+          if [ -z "$synthetic_password" ]; then
+            echo \
+              'KEYCLOAK_SMOKE_PASSWORD is missing from the synthetic environment.' \
+              >&2
+            exit 1
+          fi
+          echo "::add-mask::$synthetic_password"
+          printf 'E2E_PAYROLL_ADMIN_PASSWORD=%s\n' "$synthetic_password" \
+            >> "$GITHUB_ENV"
+          printf 'E2E_PAYROLL_SMOKE_PASSWORD=%s\n' "$synthetic_password" \
+            >> "$GITHUB_ENV"
       - name: Install backend modules
         run: ./mvnw --batch-mode -DskipTests install
       - name: Install frontend dependencies
