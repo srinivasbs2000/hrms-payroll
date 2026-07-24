@@ -428,6 +428,153 @@ BEGIN
   END IF;
 END $$;
 
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  SELECT string_agg(required.column_name, ', ' ORDER BY required.column_name)
+  INTO missing
+  FROM (VALUES
+    ('calculation_kind', 'NO'),
+    ('attempt_no', 'NO'),
+    ('supersedes_request_id', 'YES'),
+    ('recalculation_reason', 'YES'),
+    ('engine_version', 'NO')
+  ) required(column_name, nullable)
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns column_info
+    WHERE column_info.table_schema = 'payroll_calc'
+      AND column_info.table_name = 'calculation_request'
+      AND column_info.column_name = required.column_name
+      AND column_info.is_nullable = required.nullable
+  );
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION
+      'calculation requests lack required V026 columns: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid = 'payroll_calc.calculation_request'::regclass
+      AND tgname = 'calculation_request_attempt_defaults'
+      AND NOT tgisinternal
+      AND tgfoid =
+        'payroll_calc.apply_calculation_attempt_defaults()'::regprocedure
+  ) THEN
+    RAISE EXCEPTION
+      'calculation requests lack the V026 attempt-default trigger';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.calculation_request'::regclass
+      AND conname = 'calculation_request_supersedes_fk'
+      AND contype = 'f'
+  ) THEN
+    RAISE EXCEPTION
+      'calculation requests lack the V026 supersession lineage foreign key';
+  END IF;
+
+  IF to_regclass(
+       'payroll_calc.calculation_request_cycle_attempt_uk'
+     ) IS NULL
+     OR to_regclass(
+       'payroll_calc.calculation_request_one_successor_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'calculation requests lack required V026 attempt indexes';
+  END IF;
+
+  IF to_regclass(
+       'payroll_calc.calculation_request_one_completed_cycle_uk'
+     ) IS NOT NULL THEN
+    RAISE EXCEPTION
+      'obsolete V025 one-completed-request index remains after V026';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.calculation_request request
+    WHERE request.request_schema_version = 1
+      AND (
+        request.engine_version <> 'STARTER_FIXED_V1'
+        OR request.attempt_no < 1
+        OR (
+          request.calculation_kind = 'INITIAL'
+          AND (
+            request.attempt_no <> 1
+            OR request.supersedes_request_id IS NOT NULL
+            OR request.recalculation_reason IS NOT NULL
+          )
+        )
+        OR (
+          request.calculation_kind = 'RECALCULATION'
+          AND (
+            request.attempt_no <= 1
+            OR request.supersedes_request_id IS NULL
+            OR request.recalculation_reason IS NULL
+            OR length(btrim(request.recalculation_reason)) NOT BETWEEN 8 AND 500
+          )
+        )
+        OR request.calculation_kind NOT IN ('INITIAL', 'RECALCULATION')
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'schema-version-1 calculation requests violate V026 attempt shape';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.calculation_request child
+    JOIN payroll_calc.calculation_request parent
+      ON parent.tenant_id = child.tenant_id
+     AND parent.id = child.supersedes_request_id
+     AND parent.payroll_cycle_id = child.payroll_cycle_id
+    WHERE child.calculation_kind = 'RECALCULATION'
+      AND (
+        child.attempt_no <> parent.attempt_no + 1
+        OR child.input_snapshot_set_hash IS DISTINCT FROM
+          parent.input_snapshot_set_hash
+        OR child.engine_version IS DISTINCT FROM parent.engine_version
+        OR parent.request_schema_version <> 1
+        OR parent.status <> 'COMPLETED'
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'recalculation requests contain inconsistent supersession lineage';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.payroll_cycle cycle
+    JOIN payroll_calc.calculation_request active
+      ON active.tenant_id = cycle.tenant_id
+     AND active.id = cycle.active_calculation_request_id
+     AND active.payroll_cycle_id = cycle.id
+    WHERE cycle.status = 'CALCULATED'
+      AND active.request_schema_version = 1
+      AND (
+        active.status <> 'COMPLETED'
+        OR EXISTS (
+          SELECT 1
+          FROM payroll_calc.calculation_request later
+          WHERE later.tenant_id = active.tenant_id
+            AND later.payroll_cycle_id = active.payroll_cycle_id
+            AND later.attempt_no > active.attempt_no
+            AND later.request_schema_version = 1
+            AND later.status = 'COMPLETED'
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'calculated cycles do not point at the latest completed attempt';
+  END IF;
+END $$;
+
 SELECT n.nspname AS schema_name, c.relname AS table_name, c.relrowsecurity AS rls_enabled,
        c.relforcerowsecurity AS rls_forced, p.polname AS policy_name
   FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace

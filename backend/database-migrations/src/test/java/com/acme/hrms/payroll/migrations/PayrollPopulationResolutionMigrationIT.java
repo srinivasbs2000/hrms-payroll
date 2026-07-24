@@ -743,6 +743,317 @@ class PayrollPopulationResolutionMigrationIT {
   }
 
   @Test
+  void recalculationCreatesLinkedAttemptAndPreservesHistory()
+      throws Exception {
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        tenant(statement, TENANT_A);
+        UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+        resolve(statement, TENANT_A, cycleId, 0);
+        seal(statement, TENANT_A, cycleId, 1);
+        CalculationSummary initial = calculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            2,
+            "calculation-recalc-initial",
+            "4".repeat(64));
+
+        RecalculationSummary recalculated = recalculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            3,
+            "recalculation-test-one",
+            "5".repeat(64),
+            "Approved payroll review rerun");
+
+        assertThat(recalculated.supersededRequestId())
+            .isEqualTo(initial.requestId());
+        assertThat(recalculated.attemptNo()).isEqualTo(2);
+        assertThat(recalculated.resultCount()).isOne();
+        assertThat(recalculated.grossTotal()).isEqualTo("75000.0000");
+        assertThat(recalculated.deductionTotal()).isEqualTo("0.0000");
+        assertThat(recalculated.netTotal()).isEqualTo("75000.0000");
+        assertThat(recalculated.resultSetHash())
+            .isEqualTo(initial.resultSetHash());
+        assertThat(recalculated.cycleVersionNo()).isEqualTo(4);
+
+        RecalculationSummary replay = recalculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            3,
+            "recalculation-test-one",
+            "5".repeat(64),
+            "Approved payroll review rerun");
+        assertThat(replay).isEqualTo(recalculated);
+
+        try (ResultSet result = statement.executeQuery("""
+            SELECT cycle.status,cycle.version_no,
+                   cycle.active_calculation_request_id,
+                   request.calculation_kind,request.attempt_no,
+                   request.supersedes_request_id,
+                   request.recalculation_reason,
+                   request.engine_version
+            FROM payroll_ops.payroll_cycle cycle
+            JOIN payroll_calc.calculation_request request
+              ON request.tenant_id=cycle.tenant_id
+             AND request.id=cycle.active_calculation_request_id
+            WHERE cycle.id='%s'
+            """.formatted(cycleId))) {
+          assertThat(result.next()).isTrue();
+          assertThat(result.getString("status")).isEqualTo("CALCULATED");
+          assertThat(result.getLong("version_no")).isEqualTo(4);
+          assertThat(result.getObject(
+              "active_calculation_request_id",
+              UUID.class)).isEqualTo(recalculated.requestId());
+          assertThat(result.getString("calculation_kind"))
+              .isEqualTo("RECALCULATION");
+          assertThat(result.getInt("attempt_no")).isEqualTo(2);
+          assertThat(result.getObject(
+              "supersedes_request_id",
+              UUID.class)).isEqualTo(initial.requestId());
+          assertThat(result.getString("recalculation_reason"))
+              .isEqualTo("Approved payroll review rerun");
+          assertThat(result.getString("engine_version"))
+              .isEqualTo("STARTER_FIXED_V1");
+        }
+
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.calculation_request "
+                + "WHERE payroll_cycle_id='" + cycleId + "'"))
+            .isEqualTo(2);
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.payroll_result "
+                + "WHERE payroll_cycle_id='" + cycleId + "'"))
+            .isEqualTo(2);
+        assertThat(queryLong(
+            statement,
+            "SELECT count(DISTINCT result_hash) "
+                + "FROM payroll_calc.payroll_result "
+                + "WHERE payroll_cycle_id='" + cycleId + "'"))
+            .isOne();
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.component_result component "
+                + "JOIN payroll_calc.payroll_result result "
+                + "ON result.tenant_id=component.tenant_id "
+                + "AND result.id=component.payroll_result_id "
+                + "WHERE result.payroll_cycle_id='" + cycleId + "'"))
+            .isEqualTo(2);
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.calculation_trace trace "
+                + "JOIN payroll_calc.payroll_result result "
+                + "ON result.tenant_id=trace.tenant_id "
+                + "AND result.id=trace.payroll_result_id "
+                + "WHERE result.payroll_cycle_id='" + cycleId + "'"))
+            .isEqualTo(2);
+      }
+      connection.rollback();
+    }
+  }
+
+  @Test
+  void recalculationChainsAttemptsFromTheCurrentActiveRequest()
+      throws Exception {
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        tenant(statement, TENANT_A);
+        UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+        resolve(statement, TENANT_A, cycleId, 0);
+        seal(statement, TENANT_A, cycleId, 1);
+        CalculationSummary initial = calculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            2,
+            "calculation-recalc-chain",
+            "6".repeat(64));
+        RecalculationSummary second = recalculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            3,
+            "recalculation-chain-two",
+            "7".repeat(64),
+            "First controlled payroll rerun");
+        RecalculationSummary third = recalculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            4,
+            "recalculation-chain-three",
+            "8".repeat(64),
+            "Second controlled payroll rerun");
+
+        assertThat(second.supersededRequestId())
+            .isEqualTo(initial.requestId());
+        assertThat(third.supersededRequestId())
+            .isEqualTo(second.requestId());
+        assertThat(third.attemptNo()).isEqualTo(3);
+        assertThat(third.cycleVersionNo()).isEqualTo(5);
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.calculation_request "
+                + "WHERE payroll_cycle_id='" + cycleId + "'"))
+            .isEqualTo(3);
+        assertThat(queryLong(
+            statement,
+            "SELECT max(attempt_no) FROM payroll_calc.calculation_request "
+                + "WHERE payroll_cycle_id='" + cycleId + "'"))
+            .isEqualTo(3);
+        assertThat(queryLong(
+            statement,
+            "SELECT count(*) FROM payroll_calc.calculation_request "
+                + "WHERE payroll_cycle_id='" + cycleId + "' "
+                + "AND supersedes_request_id IS NOT NULL"))
+            .isEqualTo(2);
+        assertThat(queryLong(
+            statement,
+            "SELECT count(DISTINCT result_hash) "
+                + "FROM payroll_calc.payroll_result "
+                + "WHERE payroll_cycle_id='" + cycleId + "'"))
+            .isOne();
+      }
+      connection.rollback();
+    }
+  }
+
+  @Test
+  void recalculationRejectsInvalidStateReasonVersionTenantAndReplayConflict()
+      throws Exception {
+    assertSqlState("23514", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+          recalculate(
+              statement,
+              TENANT_A,
+              cycleId,
+              0,
+              "recalculation-not-calculated",
+              "9".repeat(64),
+              "Cycle is not calculated yet");
+        }
+      }
+    });
+
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        tenant(statement, TENANT_A);
+        UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+        resolve(statement, TENANT_A, cycleId, 0);
+        seal(statement, TENANT_A, cycleId, 1);
+        calculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            2,
+            "calculation-recalc-negative",
+            "a".repeat(64));
+
+        assertSqlState("23514", () -> recalculate(
+            statement,
+            TENANT_A,
+            cycleId,
+            3,
+            "recalculation-blank-reason",
+            "b".repeat(64),
+            " "));
+
+        connection.rollback();
+      }
+    }
+
+    assertSqlState("40001", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+          resolve(statement, TENANT_A, cycleId, 0);
+          seal(statement, TENANT_A, cycleId, 1);
+          calculate(
+              statement,
+              TENANT_A,
+              cycleId,
+              2,
+              "calculation-recalc-stale",
+              "c".repeat(64));
+          recalculate(
+              statement,
+              TENANT_A,
+              cycleId,
+              2,
+              "recalculation-stale-version",
+              "d".repeat(64),
+              "Stale version should fail");
+        }
+      }
+    });
+
+    assertSqlState("42501", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          recalculate(
+              statement,
+              TENANT_B,
+              LEGACY_CYCLE_ID,
+              3,
+              "recalculation-tenant-mismatch",
+              "e".repeat(64),
+              "Tenant mismatch should fail");
+        }
+      }
+    });
+
+    assertSqlState("23505", () -> {
+      try (Connection connection = app()) {
+        connection.setAutoCommit(false);
+        try (Statement statement = connection.createStatement()) {
+          tenant(statement, TENANT_A);
+          UUID cycleId = createCycle(statement, TENANT_A, FEB_PERIOD_ID);
+          resolve(statement, TENANT_A, cycleId, 0);
+          seal(statement, TENANT_A, cycleId, 1);
+          calculate(
+              statement,
+              TENANT_A,
+              cycleId,
+              2,
+              "calculation-recalc-conflict",
+              "f".repeat(64));
+          recalculate(
+              statement,
+              TENANT_A,
+              cycleId,
+              3,
+              "recalculation-conflict-key",
+              "1".repeat(64),
+              "Controlled replay conflict test");
+          recalculate(
+              statement,
+              TENANT_A,
+              cycleId,
+              3,
+              "recalculation-conflict-key",
+              "2".repeat(64),
+              "Controlled replay conflict test");
+        }
+      }
+    });
+  }
+  @Test
   void cycleCreationRejectsClosedPeriodAndDuplicateCycle() throws Exception {
     assertSqlState("23514", () -> {
       try (Connection connection = app()) {
@@ -807,6 +1118,53 @@ class PayrollPopulationResolutionMigrationIT {
       String resultSetHash,
       long cycleVersionNo) {}
 
+  private static RecalculationSummary recalculate(
+      Statement statement,
+      UUID requestedTenant,
+      UUID cycleId,
+      long expectedVersion,
+      String idempotencyKey,
+      String requestHash,
+      String reason) throws Exception {
+    try (ResultSet result = statement.executeQuery("""
+        SELECT calculation_request_id,superseded_request_id,
+               attempt_no,result_count,gross_total,deduction_total,
+               net_total,result_set_hash,cycle_version_no
+        FROM payroll_calc.recalculate_sealed_payroll(
+          '%s','%s',%d,'%s','%s','%s','calculation-test',
+          clock_timestamp()
+        )
+        """.formatted(
+            requestedTenant,
+            cycleId,
+            expectedVersion,
+            idempotencyKey,
+            requestHash,
+            reason))) {
+      assertThat(result.next()).isTrue();
+      return new RecalculationSummary(
+          result.getObject("calculation_request_id", UUID.class),
+          result.getObject("superseded_request_id", UUID.class),
+          result.getInt("attempt_no"),
+          result.getInt("result_count"),
+          result.getBigDecimal("gross_total").toPlainString(),
+          result.getBigDecimal("deduction_total").toPlainString(),
+          result.getBigDecimal("net_total").toPlainString(),
+          result.getString("result_set_hash"),
+          result.getLong("cycle_version_no"));
+    }
+  }
+
+  private record RecalculationSummary(
+      UUID requestId,
+      UUID supersededRequestId,
+      int attemptNo,
+      int resultCount,
+      String grossTotal,
+      String deductionTotal,
+      String netTotal,
+      String resultSetHash,
+      long cycleVersionNo) {}
   private static UUID createCycle(
       Statement statement, UUID requestedTenant, UUID periodId)
       throws Exception {
