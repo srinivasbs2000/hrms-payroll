@@ -65,3 +65,23 @@ The suite fails for:
 
 Traces, screenshots and video are retained only for failed tests. Saved
 authentication state is always excluded from Git and CI artifacts.
+
+## S3-09C CI acceptance
+
+The GitHub Actions browser job must:
+
+- be named `Payroll browser E2E`;
+- run inside the existing `payroll-baseline` workflow;
+- run for every pull request and push to `main`;
+- use one Playwright worker and zero retries;
+- install Chromium with Linux dependencies;
+- recreate the isolated fixture from V001–V026;
+- run both authenticated browser roles;
+- upload evidence only on failure;
+- exclude `e2e/.auth` and every raw `trace.zip`;
+- upload only a sanitized HTML summary, sanitized traces, screenshots, video and service logs;
+- fail artifact preparation when token-shaped or password-shaped content remains;
+- stop the E2E Compose project with volumes in an `always()` step.
+
+Future sprints must keep this check green and extend the fixture and browser
+suite in the same change whenever they add an executable payroll path.

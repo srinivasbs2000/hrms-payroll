@@ -66,8 +66,8 @@ $env:OIDC_ISSUER = 'http://localhost:8081/realms/payroll'
   spring-boot:run
 ```
 
-S3-09B will replace the manual backend/frontend launch with a guarded Playwright
-runner and CI job.
+S3-09B replaces the normal browser launch with a guarded Playwright runner.
+S3-09C runs that same deterministic suite in GitHub Actions.
 
 ## Stop
 
@@ -151,3 +151,45 @@ Expected coverage:
 
 Reports are written to ignored local directories. Authentication state must not
 be uploaded or committed.
+
+## GitHub Actions browser gate
+
+The `payroll-baseline` workflow contains the `Payroll browser E2E` job. The job
+uses a clean Ubuntu runner, installs the backend modules, installs Chromium with
+Linux dependencies, resets the isolated fixture, and runs the full browser
+suite.
+
+Failure evidence is written under:
+
+```text
+target/e2e-ci-artifacts/
+```
+
+Only the sanitized directory is uploaded. It contains, when available:
+
+- a generated sanitized HTML summary without embedded Playwright report data;
+- screenshots, videos and textual error context;
+- sanitized traces with network recordings removed;
+- PostgreSQL and Keycloak Compose logs; and
+- an artifact manifest.
+
+The following are never uploaded:
+
+```text
+frontend/payroll-web/e2e/.auth/
+frontend/payroll-web/**/trace.zip
+deploy/local/.env
+```
+
+Prepare the same sanitized evidence locally after a failure:
+
+```powershell
+Set-Location C:\dev\hrms-payroll
+
+pwsh.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+  -File "C:\dev\hrms-payroll\scripts\e2e\prepare-ci-artifacts.ps1" `
+  -RepositoryPath "C:\dev\hrms-payroll"
+```
+
+Upload `target/e2e-ci-artifacts` for diagnosis rather than the original
+Playwright `trace.zip`.

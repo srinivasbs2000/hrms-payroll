@@ -77,6 +77,16 @@ Set-E2eKeycloakPasswords `
     -AdminPassword $adminPassword `
     -SmokePassword $smokePassword
 
+$mavenWrapper = if ($IsWindows) {
+    Join-Path $RepositoryPath 'mvnw.cmd'
+}
+else {
+    Join-Path $RepositoryPath 'mvnw'
+}
+
+if (-not (Test-Path -LiteralPath $mavenWrapper -PathType Leaf)) {
+    throw "Maven wrapper does not exist: $mavenWrapper"
+}
 $previousJavaToolOptions = [string]$env:JAVA_TOOL_OPTIONS
 $previousFlywayUrl = [string]$env:FLYWAY_URL
 $previousFlywayUser = [string]$env:FLYWAY_USER
@@ -96,7 +106,7 @@ try {
     $env:FLYWAY_PASSWORD = [string]$values.PAYROLL_MIGRATOR_PASSWORD
 
     Invoke-Native `
-        -Command (Join-Path $RepositoryPath 'mvnw.cmd') `
+        -Command $mavenWrapper `
         -Arguments @(
             '--batch-mode'
             '-pl'
@@ -163,5 +173,5 @@ Write-Host ''
 Write-Host 'Isolated payroll E2E fixture reset completed.' -ForegroundColor Green
 Write-Host "PostgreSQL: 127.0.0.1:$PostgresPort"
 Write-Host "Keycloak: http://localhost:$KeycloakPort"
-Write-Host 'Tenant fixture: DEMO001'
+Write-Host 'Tenant fixture: E2E001'
 Write-Host 'Normal local PostgreSQL volume was not used or modified.'

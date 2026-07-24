@@ -1,4 +1,4 @@
-﻿#requires -Version 5.1
+#requires -Version 5.1
 [CmdletBinding()]
 param(
     [string]$RepositoryPath = 'C:\dev\hrms-payroll'
@@ -53,8 +53,8 @@ Invoke-Checked -Command 'npm.cmd' -Arguments @('test') `
     -WorkingDirectory $frontend
 Invoke-Checked -Command 'npm.cmd' -Arguments @('run', 'build') `
     -WorkingDirectory $frontend
-Invoke-Checked -Command 'npm.cmd' `
-    -Arguments @('audit', '--audit-level=high') `
+Invoke-Checked -Command 'node.exe' `
+    -Arguments @('scripts/verify-npm-audit.mjs') `
     -WorkingDirectory $frontend
 
 Invoke-Checked -Command $maven -Arguments @('--batch-mode', 'verify') `
