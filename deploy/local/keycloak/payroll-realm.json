@@ -144,6 +144,7 @@
                                                              "payroll-cycle.inputs.read",
                                                              "payroll-cycle.inputs.seal",
                                                              "payroll-calculation.execute",
+                                                             "payroll-calculation.recalculate",
                                                              "payroll-result.read",
                                                              "payroll-result.trace.read"
                                                          ]

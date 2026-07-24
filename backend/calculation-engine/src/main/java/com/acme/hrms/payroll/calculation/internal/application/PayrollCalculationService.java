@@ -3,6 +3,8 @@ package com.acme.hrms.payroll.calculation.internal.application;
 import com.acme.hrms.payroll.calculation.PayrollCalculationRequestView;
 import com.acme.hrms.payroll.calculation.PayrollCalculationResult;
 import com.acme.hrms.payroll.calculation.PayrollCalculationTraceView;
+import com.acme.hrms.payroll.calculation.PayrollRecalculationRequest;
+import com.acme.hrms.payroll.calculation.PayrollRecalculationResult;
 import com.acme.hrms.payroll.calculation.PayrollResultDetailView;
 import com.acme.hrms.payroll.calculation.PayrollResultSummaryView;
 import com.acme.hrms.payroll.calculation.internal.infrastructure.PayrollCalculationRepository;
@@ -57,9 +59,7 @@ public class PayrollCalculationService {
 
   public PayrollCalculationResult calculate(
       UUID cycleId, String idempotencyKey, long expectedVersion) {
-    if (idempotencyKey == null || idempotencyKey.isBlank()) {
-      throw new IllegalArgumentException("Idempotency-Key is required");
-    }
+    requireIdempotencyKey(idempotencyKey);
 
     return transactions.write(() -> {
       CalculationCycleState before = repository.cycle(cycleId);
@@ -82,6 +82,50 @@ public class PayrollCalculationService {
           before.activeCalculationRequestId(),
           result.calculationRequestId())) {
         recordCalculation(before, after, result, principal);
+      }
+      return result;
+    });
+  }
+
+  public PayrollRecalculationResult recalculate(
+      UUID cycleId,
+      String idempotencyKey,
+      long expectedVersion,
+      PayrollRecalculationRequest request) {
+    requireIdempotencyKey(idempotencyKey);
+    if (request == null || request.reason() == null) {
+      throw new IllegalArgumentException("Recalculation reason is required");
+    }
+    String reason = request.reason().trim();
+    if (reason.length() < 8 || reason.length() > 500) {
+      throw new IllegalArgumentException(
+          "Recalculation reason must contain between 8 and 500 characters");
+    }
+
+    return transactions.write(() -> {
+      CalculationCycleState before = repository.cycle(cycleId);
+      String principal = actor.require();
+      Instant recalculatedAt = clock.instant();
+      Map<String, Object> hashInput = new LinkedHashMap<>();
+      hashInput.put("cycleId", cycleId);
+      hashInput.put("expectedVersion", expectedVersion);
+      hashInput.put("reason", reason);
+      String requestHash = canonical.hash(hashInput);
+
+      PayrollRecalculationResult result = repository.recalculate(
+          cycleId,
+          expectedVersion,
+          idempotencyKey,
+          requestHash,
+          reason,
+          principal,
+          recalculatedAt);
+
+      CalculationCycleState after = repository.cycle(cycleId);
+      if (!Objects.equals(
+          before.activeCalculationRequestId(),
+          result.calculationRequestId())) {
+        recordRecalculation(before, after, result, reason, principal);
       }
       return result;
     });
@@ -150,6 +194,46 @@ public class PayrollCalculationService {
         cycleState(after)));
   }
 
+  private void recordRecalculation(
+      CalculationCycleState before,
+      CalculationCycleState after,
+      PayrollRecalculationResult result,
+      String reason,
+      String principal) {
+    Map<String, Object> metadata = new LinkedHashMap<>();
+    metadata.put("calculationRequestId", result.calculationRequestId());
+    metadata.put("supersededRequestId", result.supersededRequestId());
+    metadata.put("attemptNo", result.attemptNo());
+    metadata.put("recalculationReason", reason);
+    metadata.put("engineVersion", "STARTER_FIXED_V1");
+    metadata.put("resultCount", result.resultCount());
+    metadata.put("grossTotal", result.grossTotal());
+    metadata.put("deductionTotal", result.deductionTotal());
+    metadata.put("netTotal", result.netTotal());
+    metadata.put("resultSetHash", result.resultSetHash());
+
+    audit.append(
+        "RECALCULATED",
+        OBJECT_TYPE,
+        after.id(),
+        cycleState(before),
+        cycleState(after),
+        metadata,
+        principal);
+
+    Map<String, Object> payload = cycleState(after);
+    payload.putAll(metadata);
+    outbox.append(events.create(
+        "PayrollRecalculated",
+        1,
+        TenantContext.require(),
+        null,
+        OBJECT_TYPE,
+        after.id(),
+        after.versionNo() + 1,
+        payload));
+  }
+
   private Map<String, Object> cycleState(CalculationCycleState cycle) {
     Map<String, Object> state = new LinkedHashMap<>();
     state.put("id", cycle.id());
@@ -169,5 +253,11 @@ public class PayrollCalculationService {
     state.put("controlTotal", cycle.controlTotal());
     state.put("versionNo", cycle.versionNo());
     return state;
+  }
+
+  private static void requireIdempotencyKey(String idempotencyKey) {
+    if (idempotencyKey == null || idempotencyKey.isBlank()) {
+      throw new IllegalArgumentException("Idempotency-Key is required");
+    }
   }
 }

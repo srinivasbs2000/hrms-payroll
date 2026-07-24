@@ -79,6 +79,36 @@ pathItems:
         '404': {$ref: '#/responses/NotFound'}
         '409': {$ref: '#/responses/Conflict'}
         '422': {$ref: '#/responses/UnprocessableEntity'}
+  PayrollCycleRecalculation:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Calculation]
+      summary: Recalculate one currently calculated regular payroll cycle
+      operationId: recalculateSealedPayroll
+      x-permission: payroll-calculation.recalculate
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/PayrollRecalculationRequest'}
+      responses:
+        '200':
+          description: Controlled recalculation completed or replayed
+          headers:
+            ETag: {schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/PayrollRecalculationResult'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
   PayrollCycleCalculationRequests:
     parameters:
     - $ref: '#/parameters/CycleId'
@@ -110,7 +140,7 @@ pathItems:
       x-permission: payroll-result.read
       responses:
         '200':
-          description: Payroll result summaries
+          description: Historical payroll result summaries, newest attempt first
           content:
             application/json:
               schema:
@@ -196,6 +226,46 @@ schemas:
       cycleVersionNo: {type: integer, format: int64, minimum: 1}
       completedAt: {type: string, format: date-time}
       completedBy: {type: string, minLength: 1}
+  PayrollRecalculationRequest:
+    type: object
+    additionalProperties: false
+    required: [reason]
+    properties:
+      reason:
+        type: string
+        minLength: 8
+        maxLength: 500
+        pattern: '.*\S.*'
+        example: Approved payroll review rerun
+  PayrollRecalculationResult:
+    type: object
+    additionalProperties: false
+    required:
+    - cycleId
+    - calculationRequestId
+    - supersededRequestId
+    - attemptNo
+    - resultCount
+    - grossTotal
+    - deductionTotal
+    - netTotal
+    - resultSetHash
+    - cycleVersionNo
+    - completedAt
+    - completedBy
+    properties:
+      cycleId: {type: string, format: uuid}
+      calculationRequestId: {type: string, format: uuid}
+      supersededRequestId: {type: string, format: uuid}
+      attemptNo: {type: integer, minimum: 2}
+      resultCount: {type: integer, minimum: 1}
+      grossTotal: {type: number, minimum: 0, multipleOf: 0.0001}
+      deductionTotal: {type: number, minimum: 0, multipleOf: 0.0001}
+      netTotal: {type: number, minimum: 0, multipleOf: 0.0001}
+      resultSetHash: {type: string, pattern: '^[0-9a-f]{64}$'}
+      cycleVersionNo: {type: integer, format: int64, minimum: 1}
+      completedAt: {type: string, format: date-time}
+      completedBy: {type: string, minLength: 1}
   PayrollCalculationRequest:
     type: object
     additionalProperties: false
@@ -203,6 +273,9 @@ schemas:
     - id
     - cycleId
     - status
+    - calculationKind
+    - attemptNo
+    - engineVersion
     - requestSchemaVersion
     - expectedCycleVersion
     - inputSnapshotSetHash
@@ -214,6 +287,16 @@ schemas:
       status:
         type: string
         enum: [ACCEPTED, CALCULATING, COMPLETED, FAILED]
+      calculationKind:
+        type: string
+        enum: [LEGACY, INITIAL, RECALCULATION]
+      attemptNo: {type: integer, minimum: 0}
+      supersededRequestId: {type: [string, 'null'], format: uuid}
+      recalculationReason:
+        type: [string, 'null']
+        minLength: 8
+        maxLength: 500
+      engineVersion: {type: string, minLength: 3, maxLength: 40}
       requestSchemaVersion: {type: integer, enum: [0, 1]}
       expectedCycleVersion: {type: integer, format: int64, minimum: 0}
       inputSnapshotSetHash: {type: string, pattern: '^[0-9a-f]{64}$'}

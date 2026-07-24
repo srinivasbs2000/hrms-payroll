@@ -4,6 +4,7 @@ import com.acme.hrms.payroll.calculation.PayrollCalculationRequestView;
 import com.acme.hrms.payroll.calculation.PayrollCalculationResult;
 import com.acme.hrms.payroll.calculation.PayrollCalculationTraceView;
 import com.acme.hrms.payroll.calculation.PayrollComponentResultView;
+import com.acme.hrms.payroll.calculation.PayrollRecalculationResult;
 import com.acme.hrms.payroll.calculation.PayrollResultDetailView;
 import com.acme.hrms.payroll.calculation.PayrollResultSummaryView;
 import com.acme.hrms.payroll.platform.ConflictException;
@@ -141,6 +142,83 @@ public class PayrollCalculationRepository {
     }
   }
 
+  public PayrollRecalculationResult recalculate(
+      UUID cycleId,
+      long expectedVersion,
+      String idempotencyKey,
+      String requestHash,
+      String reason,
+      String actor,
+      Instant recalculatedAt) {
+    try {
+      RecalculationFunctionResult functionResult = jdbc.query(
+              """
+              select calculation_request_id,
+                     superseded_request_id,
+                     attempt_no,
+                     result_count,
+                     gross_total,
+                     deduction_total,
+                     net_total,
+                     result_set_hash,
+                     cycle_version_no
+              from payroll_calc.recalculate_sealed_payroll(
+                ?,?,?,?,?,?,?,?
+              )
+              """,
+              (result, row) -> new RecalculationFunctionResult(
+                  result.getObject("calculation_request_id", UUID.class),
+                  result.getObject("superseded_request_id", UUID.class),
+                  result.getInt("attempt_no"),
+                  result.getInt("result_count"),
+                  result.getBigDecimal("gross_total"),
+                  result.getBigDecimal("deduction_total"),
+                  result.getBigDecimal("net_total"),
+                  result.getString("result_set_hash"),
+                  result.getLong("cycle_version_no")),
+              TenantContext.require(),
+              cycleId,
+              expectedVersion,
+              idempotencyKey,
+              requestHash,
+              reason,
+              actor,
+              Timestamp.from(recalculatedAt))
+          .stream()
+          .findFirst()
+          .orElseThrow(() -> new IllegalStateException(
+              "Payroll recalculation returned no result"));
+
+      return jdbc.query(
+              """
+              select completed_at,completed_by
+              from payroll_calc.calculation_request
+              where tenant_id=? and id=?
+              """,
+              (result, row) -> new PayrollRecalculationResult(
+                  cycleId,
+                  functionResult.requestId(),
+                  functionResult.supersededRequestId(),
+                  functionResult.attemptNo(),
+                  functionResult.resultCount(),
+                  functionResult.grossTotal(),
+                  functionResult.deductionTotal(),
+                  functionResult.netTotal(),
+                  functionResult.resultSetHash(),
+                  functionResult.cycleVersionNo(),
+                  instant(result, "completed_at"),
+                  result.getString("completed_by")),
+              TenantContext.require(),
+              functionResult.requestId())
+          .stream()
+          .findFirst()
+          .orElseThrow(() -> new IllegalStateException(
+              "Completed recalculation request could not be read"));
+    } catch (DataAccessException exception) {
+      throw translate("Payroll could not be recalculated", exception);
+    }
+  }
+
   public CalculationCycleState cycle(UUID cycleId) {
     return jdbc.query(
             """
@@ -183,6 +261,8 @@ public class PayrollCalculationRepository {
     return jdbc.query(
         """
         select id,payroll_cycle_id,status,
+               calculation_kind,attempt_no,supersedes_request_id,
+               recalculation_reason,engine_version,
                request_schema_version,expected_cycle_version,
                input_snapshot_set_hash,requested_at,started_at,
                completed_at,completed_by,completed_cycle_version,
@@ -190,12 +270,17 @@ public class PayrollCalculationRepository {
                result_set_hash,version_no
         from payroll_calc.calculation_request
         where tenant_id=? and payroll_cycle_id=?
-        order by requested_at desc,id desc
+        order by attempt_no desc,requested_at desc,id desc
         """,
         (result, row) -> new PayrollCalculationRequestView(
             result.getObject("id", UUID.class),
             result.getObject("payroll_cycle_id", UUID.class),
             result.getString("status"),
+            result.getString("calculation_kind"),
+            result.getInt("attempt_no"),
+            result.getObject("supersedes_request_id", UUID.class),
+            result.getString("recalculation_reason"),
+            result.getString("engine_version"),
             result.getShort("request_schema_version"),
             result.getLong("expected_cycle_version"),
             result.getString("input_snapshot_set_hash"),
@@ -219,7 +304,9 @@ public class PayrollCalculationRepository {
         RESULT_SELECT
             + " where result.tenant_id=?"
             + " and result.payroll_cycle_id=?"
-            + " order by relationship_identity.employee_number,"
+            + " order by result.calculated_at desc,"
+            + " result.calculation_request_id desc,"
+            + " relationship_identity.employee_number,"
             + " assignment_identity.assignment_number",
         this::mapSummary,
         TenantContext.require(),
@@ -474,6 +561,17 @@ public class PayrollCalculationRepository {
 
   private record CalculationFunctionResult(
       UUID requestId,
+      int resultCount,
+      BigDecimal grossTotal,
+      BigDecimal deductionTotal,
+      BigDecimal netTotal,
+      String resultSetHash,
+      long cycleVersionNo) {}
+
+  private record RecalculationFunctionResult(
+      UUID requestId,
+      UUID supersededRequestId,
+      int attemptNo,
       int resultCount,
       BigDecimal grossTotal,
       BigDecimal deductionTotal,

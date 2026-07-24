@@ -336,6 +336,8 @@ paths:
     $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleInputSnapshotIdentity'
   /payroll-cycles/{cycleId}/calculation:
     $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleCalculation'
+  /payroll-cycles/{cycleId}/recalculation:
+    $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleRecalculation'
   /payroll-cycles/{cycleId}/calculation-requests:
     $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleCalculationRequests'
   /payroll-cycles/{cycleId}/results:
