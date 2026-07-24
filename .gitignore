@@ -41,3 +41,8 @@ yarn-error.log*
 .docker/
 tmp/
 temp/
+
+# Playwright local state and failure evidence
+frontend/payroll-web/e2e/.auth/
+frontend/payroll-web/playwright-report/
+frontend/payroll-web/test-results/

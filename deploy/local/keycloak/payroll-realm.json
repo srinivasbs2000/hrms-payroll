@@ -137,7 +137,16 @@
                                                              "employee-payroll.salary-assignment.create",
                                                              "employee-payroll.salary-assignment.correct",
                                                              "employee-payroll.salary-assignment.end-date",
-                                                             "employee-payroll.salary-assignment.approve"
+                                                             "employee-payroll.salary-assignment.approve",
+                                                             "payroll-cycle.read",
+                                                             "payroll-cycle.create",
+                                                             "payroll-cycle.population.resolve",
+                                                             "payroll-cycle.inputs.read",
+                                                             "payroll-cycle.inputs.seal",
+                                                             "payroll-calculation.execute",
+                                                             "payroll-calculation.recalculate",
+                                                             "payroll-result.read",
+                                                             "payroll-result.trace.read"
                                                          ]
                                      }
                   },
@@ -176,7 +185,11 @@
                                                              "employee-payroll.assignment.read",
                                                              "employee-payroll.profile.read",
                                                              "employee-payroll.pay-group-assignment.read",
-                                                             "employee-payroll.salary-assignment.read"
+                                                             "employee-payroll.salary-assignment.read",
+                                                             "payroll-cycle.read",
+                                                             "payroll-cycle.inputs.read",
+                                                             "payroll-result.read",
+                                                             "payroll-result.trace.read"
                                                          ]
                                      }
                   }

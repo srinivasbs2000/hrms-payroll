@@ -315,135 +315,37 @@ paths:
   /salary-assignments/{assignmentId}/audit:
     $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentAudit'
   /payroll-cycles:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Payroll Operations
-      operationId: createPayrollCycle
-      x-permission: payroll-cycle.create
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PayrollCycleCreate'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EntityId'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Create Payroll Cycle
-  /payroll-cycles/{cycleId}/resolve-population:
-    parameters:
-    - $ref: '#/components/parameters/CycleId'
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Payroll Operations
-      operationId: resolvePopulation
-      x-permission: payroll-cycle.population.resolve
-      responses:
-        '200':
-          description: Population
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PopulationSummary'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Resolve Population
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleCollection'
+  /payroll-cycles/{cycleId}:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleIdentity'
+  /payroll-cycles/{cycleId}/population-resolution:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCyclePopulationResolution'
+  /payroll-cycles/{cycleId}/population:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCyclePopulation'
+  /payroll-cycles/{cycleId}/population-resolutions:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCyclePopulationResolutions'
+  /payroll-cycles/{cycleId}/population-decisions:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCyclePopulationDecisions'
+  /payroll-cycles/{cycleId}/audit:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleAudit'
   /payroll-cycles/{cycleId}/seal-inputs:
-    parameters:
-    - $ref: '#/components/parameters/CycleId'
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Payroll Operations
-      operationId: sealInputs
-      x-permission: payroll-cycle.inputs.seal
-      responses:
-        '200':
-          description: Sealed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SnapshotSummary'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Seal Inputs
-  /payroll-calculations:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags:
-      - Calculation
-      operationId: calculatePayroll
-      x-permission: payroll-calculation.execute
-      parameters:
-      - $ref: '#/components/parameters/IdempotencyKey'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CalculationRequest'
-      responses:
-        '202':
-          description: Accepted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CalculationAccepted'
-        '409':
-          $ref: '#/components/responses/Problem'
-        '422':
-          $ref: '#/components/responses/Problem'
-      summary: Calculate Payroll
-  /payroll-results/{resultId}:
-    parameters:
-    - $ref: '#/components/parameters/ResultId'
-    - $ref: '#/components/parameters/CorrelationId'
-    get:
-      tags:
-      - Calculation
-      operationId: getPayrollResult
-      x-permission: payroll-result.read
-      responses:
-        '200':
-          description: Result
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PayrollResult'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Get Payroll Result
-  /payroll-results/{resultId}/trace:
-    parameters:
-    - $ref: '#/components/parameters/ResultId'
-    - $ref: '#/components/parameters/CorrelationId'
-    get:
-      tags:
-      - Calculation
-      operationId: getCalculationTrace
-      x-permission: payroll-result.trace.read
-      responses:
-        '200':
-          description: Trace
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TraceStep'
-        '400':
-          $ref: '#/components/responses/Problem'
-      summary: Get Calculation Trace
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleSealInputs'
+  /payroll-cycles/{cycleId}/input-snapshots:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleInputSnapshots'
+  /payroll-cycles/{cycleId}/input-snapshots/{snapshotId}:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleInputSnapshotIdentity'
+  /payroll-cycles/{cycleId}/calculation:
+    $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleCalculation'
+  /payroll-cycles/{cycleId}/recalculation:
+    $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleRecalculation'
+  /payroll-cycles/{cycleId}/calculation-requests:
+    $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleCalculationRequests'
+  /payroll-cycles/{cycleId}/results:
+    $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleResults'
+  /payroll-cycles/{cycleId}/results/{resultId}:
+    $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleResultIdentity'
+  /payroll-cycles/{cycleId}/results/{resultId}/trace:
+    $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleResultTrace'
   /payroll-results/{resultId}/draft-payslip:
     parameters:
     - $ref: '#/components/parameters/ResultId'
@@ -494,13 +396,6 @@ components:
         format: uuid
     CalendarId:
       name: calendarId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-    CycleId:
-      name: cycleId
       in: path
       required: true
       schema:
@@ -1437,14 +1332,6 @@ components:
         beforeState: {type: [string, 'null']}
         afterState: {type: [string, 'null']}
         metadata: {type: string}
-    EntityId:
-      type: object
-      required:
-      - id
-      properties:
-        id:
-          type: string
-          format: uuid
     Money:
       type: object
       required:
@@ -1798,73 +1685,6 @@ components:
           type: array
           minItems: 1
           items: {$ref: '#/components/schemas/SalaryStructureLineView'}
-    PayrollCycleCreate:
-      type: object
-      required:
-      - payGroupId
-      - payPeriodId
-      properties:
-        payGroupId:
-          type: string
-          format: uuid
-        payPeriodId:
-          type: string
-          format: uuid
-        cycleType:
-          type: string
-          const: REGULAR
-    PopulationSummary:
-      type: object
-      required:
-      - cycleId
-      - includedCount
-      properties:
-        cycleId:
-          type: string
-          format: uuid
-        includedCount:
-          type: integer
-        excludedCount:
-          type: integer
-    SnapshotSummary:
-      type: object
-      required:
-      - cycleId
-      - snapshotCount
-      - combinedHash
-      properties:
-        cycleId:
-          type: string
-          format: uuid
-        snapshotCount:
-          type: integer
-        combinedHash:
-          type: string
-    CalculationRequest:
-      type: object
-      required:
-      - payrollCycleId
-      properties:
-        payrollCycleId:
-          type: string
-          format: uuid
-        mode:
-          type: string
-          enum:
-          - TRIAL
-          default: TRIAL
-    CalculationAccepted:
-      type: object
-      required:
-      - calculationRequestId
-      - status
-      properties:
-        calculationRequestId:
-          type: string
-          format: uuid
-        status:
-          type: string
-          const: ACCEPTED
     ComponentResult:
       type: object
       required:
@@ -1881,68 +1701,6 @@ components:
           type: string
         calculatedAmount:
           $ref: '#/components/schemas/Money'
-    PayrollResult:
-      type: object
-      required:
-      - id
-      - payrollCycleId
-      - payrollAssignmentId
-      - gross
-      - deductions
-      - net
-      - components
-      - resultHash
-      properties:
-        id:
-          type: string
-          format: uuid
-        payrollCycleId:
-          type: string
-          format: uuid
-        payrollAssignmentId:
-          type: string
-          format: uuid
-        gross:
-          $ref: '#/components/schemas/Money'
-        deductions:
-          $ref: '#/components/schemas/Money'
-        net:
-          $ref: '#/components/schemas/Money'
-        components:
-          type: array
-          items:
-            $ref: '#/components/schemas/ComponentResult'
-        resultHash:
-          type: string
-    TraceStep:
-      type: object
-      required:
-      - stepNo
-      - stepType
-      - inputs
-      - output
-      properties:
-        stepNo:
-          type: integer
-        componentCode:
-          type:
-          - string
-          - 'null'
-        stepType:
-          type: string
-        inputs:
-          type: object
-          additionalProperties: true
-        expression:
-          type:
-          - string
-          - 'null'
-        output:
-          type: string
-        message:
-          type:
-          - string
-          - 'null'
     DraftPayslip:
       type: object
       required:
