@@ -70,13 +70,21 @@ BEGIN
       RAISE EXCEPTION 'payroll_app lacks SELECT on %', tenant_table.relation;
     END IF;
     insert_expected := NOT (
-      tenant_table.nspname = 'organisation'
-      AND tenant_table.relname IN ('payroll_calendar', 'pay_period'));
+      (tenant_table.nspname = 'organisation'
+       AND tenant_table.relname IN ('payroll_calendar', 'pay_period'))
+      OR (tenant_table.nspname = 'payroll_ops'
+       AND tenant_table.relname IN (
+         'payroll_cycle','population_member',
+         'population_resolution','population_decision','input_snapshot'
+       ))
+      OR (tenant_table.nspname = 'payroll_calc'));
     IF has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') <> insert_expected THEN
       RAISE EXCEPTION 'payroll_app INSERT grant does not match baseline for %', tenant_table.relation;
     END IF;
     mutable_expected := tenant_table.nspname NOT IN ('audit', 'payroll_calc')
-      AND NOT (tenant_table.nspname = 'payroll_ops' AND tenant_table.relname = 'input_snapshot')
+      AND NOT (tenant_table.nspname = 'payroll_ops' AND tenant_table.relname IN (
+        'payroll_cycle','population_member','population_resolution',
+        'population_decision','input_snapshot'))
       AND NOT (tenant_table.nspname = 'documents' AND tenant_table.relname = 'draft_payslip')
       AND NOT (tenant_table.nspname = 'organisation' AND tenant_table.relname IN (
         'legal_entity','legal_entity_version','payroll_statutory_unit','payroll_statutory_unit_version',
@@ -95,7 +103,8 @@ BEGIN
     END IF;
   END LOOP;
 
-  FOREACH immutable IN ARRAY ARRAY['audit.audit_event'::regclass, 'payroll_ops.input_snapshot'::regclass,
+  FOREACH immutable IN ARRAY ARRAY['audit.audit_event'::regclass,
+    'payroll_ops.input_snapshot'::regclass, 'payroll_ops.population_decision'::regclass,
     'payroll_calc.payroll_result'::regclass, 'payroll_calc.component_result'::regclass,
     'payroll_calc.calculation_trace'::regclass, 'documents.draft_payslip'::regclass] LOOP
     IF has_table_privilege('payroll_app', immutable, 'UPDATE') OR has_table_privilege('payroll_app', immutable, 'DELETE')
@@ -117,6 +126,14 @@ BEGIN
 
   FOR controlled IN
     SELECT * FROM (VALUES
+      ('payroll_ops.payroll_cycle'::regclass,
+       'payroll_ops.reject_uncontrolled_population_mutation()'::regprocedure),
+      ('payroll_calc.calculation_request'::regclass,
+       'payroll_calc.reject_uncontrolled_calculation_mutation()'::regprocedure),
+      ('payroll_ops.population_member'::regclass,
+       'payroll_ops.reject_uncontrolled_population_mutation()'::regprocedure),
+      ('payroll_ops.population_resolution'::regclass,
+       'payroll_ops.reject_uncontrolled_population_mutation()'::regprocedure),
       ('organisation.pay_group_version'::regclass,
        'organisation.reject_uncontrolled_pay_group_version_mutation()'::regprocedure),
       ('compensation.pay_component_version'::regclass,
@@ -163,7 +180,11 @@ BEGIN
     'employee_payroll.end_date_pay_group_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
     'employee_payroll.approve_salary_assignment(uuid,uuid,character varying,timestamp with time zone)',
     'employee_payroll.end_date_salary_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
-    'employee_payroll.update_employee_payroll_profile_status(uuid,uuid,character varying,bigint,character varying,timestamp with time zone)'
+    'employee_payroll.update_employee_payroll_profile_status(uuid,uuid,character varying,bigint,character varying,timestamp with time zone)',
+    'payroll_ops.create_regular_payroll_cycle(uuid,uuid,uuid,character varying,timestamp with time zone)',
+    'payroll_ops.resolve_payroll_population(uuid,uuid,bigint,character varying,timestamp with time zone)',
+    'payroll_ops.seal_payroll_inputs(uuid,uuid,bigint,character varying,timestamp with time zone)',
+    'payroll_calc.calculate_sealed_payroll(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)'
   ]
   LOOP
     lifecycle_oid := to_regprocedure(lifecycle_signature);
@@ -172,6 +193,182 @@ BEGIN
       RAISE EXCEPTION 'payroll_app lacks controlled lifecycle function: %', lifecycle_signature;
     END IF;
   END LOOP;
+END $$;
+
+
+DO $$
+DECLARE missing text;
+BEGIN
+  SELECT string_agg(required.column_name, ', ' ORDER BY required.column_name)
+  INTO missing
+  FROM (VALUES
+    ('payload_schema_version'),
+    ('population_resolution_id'),
+    ('population_member_id'),
+    ('population_decision_id'),
+    ('payroll_relationship_version_id'),
+    ('employee_payroll_profile_id'),
+    ('pay_group_assignment_id'),
+    ('salary_assignment_id'),
+    ('salary_structure_version_id')
+  ) required(column_name)
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns column_info
+    WHERE column_info.table_schema = 'payroll_ops'
+      AND column_info.table_name = 'input_snapshot'
+      AND column_info.column_name = required.column_name
+      AND column_info.is_nullable = 'NO'
+  );
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION
+      'input snapshots lack required V024 non-null lineage columns: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_ops.input_snapshot'::regclass
+      AND conname = 'input_snapshot_payload_hash_ck'
+      AND contype = 'c'
+  ) THEN
+    RAISE EXCEPTION
+      'input snapshots lack the V024 canonical payload-hash constraint';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.input_snapshot snapshot
+    WHERE snapshot.snapshot_hash <> encode(
+      digest(snapshot.snapshot_payload::text, 'sha256'),
+      'hex'
+    )
+  ) THEN
+    RAISE EXCEPTION
+      'input snapshot payload hashes are inconsistent';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.payroll_cycle cycle
+    WHERE cycle.status IN ('INPUTS_SEALED', 'CALCULATING', 'CALCULATED')
+      AND (
+        cycle.input_sealed_at IS NULL
+        OR cycle.input_sealed_by IS NULL
+        OR cycle.input_snapshot_count IS NULL
+        OR cycle.input_snapshot_set_hash IS NULL
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'sealed payroll cycles lack complete V024 seal metadata';
+  END IF;
+END $$;
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  SELECT string_agg(required.column_name, ', ' ORDER BY required.column_name)
+  INTO missing
+  FROM (VALUES
+    ('request_schema_version'),
+    ('expected_cycle_version'),
+    ('input_snapshot_set_hash'),
+    ('started_at'),
+    ('completed_at'),
+    ('completed_cycle_version'),
+    ('result_count'),
+    ('result_set_hash')
+  ) required(column_name)
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns column_info
+    WHERE column_info.table_schema = 'payroll_calc'
+      AND column_info.table_name = 'calculation_request'
+      AND column_info.column_name = required.column_name
+  );
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION
+      'calculation requests lack required V025 columns: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.payroll_result'::regclass
+      AND conname = 'payroll_result_snapshot_lineage_fk'
+      AND contype = 'f'
+  ) THEN
+    RAISE EXCEPTION
+      'payroll results lack the V025 exact input-snapshot lineage foreign key';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.payroll_result'::regclass
+      AND conname = 'payroll_result_schema1_shape_ck'
+      AND contype = 'c'
+  ) THEN
+    RAISE EXCEPTION
+      'payroll results lack the V025 deterministic result-shape constraint';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.payroll_result result
+    WHERE result.result_schema_version = 1
+      AND result.result_hash <> encode(
+        public.digest(result.result_payload::text, 'sha256'::text),
+        'hex'
+      )
+  ) THEN
+    RAISE EXCEPTION 'schema-version-1 payroll-result hashes are inconsistent';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.component_result component
+    WHERE component.component_schema_version = 1
+      AND component.component_hash <> encode(
+        public.digest(component.component_payload::text, 'sha256'::text),
+        'hex'
+      )
+  ) THEN
+    RAISE EXCEPTION 'schema-version-1 component-result hashes are inconsistent';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.calculation_trace trace
+    WHERE trace.trace_schema_version = 1
+      AND trace.trace_hash <> encode(
+        public.digest(trace.trace_payload::text, 'sha256'::text),
+        'hex'
+      )
+  ) THEN
+    RAISE EXCEPTION 'schema-version-1 calculation-trace hashes are inconsistent';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.payroll_cycle cycle
+    WHERE cycle.status = 'CALCULATED'
+      AND (
+        cycle.active_calculation_request_id IS NULL
+        OR cycle.calculated_at IS NULL
+        OR cycle.calculated_by IS NULL
+        OR cycle.calculation_result_count IS NULL
+        OR cycle.calculation_result_set_hash IS NULL
+        OR cycle.gross_total IS NULL
+        OR cycle.deduction_total IS NULL
+        OR cycle.net_total IS NULL
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'calculated payroll cycles lack complete V025 calculation metadata';
+  END IF;
 END $$;
 
 
@@ -228,6 +425,153 @@ BEGIN
   ) THEN
     RAISE EXCEPTION
       'pay-group versions lack the V022 payroll-cycle end-date guard';
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  SELECT string_agg(required.column_name, ', ' ORDER BY required.column_name)
+  INTO missing
+  FROM (VALUES
+    ('calculation_kind', 'NO'),
+    ('attempt_no', 'NO'),
+    ('supersedes_request_id', 'YES'),
+    ('recalculation_reason', 'YES'),
+    ('engine_version', 'NO')
+  ) required(column_name, nullable)
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns column_info
+    WHERE column_info.table_schema = 'payroll_calc'
+      AND column_info.table_name = 'calculation_request'
+      AND column_info.column_name = required.column_name
+      AND column_info.is_nullable = required.nullable
+  );
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION
+      'calculation requests lack required V026 columns: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid = 'payroll_calc.calculation_request'::regclass
+      AND tgname = 'calculation_request_attempt_defaults'
+      AND NOT tgisinternal
+      AND tgfoid =
+        'payroll_calc.apply_calculation_attempt_defaults()'::regprocedure
+  ) THEN
+    RAISE EXCEPTION
+      'calculation requests lack the V026 attempt-default trigger';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.calculation_request'::regclass
+      AND conname = 'calculation_request_supersedes_fk'
+      AND contype = 'f'
+  ) THEN
+    RAISE EXCEPTION
+      'calculation requests lack the V026 supersession lineage foreign key';
+  END IF;
+
+  IF to_regclass(
+       'payroll_calc.calculation_request_cycle_attempt_uk'
+     ) IS NULL
+     OR to_regclass(
+       'payroll_calc.calculation_request_one_successor_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'calculation requests lack required V026 attempt indexes';
+  END IF;
+
+  IF to_regclass(
+       'payroll_calc.calculation_request_one_completed_cycle_uk'
+     ) IS NOT NULL THEN
+    RAISE EXCEPTION
+      'obsolete V025 one-completed-request index remains after V026';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.calculation_request request
+    WHERE request.request_schema_version = 1
+      AND (
+        request.engine_version <> 'STARTER_FIXED_V1'
+        OR request.attempt_no < 1
+        OR (
+          request.calculation_kind = 'INITIAL'
+          AND (
+            request.attempt_no <> 1
+            OR request.supersedes_request_id IS NOT NULL
+            OR request.recalculation_reason IS NOT NULL
+          )
+        )
+        OR (
+          request.calculation_kind = 'RECALCULATION'
+          AND (
+            request.attempt_no <= 1
+            OR request.supersedes_request_id IS NULL
+            OR request.recalculation_reason IS NULL
+            OR length(btrim(request.recalculation_reason)) NOT BETWEEN 8 AND 500
+          )
+        )
+        OR request.calculation_kind NOT IN ('INITIAL', 'RECALCULATION')
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'schema-version-1 calculation requests violate V026 attempt shape';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_calc.calculation_request child
+    JOIN payroll_calc.calculation_request parent
+      ON parent.tenant_id = child.tenant_id
+     AND parent.id = child.supersedes_request_id
+     AND parent.payroll_cycle_id = child.payroll_cycle_id
+    WHERE child.calculation_kind = 'RECALCULATION'
+      AND (
+        child.attempt_no <> parent.attempt_no + 1
+        OR child.input_snapshot_set_hash IS DISTINCT FROM
+          parent.input_snapshot_set_hash
+        OR child.engine_version IS DISTINCT FROM parent.engine_version
+        OR parent.request_schema_version <> 1
+        OR parent.status <> 'COMPLETED'
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'recalculation requests contain inconsistent supersession lineage';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.payroll_cycle cycle
+    JOIN payroll_calc.calculation_request active
+      ON active.tenant_id = cycle.tenant_id
+     AND active.id = cycle.active_calculation_request_id
+     AND active.payroll_cycle_id = cycle.id
+    WHERE cycle.status = 'CALCULATED'
+      AND active.request_schema_version = 1
+      AND (
+        active.status <> 'COMPLETED'
+        OR EXISTS (
+          SELECT 1
+          FROM payroll_calc.calculation_request later
+          WHERE later.tenant_id = active.tenant_id
+            AND later.payroll_cycle_id = active.payroll_cycle_id
+            AND later.attempt_no > active.attempt_no
+            AND later.request_schema_version = 1
+            AND later.status = 'COMPLETED'
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'calculated cycles do not point at the latest completed attempt';
   END IF;
 END $$;
 
