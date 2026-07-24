@@ -39,7 +39,7 @@ public class PayrollCalculationController {
     PayrollCalculationResult result = service.calculate(
         cycleId,
         idempotencyKey,
-        expectedVersion(ifMatch));
+        PayrollCalculationHttpSupport.expectedVersion(ifMatch));
     return ResponseEntity.ok()
         .eTag(Long.toString(result.cycleVersionNo()))
         .body(result);
@@ -55,7 +55,7 @@ public class PayrollCalculationController {
     PayrollRecalculationResult result = service.recalculate(
         cycleId,
         idempotencyKey,
-        expectedVersion(ifMatch),
+        PayrollCalculationHttpSupport.expectedVersion(ifMatch),
         request);
     return ResponseEntity.ok()
         .eTag(Long.toString(result.cycleVersionNo()))
@@ -90,33 +90,5 @@ public class PayrollCalculationController {
       @PathVariable UUID cycleId,
       @PathVariable UUID resultId) {
     return service.trace(cycleId, resultId);
-  }
-
-  private static long expectedVersion(String ifMatch) {
-    if (ifMatch == null || ifMatch.isBlank()) {
-      throw new IllegalArgumentException(
-          "If-Match must contain a numeric version");
-    }
-
-    String value = ifMatch.trim();
-    if (value.startsWith("W/")) {
-      value = value.substring(2).trim();
-    }
-    if (value.length() >= 2
-        && value.startsWith("\"")
-        && value.endsWith("\"")) {
-      value = value.substring(1, value.length() - 1);
-    }
-    if (!value.matches("[0-9]+")) {
-      throw new IllegalArgumentException(
-          "If-Match must contain a numeric version");
-    }
-
-    try {
-      return Long.parseLong(value);
-    } catch (NumberFormatException exception) {
-      throw new IllegalArgumentException(
-          "If-Match version is outside the supported range", exception);
-    }
   }
 }
