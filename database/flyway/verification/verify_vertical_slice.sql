@@ -50,7 +50,7 @@ BEGIN
   IF pg_has_role('payroll_app', 'payroll_owner', 'MEMBER') THEN RAISE EXCEPTION 'payroll_app can assume payroll_owner'; END IF;
   IF has_database_privilege('payroll_app', current_database(), 'CREATE') THEN RAISE EXCEPTION 'payroll_app can create database objects'; END IF;
   SELECT string_agg(nspname, ', ' ORDER BY nspname) INTO violation FROM pg_namespace
-   WHERE nspname IN ('public','platform','security','audit','organisation','compensation','employee_payroll','payroll_ops','payroll_calc','documents','integration')
+   WHERE nspname IN ('public','platform','security','audit','organisation','compensation','employee_payroll','payroll_ops','payroll_calc','documents','integration','statutory')
      AND has_schema_privilege('payroll_app', oid, 'CREATE');
   IF violation IS NOT NULL THEN RAISE EXCEPTION 'payroll_app has CREATE on schemas: %', violation; END IF;
   IF EXISTS (SELECT 1 FROM pg_class WHERE relowner = 'payroll_app'::regrole)
@@ -81,7 +81,7 @@ BEGIN
     IF has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') <> insert_expected THEN
       RAISE EXCEPTION 'payroll_app INSERT grant does not match baseline for %', tenant_table.relation;
     END IF;
-    mutable_expected := tenant_table.nspname NOT IN ('audit', 'payroll_calc')
+    mutable_expected := tenant_table.nspname NOT IN ('audit', 'payroll_calc', 'statutory')
       AND NOT (tenant_table.nspname = 'payroll_ops' AND tenant_table.relname IN (
         'payroll_cycle','population_member','population_resolution',
         'population_decision','input_snapshot'))
@@ -149,7 +149,13 @@ BEGIN
       ('employee_payroll.pay_group_assignment'::regclass,
        'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure),
       ('employee_payroll.salary_assignment'::regclass,
-       'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure)
+       'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_rule_version'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_rule_portion'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_rule_slab'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure)
     ) expected(relation, trigger_function)
   LOOP
     IF NOT EXISTS (
@@ -184,7 +190,9 @@ BEGIN
     'payroll_ops.create_regular_payroll_cycle(uuid,uuid,uuid,character varying,timestamp with time zone)',
     'payroll_ops.resolve_payroll_population(uuid,uuid,bigint,character varying,timestamp with time zone)',
     'payroll_ops.seal_payroll_inputs(uuid,uuid,bigint,character varying,timestamp with time zone)',
-    'payroll_calc.calculate_sealed_payroll(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)'
+    'payroll_calc.calculate_sealed_payroll(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)',
+    'statutory.approve_statutory_rule_version(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_statutory_rule_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)'
   ]
   LOOP
     lifecycle_oid := to_regprocedure(lifecycle_signature);
@@ -572,6 +580,97 @@ BEGIN
   ) THEN
     RAISE EXCEPTION
       'calculated cycles do not point at the latest completed attempt';
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  IF to_regnamespace('statutory') IS NULL THEN
+    RAISE EXCEPTION 'V027 statutory schema is missing';
+  END IF;
+
+  SELECT string_agg(required.table_name, ', ' ORDER BY required.table_name)
+  INTO missing
+  FROM (VALUES
+    ('statutory_rule'),
+    ('statutory_rule_version'),
+    ('statutory_rule_portion'),
+    ('statutory_rule_slab')
+  ) required(table_name)
+  WHERE to_regclass(
+    format('statutory.%I', required.table_name)
+  ) IS NULL;
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION 'V027 statutory tables are missing: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'statutory.statutory_rule_version'::regclass
+      AND conname = 'statutory_rule_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'statutory-rule versions lack the V027 approved-range exclusion';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'statutory.statutory_rule_slab'::regclass
+      AND conname = 'statutory_rule_slab_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'statutory-rule slabs lack the V027 band-overlap exclusion';
+  END IF;
+
+  IF to_regclass(
+       'statutory.statutory_rule_version_one_successor_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'statutory-rule versions lack the V027 one-successor index';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_rule_version version
+    WHERE version.approval_status = 'APPROVED'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM statutory.statutory_rule_portion portion
+        WHERE portion.tenant_id = version.tenant_id
+          AND portion.statutory_rule_version_id = version.id
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'approved statutory-rule versions exist without liability portions';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_rule_portion portion
+    WHERE portion.calculation_method = 'SLAB'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM statutory.statutory_rule_slab slab
+        WHERE slab.tenant_id = portion.tenant_id
+          AND slab.statutory_rule_portion_id = portion.id
+      )
+      AND EXISTS (
+        SELECT 1
+        FROM statutory.statutory_rule_version version
+        WHERE version.tenant_id = portion.tenant_id
+          AND version.id = portion.statutory_rule_version_id
+          AND version.approval_status = 'APPROVED'
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'approved SLAB statutory portions exist without bands';
   END IF;
 END $$;
 

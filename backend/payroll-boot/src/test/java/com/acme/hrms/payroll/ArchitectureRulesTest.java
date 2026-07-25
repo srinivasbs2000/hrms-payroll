@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class ArchitectureRulesTest {
   private static final List<String> MODULES = List.of(
       "platform", "security", "integrations", "organisation", "compensation", "employeepayroll",
-      "payrolloperations", "calculation", "documentsreporting");
+      "payrolloperations", "calculation", "statutory", "documentsreporting");
   private static JavaClasses classesUnderTest;
 
   @BeforeAll
