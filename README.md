@@ -1,53 +1,80 @@
-# HRMS Payroll vertical slice
+# HRMS Payroll Sprint 1–4 vertical slice
 
-Runnable Sprint 1–3 payroll vertical slice covering tenant-safe organisation,
-payroll configuration, employee payroll identity and controlled payroll
-execution. The repository contains a Java 21/Spring Boot modular monolith,
-React 18/Vite web application, OpenAPI 3.1 contract, PostgreSQL 17/Flyway
-schema, Keycloak development realm, Docker Compose stack and Sprint 0–3
-delivery backlog.
+Runnable payroll vertical slice covering tenant-safe organisation, payroll
+configuration, employee payroll identity, controlled regular payroll execution
+and jurisdiction-neutral statutory evidence. The repository contains a Java
+21/Spring Boot modular monolith, React 18/Vite web application, OpenAPI 3.1
+contracts, PostgreSQL 17/Flyway schema, Keycloak development realm, Docker
+Compose stack and a Sprint 0–4 delivery backlog.
 
-The implemented payroll scope is limited to regular monthly, non-statutory
-starter calculation using approved fixed components. Sprint 3 adds controlled
-cycle and population resolution, immutable sealed input snapshots,
-deterministic result/component/trace persistence, controlled recalculation and
-a real draft-payslip view generated from persisted calculation evidence.
+The implemented regular-payroll path supports approved fixed monthly BASIC,
+HRA and SPECIAL_ALLOWANCE components, immutable sealed inputs, deterministic
+calculation evidence, controlled recalculation and a persisted draft-payslip
+view.
 
-Statutory deductions and tax, retro and off-cycle payroll, final settlement,
-banking/payment files, accounting/GL integration and legal/final payslip
-publication are intentionally excluded.
+Sprint 4 adds a country-neutral statutory bounded context with effective-dated
+rule versions, employee statutory profiles and exact assignments,
+deterministic statutory evaluation, append-only ledger posting, signed
+corrections, PTD/YTD balances, reconciliation, remittance preparation evidence,
+secured APIs and a permission-aware statutory operator workspace.
+
+The repository does not provide jurisdiction-specific statutory rates or legal
+tax interpretation. Statutory filing, returns, acknowledgements, payment or
+settlement, retro and off-cycle payroll, final settlement, banking/payment
+files, accounting/GL integration and legal/final payslip publication remain
+explicitly excluded.
 
 ## Repository layout
 
 - `backend/` - Maven modules and Spring Boot composition root
 - `frontend/payroll-web/` - React 18, TypeScript and Vite application
-- `contracts/openapi/` - approved OpenAPI 3.1 contract
+- `contracts/openapi/` - aggregate and bounded-context OpenAPI 3.1 contracts
 - `database/flyway/` - canonical bootstrap, migrations, development seed and verification SQL
 - `deploy/local/` - PostgreSQL and Keycloak Docker Compose stack
-- `docs/baseline/` - implementation pack and artifact manifest
 - `docs/adr/` - accepted architecture decisions
+- `docs/baseline/` - implementation packs and historical integration reports
 - `docs/quality/` - schema audits, negative-path evidence and Sprint closure reports
-- `docs/runbooks/` - API, UI and operational validation instructions
-- `backlog/` - Sprint 0–3 delivery backlog
+- `docs/runbooks/` - API, UI, operational and project-continuation guidance
+- `backlog/` - Sprint 0–4 delivery backlog
 
-## Sprint 3 execution flow
+## Regular payroll execution flow
 
-The controlled regular-payroll path is:
+1. Create or select a regular payroll cycle.
+2. Resolve an immutable population attempt with inclusion/exclusion evidence.
+3. Seal immutable employee input snapshots.
+4. Execute the deterministic fixed-component calculation.
+5. Persist calculation request, result, component and trace evidence atomically.
+6. Inspect the persisted draft payslip.
+7. Perform a reasoned, version-checked recalculation while preserving history.
 
-1. create or select a payroll cycle;
-2. resolve an immutable population attempt with inclusion/exclusion evidence;
-3. seal immutable employee input snapshots;
-4. execute the deterministic starter calculation;
-5. persist calculation request, result, component and trace evidence atomically;
-6. inspect the real draft payslip generated from persisted results; and
-7. perform a reasoned, version-checked recalculation while preserving history.
-
-The draft payslip is explicitly marked:
+The draft payslip remains explicitly marked:
 
 `DRAFT · NOT FOR PAYMENT · NOT A LEGAL PAYSLIP`
 
-Use `docs/runbooks/payroll-execution-ui.md` for the execution workspace and
-`docs/runbooks/sprint-3-manual-smoke.md` for the pre-merge live smoke check.
+Use `docs/runbooks/payroll-execution-ui.md` for the regular-payroll workspace.
+
+## Statutory execution flow
+
+1. Select a calculated payroll cycle and its exact completed calculation request.
+2. Execute deterministic statutory evaluation against exact approved rule,
+   profile, assignment and payroll-result lineage.
+3. Post the completed evaluation to the append-only statutory ledger.
+4. Review ledger entries, balances, reconciliation and remittance preparation
+   evidence.
+5. Append a signed correction with an auditable reason when authorised.
+
+Use `docs/runbooks/statutory-execution-ui.md` for normal operation and
+`docs/runbooks/sprint-4-manual-smoke.md` for the pre-merge live validation.
+
+## Project continuation
+
+Before continuing design or implementation in a new thread or session, read:
+
+`docs/runbooks/project-continuation-handoff.md`
+
+Then validate that handoff against the current local working tree, live GitHub
+branch, pull request and CI evidence. Unknown or conflicting facts must be
+reported rather than guessed.
 
 ## Prerequisites
 
@@ -90,17 +117,19 @@ $env:FLYWAY_PASSWORD = $local.PAYROLL_MIGRATOR_PASSWORD
 
 ## Full verification
 
-Run the checked-in Sprint 3 regression script:
+Run the checked-in Sprint 4 regression script:
 
 ```powershell
 pwsh.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
-  -File "C:\dev\hrms-payroll\scripts\verify-sprint-3.ps1" `
+  -File "C:\dev\hrms-payroll\scripts\verify-sprint-4.ps1" `
   -RepositoryPath "C:\dev\hrms-payroll"
 ```
 
-The script runs frontend dependency installation, lint, all tests, production
-build, npm audit, Maven verification, pinned Redocly validation,
-`git diff --check` and final Git status.
+The script runs frontend dependency installation, scoped npm-audit policy
+self-tests and live validation, lint, all frontend tests, production build,
+full Maven verification, aggregate OpenAPI validation with external
+statutory-fragment references resolved, `git diff --check` and final Git
+status.
 
 The database verification can also be run explicitly:
 

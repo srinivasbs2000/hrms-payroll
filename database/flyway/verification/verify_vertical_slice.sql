@@ -50,7 +50,7 @@ BEGIN
   IF pg_has_role('payroll_app', 'payroll_owner', 'MEMBER') THEN RAISE EXCEPTION 'payroll_app can assume payroll_owner'; END IF;
   IF has_database_privilege('payroll_app', current_database(), 'CREATE') THEN RAISE EXCEPTION 'payroll_app can create database objects'; END IF;
   SELECT string_agg(nspname, ', ' ORDER BY nspname) INTO violation FROM pg_namespace
-   WHERE nspname IN ('public','platform','security','audit','organisation','compensation','employee_payroll','payroll_ops','payroll_calc','documents','integration')
+   WHERE nspname IN ('public','platform','security','audit','organisation','compensation','employee_payroll','payroll_ops','payroll_calc','documents','integration','statutory')
      AND has_schema_privilege('payroll_app', oid, 'CREATE');
   IF violation IS NOT NULL THEN RAISE EXCEPTION 'payroll_app has CREATE on schemas: %', violation; END IF;
   IF EXISTS (SELECT 1 FROM pg_class WHERE relowner = 'payroll_app'::regrole)
@@ -77,11 +77,19 @@ BEGIN
          'payroll_cycle','population_member',
          'population_resolution','population_decision','input_snapshot'
        ))
-      OR (tenant_table.nspname = 'payroll_calc'));
+      OR (tenant_table.nspname = 'payroll_calc')
+      OR (tenant_table.nspname = 'statutory'
+       AND tenant_table.relname IN (
+         'statutory_evaluation_request','statutory_input_snapshot',
+         'statutory_result','statutory_portion_result',
+         'payroll_statutory_summary','statutory_ledger_batch',
+         'statutory_ledger_entry','statutory_balance_snapshot',
+         'statutory_reconciliation','statutory_remittance_summary'
+       )));
     IF has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') <> insert_expected THEN
       RAISE EXCEPTION 'payroll_app INSERT grant does not match baseline for %', tenant_table.relation;
     END IF;
-    mutable_expected := tenant_table.nspname NOT IN ('audit', 'payroll_calc')
+    mutable_expected := tenant_table.nspname NOT IN ('audit', 'payroll_calc', 'statutory')
       AND NOT (tenant_table.nspname = 'payroll_ops' AND tenant_table.relname IN (
         'payroll_cycle','population_member','population_resolution',
         'population_decision','input_snapshot'))
@@ -106,7 +114,15 @@ BEGIN
   FOREACH immutable IN ARRAY ARRAY['audit.audit_event'::regclass,
     'payroll_ops.input_snapshot'::regclass, 'payroll_ops.population_decision'::regclass,
     'payroll_calc.payroll_result'::regclass, 'payroll_calc.component_result'::regclass,
-    'payroll_calc.calculation_trace'::regclass, 'documents.draft_payslip'::regclass] LOOP
+    'payroll_calc.calculation_trace'::regclass, 'documents.draft_payslip'::regclass,
+    'statutory.statutory_input_snapshot'::regclass,
+    'statutory.statutory_result'::regclass,
+    'statutory.statutory_portion_result'::regclass,
+    'statutory.payroll_statutory_summary'::regclass,
+    'statutory.statutory_ledger_entry'::regclass,
+    'statutory.statutory_balance_snapshot'::regclass,
+    'statutory.statutory_reconciliation'::regclass,
+    'statutory.statutory_remittance_summary'::regclass] LOOP
     IF has_table_privilege('payroll_app', immutable, 'UPDATE') OR has_table_privilege('payroll_app', immutable, 'DELETE')
       THEN RAISE EXCEPTION 'payroll_app can mutate immutable relation %', immutable; END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid = immutable AND NOT tgisinternal
@@ -149,7 +165,25 @@ BEGIN
       ('employee_payroll.pay_group_assignment'::regclass,
        'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure),
       ('employee_payroll.salary_assignment'::regclass,
-       'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure)
+       'employee_payroll.reject_uncontrolled_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_rule_version'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_rule_portion'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_rule_slab'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.employee_statutory_profile_version'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.employee_statutory_rule_assignment'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_component_classification'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_evaluation_request'::regclass,
+       'statutory.reject_uncontrolled_statutory_evaluation_mutation()'::regprocedure),
+      ('statutory.statutory_balance_year'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_ledger_batch'::regclass,
+       'statutory.reject_uncontrolled_statutory_ledger_batch_mutation()'::regprocedure)
     ) expected(relation, trigger_function)
   LOOP
     IF NOT EXISTS (
@@ -184,7 +218,20 @@ BEGIN
     'payroll_ops.create_regular_payroll_cycle(uuid,uuid,uuid,character varying,timestamp with time zone)',
     'payroll_ops.resolve_payroll_population(uuid,uuid,bigint,character varying,timestamp with time zone)',
     'payroll_ops.seal_payroll_inputs(uuid,uuid,bigint,character varying,timestamp with time zone)',
-    'payroll_calc.calculate_sealed_payroll(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)'
+    'payroll_calc.calculate_sealed_payroll(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)',
+    'statutory.approve_statutory_rule_version(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_statutory_rule_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.approve_employee_statutory_profile_version(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_employee_statutory_profile_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.approve_employee_statutory_rule_assignment(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_employee_statutory_rule_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.approve_statutory_component_classification(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_statutory_component_classification(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.evaluate_calculated_payroll(uuid,uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)',
+    'statutory.approve_statutory_balance_year(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_statutory_balance_year(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.post_statutory_evaluation(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)',
+    'statutory.post_statutory_correction(uuid,uuid,uuid,numeric,numeric,character varying,bigint,character varying,character varying,character varying,timestamp with time zone)'
   ]
   LOOP
     lifecycle_oid := to_regprocedure(lifecycle_signature);
@@ -572,6 +619,676 @@ BEGIN
   ) THEN
     RAISE EXCEPTION
       'calculated cycles do not point at the latest completed attempt';
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  IF to_regnamespace('statutory') IS NULL THEN
+    RAISE EXCEPTION 'V027 statutory schema is missing';
+  END IF;
+
+  SELECT string_agg(required.table_name, ', ' ORDER BY required.table_name)
+  INTO missing
+  FROM (VALUES
+    ('statutory_rule'),
+    ('statutory_rule_version'),
+    ('statutory_rule_portion'),
+    ('statutory_rule_slab')
+  ) required(table_name)
+  WHERE to_regclass(
+    format('statutory.%I', required.table_name)
+  ) IS NULL;
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION 'V027 statutory tables are missing: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'statutory.statutory_rule_version'::regclass
+      AND conname = 'statutory_rule_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'statutory-rule versions lack the V027 approved-range exclusion';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'statutory.statutory_rule_slab'::regclass
+      AND conname = 'statutory_rule_slab_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'statutory-rule slabs lack the V027 band-overlap exclusion';
+  END IF;
+
+  IF to_regclass(
+       'statutory.statutory_rule_version_one_successor_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'statutory-rule versions lack the V027 one-successor index';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_rule_version version
+    WHERE version.approval_status = 'APPROVED'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM statutory.statutory_rule_portion portion
+        WHERE portion.tenant_id = version.tenant_id
+          AND portion.statutory_rule_version_id = version.id
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'approved statutory-rule versions exist without liability portions';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_rule_portion portion
+    WHERE portion.calculation_method = 'SLAB'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM statutory.statutory_rule_slab slab
+        WHERE slab.tenant_id = portion.tenant_id
+          AND slab.statutory_rule_portion_id = portion.id
+      )
+      AND EXISTS (
+        SELECT 1
+        FROM statutory.statutory_rule_version version
+        WHERE version.tenant_id = portion.tenant_id
+          AND version.id = portion.statutory_rule_version_id
+          AND version.approval_status = 'APPROVED'
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'approved SLAB statutory portions exist without bands';
+  END IF;
+END $$;
+
+
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  SELECT string_agg(required.table_name, ', ' ORDER BY required.table_name)
+  INTO missing
+  FROM (VALUES
+    ('employee_statutory_profile'),
+    ('employee_statutory_profile_version'),
+    ('employee_statutory_rule_assignment')
+  ) required(table_name)
+  WHERE to_regclass(
+    format('statutory.%I', required.table_name)
+  ) IS NULL;
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION 'V028 employee statutory tables are missing: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_profile_version'::regclass
+      AND conname = 'employee_statutory_profile_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'employee statutory profile versions lack the V028 range exclusion';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_rule_assignment'::regclass
+      AND conname =
+          'employee_statutory_rule_assignment_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'employee statutory rule assignments lack the V028 range exclusion';
+  END IF;
+
+  IF to_regclass(
+       'statutory.employee_statutory_profile_version_one_successor_uk'
+     ) IS NULL
+     OR to_regclass(
+       'statutory.employee_statutory_rule_assignment_one_successor_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'V028 employee statutory histories lack one-successor indexes';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_rule_assignment'::regclass
+      AND conname = 'employee_statutory_assignment_profile_version_fk'
+      AND contype = 'f'
+  )
+  OR NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_rule_assignment'::regclass
+      AND conname = 'employee_statutory_assignment_payroll_version_fk'
+      AND contype = 'f'
+  )
+  OR NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_rule_assignment'::regclass
+      AND conname = 'employee_statutory_assignment_rule_version_fk'
+      AND contype = 'f'
+  ) THEN
+    RAISE EXCEPTION
+      'V028 statutory assignments lack exact parent-version lineage';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid =
+          'statutory.employee_statutory_profile_version'::regclass
+      AND tgname =
+          'employee_statutory_profile_version_assignment_guard'
+      AND NOT tgisinternal
+      AND tgfoid =
+          'statutory.guard_employee_statutory_profile_version_end_date()'
+            ::regprocedure
+  )
+  OR NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid = 'statutory.statutory_rule_version'::regclass
+      AND tgname = 'statutory_rule_version_employee_assignment_guard'
+      AND NOT tgisinternal
+      AND tgfoid =
+          'statutory.guard_statutory_rule_version_assignment_end_date()'
+            ::regprocedure
+  )
+  OR NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid =
+          'employee_payroll.payroll_assignment_version'::regclass
+      AND tgname = 'payroll_assignment_version_statutory_guard'
+      AND NOT tgisinternal
+      AND tgfoid =
+          'statutory.guard_payroll_assignment_version_statutory_end_date()'
+            ::regprocedure
+  ) THEN
+    RAISE EXCEPTION
+      'V028 exact-parent end-date guards are incomplete';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.employee_statutory_rule_assignment assignment
+    JOIN statutory.employee_statutory_profile profile
+      ON profile.tenant_id = assignment.tenant_id
+     AND profile.id = assignment.employee_statutory_profile_id
+    JOIN employee_payroll.payroll_assignment payroll_assignment
+      ON payroll_assignment.tenant_id = assignment.tenant_id
+     AND payroll_assignment.id = assignment.payroll_assignment_id
+    JOIN statutory.statutory_rule rule
+      ON rule.tenant_id = assignment.tenant_id
+     AND rule.id = assignment.statutory_rule_id
+    WHERE assignment.approval_status = 'APPROVED'
+      AND (
+        profile.payroll_relationship_id <>
+          payroll_assignment.payroll_relationship_id
+        OR profile.jurisdiction_code <> rule.jurisdiction_code
+        OR profile.authority_code <> rule.authority_code
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'approved V028 assignments contain inconsistent stable lineage';
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  SELECT string_agg(required.table_name, ', ' ORDER BY required.table_name)
+  INTO missing
+  FROM (VALUES
+    ('statutory_component_classification'),
+    ('statutory_evaluation_request'),
+    ('statutory_input_snapshot'),
+    ('statutory_result'),
+    ('statutory_portion_result'),
+    ('payroll_statutory_summary')
+  ) required(table_name)
+  WHERE to_regclass(
+    format('statutory.%I', required.table_name)
+  ) IS NULL;
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION 'V029 statutory evaluation tables are missing: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+      'statutory.statutory_component_classification'::regclass
+      AND conname =
+        'statutory_component_classification_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'V029 component classifications lack approved-range exclusion';
+  END IF;
+
+  IF to_regclass(
+       'statutory.statutory_component_classification_one_successor_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'V029 component classifications lack one-successor enforcement';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.payroll_result'::regclass
+      AND conname = 'payroll_result_statutory_summary_uk'
+      AND contype = 'u'
+  ) OR NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.payroll_result'::regclass
+      AND conname = 'payroll_result_statutory_lineage_uk'
+      AND contype = 'u'
+  ) THEN
+    RAISE EXCEPTION
+      'V029 payroll results lack exact statutory lineage keys';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_component_classification classification
+    JOIN compensation.pay_component_version component_version
+      ON component_version.tenant_id = classification.tenant_id
+     AND component_version.id = classification.component_version_id
+     AND component_version.component_id = classification.component_id
+    WHERE classification.approval_status = 'APPROVED'
+      AND (
+        component_version.approval_status <> 'APPROVED'
+        OR classification.effective_from < component_version.effective_from
+        OR component_version.effective_to IS NOT NULL
+           AND (
+             classification.effective_to IS NULL
+             OR classification.effective_to > component_version.effective_to
+           )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'approved V029 classifications violate exact component-version lineage';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_evaluation_request request
+    WHERE request.status = 'COMPLETED'
+      AND (
+        request.payroll_result_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.payroll_statutory_summary summary
+          WHERE summary.tenant_id = request.tenant_id
+            AND summary.evaluation_request_id = request.id
+        )
+        OR request.statutory_result_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.statutory_result result
+          WHERE result.tenant_id = request.tenant_id
+            AND result.evaluation_request_id = request.id
+        )
+        OR request.employee_total IS DISTINCT FROM (
+          SELECT coalesce(sum(summary.employee_statutory_amount), 0)
+          FROM statutory.payroll_statutory_summary summary
+          WHERE summary.tenant_id = request.tenant_id
+            AND summary.evaluation_request_id = request.id
+        )
+        OR request.employer_total IS DISTINCT FROM (
+          SELECT coalesce(sum(summary.employer_statutory_amount), 0)
+          FROM statutory.payroll_statutory_summary summary
+          WHERE summary.tenant_id = request.tenant_id
+            AND summary.evaluation_request_id = request.id
+        )
+        OR request.post_statutory_net_total IS DISTINCT FROM (
+          SELECT coalesce(sum(summary.post_statutory_net_amount), 0)
+          FROM statutory.payroll_statutory_summary summary
+          WHERE summary.tenant_id = request.tenant_id
+            AND summary.evaluation_request_id = request.id
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'completed V029 evaluation totals do not match immutable evidence';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_result result
+    WHERE result.employee_amount IS DISTINCT FROM (
+      SELECT coalesce(sum(portion.calculated_amount), 0)
+      FROM statutory.statutory_portion_result portion
+      WHERE portion.tenant_id = result.tenant_id
+        AND portion.statutory_result_id = result.id
+        AND portion.liable_party = 'EMPLOYEE'
+    )
+       OR result.employer_amount IS DISTINCT FROM (
+      SELECT coalesce(sum(portion.calculated_amount), 0)
+      FROM statutory.statutory_portion_result portion
+      WHERE portion.tenant_id = result.tenant_id
+        AND portion.statutory_result_id = result.id
+        AND portion.liable_party = 'EMPLOYER'
+    )
+  ) THEN
+    RAISE EXCEPTION
+      'V029 statutory-result totals do not match portion evidence';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_input_snapshot snapshot
+    WHERE snapshot.snapshot_hash <> encode(
+      public.digest(snapshot.snapshot_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_result result
+    WHERE result.result_hash <> encode(
+      public.digest(result.result_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_portion_result portion
+    WHERE portion.result_hash <> encode(
+      public.digest(portion.result_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.payroll_statutory_summary summary
+    WHERE summary.summary_hash <> encode(
+      public.digest(summary.summary_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) THEN
+    RAISE EXCEPTION 'V029 immutable evidence contains a hash mismatch';
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  v_missing text;
+BEGIN
+  SELECT string_agg(required.table_name, ', ' ORDER BY required.table_name)
+  INTO v_missing
+  FROM (VALUES
+    ('statutory_balance_year'),
+    ('statutory_ledger_batch'),
+    ('statutory_ledger_entry'),
+    ('statutory_balance_snapshot'),
+    ('statutory_reconciliation'),
+    ('statutory_remittance_summary')
+  ) required(table_name)
+  WHERE to_regclass(
+    format('statutory.%I', required.table_name)
+  ) IS NULL;
+
+  IF v_missing IS NOT NULL THEN
+    RAISE EXCEPTION 'V030 statutory ledger tables are missing: %',
+      v_missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'statutory.statutory_balance_year'::regclass
+      AND conname = 'statutory_balance_year_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'V030 balance years lack approved-range exclusion';
+  END IF;
+
+  IF to_regclass(
+       'statutory.statutory_balance_year_one_successor_uk'
+     ) IS NULL OR to_regclass(
+       'statutory.statutory_ledger_batch_one_successor_uk'
+     ) IS NULL OR to_regclass(
+       'statutory.statutory_ledger_batch_one_evaluation_posting_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'V030 balance-year or ledger-batch history enforcement is missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns column_info
+    WHERE column_info.table_schema = 'payroll_ops'
+      AND column_info.table_name = 'payroll_cycle'
+      AND column_info.column_name =
+          'active_statutory_ledger_batch_id'
+  ) OR NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_ops.payroll_cycle'::regclass
+      AND conname = 'payroll_cycle_active_statutory_batch_fk'
+      AND contype = 'f'
+  ) THEN
+    RAISE EXCEPTION
+      'V030 payroll cycles lack active statutory ledger lineage';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_ledger_batch ledger_batch
+    WHERE ledger_batch.status = 'COMPLETED'
+      AND (
+        ledger_batch.entry_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = ledger_batch.tenant_id
+            AND ledger_entry.ledger_batch_id = ledger_batch.id
+        )
+        OR ledger_batch.balance_snapshot_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.statutory_balance_snapshot balance_snapshot
+          WHERE balance_snapshot.tenant_id = ledger_batch.tenant_id
+            AND balance_snapshot.ledger_batch_id = ledger_batch.id
+        )
+        OR ledger_batch.remittance_summary_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.statutory_remittance_summary remittance
+          WHERE remittance.tenant_id = ledger_batch.tenant_id
+            AND remittance.ledger_batch_id = ledger_batch.id
+        )
+        OR ledger_batch.employee_delta_total IS DISTINCT FROM (
+          SELECT coalesce(
+            sum(ledger_entry.employee_amount_delta),
+            0
+          )::numeric(19,4)
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = ledger_batch.tenant_id
+            AND ledger_entry.ledger_batch_id = ledger_batch.id
+        )
+        OR ledger_batch.employer_delta_total IS DISTINCT FROM (
+          SELECT coalesce(
+            sum(ledger_entry.employer_amount_delta),
+            0
+          )::numeric(19,4)
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = ledger_batch.tenant_id
+            AND ledger_entry.ledger_batch_id = ledger_batch.id
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'completed V030 ledger-batch totals do not match immutable evidence';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.payroll_cycle cycle
+    JOIN statutory.statutory_ledger_batch ledger_batch
+      ON ledger_batch.tenant_id = cycle.tenant_id
+     AND ledger_batch.id = cycle.active_statutory_ledger_batch_id
+    WHERE cycle.active_statutory_ledger_batch_id IS NOT NULL
+      AND (
+        ledger_batch.payroll_cycle_id <> cycle.id
+        OR ledger_batch.status <> 'COMPLETED'
+        OR cycle.statutory_employee_total IS DISTINCT FROM (
+          SELECT coalesce(
+            sum(ledger_entry.employee_amount_delta),
+            0
+          )::numeric(19,4)
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = cycle.tenant_id
+            AND ledger_entry.payroll_cycle_id = cycle.id
+        )
+        OR cycle.statutory_employer_total IS DISTINCT FROM (
+          SELECT coalesce(
+            sum(ledger_entry.employer_amount_delta),
+            0
+          )::numeric(19,4)
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = cycle.tenant_id
+            AND ledger_entry.payroll_cycle_id = cycle.id
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'V030 active cycle posting does not match append-only ledger totals';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_reconciliation reconciliation
+    WHERE reconciliation.reconciliation_status <> 'MATCHED'
+       OR reconciliation.employee_variance <> 0
+       OR reconciliation.employer_variance <> 0
+       OR reconciliation.expected_employee_total <>
+          reconciliation.source_employee_total +
+            reconciliation.correction_employee_total
+       OR reconciliation.expected_employer_total <>
+          reconciliation.source_employer_total +
+            reconciliation.correction_employer_total
+       OR reconciliation.ledger_employee_total <>
+          reconciliation.expected_employee_total
+       OR reconciliation.ledger_employer_total <>
+          reconciliation.expected_employer_total
+  ) THEN
+    RAISE EXCEPTION
+      'V030 contains non-zero or internally inconsistent reconciliation';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_remittance_summary remittance
+    WHERE remittance.remittance_amount <>
+          remittance.period_employee_total +
+            remittance.period_employer_total
+       OR (
+         remittance.remittance_amount > 0
+         AND remittance.remittance_position <> 'PAYABLE'
+       )
+       OR (
+         remittance.remittance_amount < 0
+         AND remittance.remittance_position <> 'CREDIT'
+       )
+       OR (
+         remittance.remittance_amount = 0
+         AND remittance.remittance_position <> 'ZERO'
+       )
+  ) THEN
+    RAISE EXCEPTION
+      'V030 remittance-ready summaries contain an invalid position';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_ledger_entry reversal_entry
+    JOIN statutory.statutory_ledger_entry source_entry
+      ON source_entry.tenant_id = reversal_entry.tenant_id
+     AND source_entry.id = reversal_entry.source_entry_id
+    WHERE reversal_entry.entry_kind = 'REVERSAL'
+      AND source_entry.entry_kind = 'REVERSAL'
+  ) THEN
+    RAISE EXCEPTION
+      'V030 replacement batches reverse prior reversals instead of the active posting epoch';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_ledger_entry ledger_entry
+    JOIN organisation.pay_period period
+      ON period.tenant_id = ledger_entry.tenant_id
+     AND period.id = ledger_entry.pay_period_id
+    JOIN statutory.statutory_balance_year balance_year
+      ON balance_year.tenant_id = ledger_entry.tenant_id
+     AND balance_year.id = ledger_entry.balance_year_id
+    WHERE period.payment_date < balance_year.period_start
+       OR period.payment_date >= balance_year.period_end
+       OR balance_year.approval_status <> 'APPROVED'
+  ) THEN
+    RAISE EXCEPTION
+      'V030 ledger evidence is outside its approved balance year';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_ledger_entry ledger_entry
+    WHERE ledger_entry.entry_hash <> encode(
+      public.digest(ledger_entry.entry_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_balance_snapshot balance_snapshot
+    WHERE balance_snapshot.snapshot_hash <> encode(
+      public.digest(
+        balance_snapshot.snapshot_payload::text,
+        'sha256'::text
+      ),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_reconciliation reconciliation
+    WHERE reconciliation.reconciliation_hash <> encode(
+      public.digest(
+        reconciliation.reconciliation_payload::text,
+        'sha256'::text
+      ),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_remittance_summary remittance
+    WHERE remittance.summary_hash <> encode(
+      public.digest(remittance.summary_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) THEN
+    RAISE EXCEPTION 'V030 immutable ledger evidence contains a hash mismatch';
   END IF;
 END $$;
 

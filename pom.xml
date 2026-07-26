@@ -31,6 +31,7 @@
     <module>backend/organisation</module>
     <module>backend/compensation</module>
     <module>backend/employee-payroll</module>
+    <module>backend/statutory-deductions</module>
     <module>backend/payroll-operations</module>
     <module>backend/calculation-engine</module>
     <module>backend/documents-reporting</module>

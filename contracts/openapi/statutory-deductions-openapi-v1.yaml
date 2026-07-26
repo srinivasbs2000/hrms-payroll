@@ -1,0 +1,624 @@
+parameters:
+  CycleId:
+    name: cycleId
+    in: path
+    required: true
+    schema:
+      $ref: '#/schemas/Uuid'
+  CorrelationId:
+    name: X-Correlation-ID
+    in: header
+    required: false
+    schema:
+      $ref: '#/schemas/Uuid'
+  IdempotencyKey:
+    name: Idempotency-Key
+    in: header
+    required: true
+    schema:
+      type: string
+      minLength: 8
+      maxLength: 120
+  IfMatch:
+    name: If-Match
+    in: header
+    required: true
+    schema:
+      type: string
+      pattern: ^(W/\s*)?"?[0-9]+"?$
+headers:
+  ETag:
+    description: Numeric payroll-cycle version
+    schema:
+      type: string
+responses:
+  Unauthorized:
+    description: Authentication is required
+  Forbidden:
+    description: Required permission is absent
+  Problem:
+    description: RFC 9457 problem response
+    content:
+      application/problem+json:
+        schema:
+          $ref: '#/schemas/Problem'
+pathItems:
+  StatutoryEvaluations:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags:
+      - Statutory
+      summary: Evaluate the active calculated payroll request
+      operationId: evaluateStatutoryPayroll
+      x-permission: statutory-evaluation.execute
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/StatutoryEvaluationCommand'
+      responses:
+        '200':
+          description: Completed or idempotently replayed statutory evaluation
+          headers:
+            ETag:
+              $ref: '#/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryEvaluationExecution'
+        '400':
+          $ref: '#/responses/Problem'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+        '409':
+          $ref: '#/responses/Problem'
+        '422':
+          $ref: '#/responses/Problem'
+    get:
+      tags:
+      - Statutory
+      summary: List statutory evaluation requests for a payroll cycle
+      operationId: listStatutoryEvaluations
+      x-permission: statutory-evaluation.read
+      responses:
+        '200':
+          description: Evaluation request history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/StatutoryEvaluationRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+  StatutoryPostings:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags:
+      - Statutory
+      summary: Post a completed statutory evaluation to the append-only ledger
+      operationId: postStatutoryEvaluation
+      x-permission: statutory-ledger.post
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/StatutoryLedgerPostingCommand'
+      responses:
+        '200':
+          description: Completed or idempotently replayed ledger posting
+          headers:
+            ETag:
+              $ref: '#/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryLedgerPostingExecution'
+        '400':
+          $ref: '#/responses/Problem'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+        '409':
+          $ref: '#/responses/Problem'
+        '422':
+          $ref: '#/responses/Problem'
+  StatutoryCorrections:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags:
+      - Statutory
+      summary: Post a signed statutory correction
+      operationId: correctStatutoryLedger
+      x-permission: statutory-ledger.correct
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/StatutoryCorrectionCommand'
+      responses:
+        '200':
+          description: Completed or idempotently replayed correction
+          headers:
+            ETag:
+              $ref: '#/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryCorrectionExecution'
+        '400':
+          $ref: '#/responses/Problem'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+        '409':
+          $ref: '#/responses/Problem'
+        '422':
+          $ref: '#/responses/Problem'
+  StatutoryResults:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    get:
+      tags:
+      - Statutory
+      summary: List immutable statutory result evidence
+      operationId: listStatutoryResults
+      x-permission: statutory-evaluation.read
+      responses:
+        '200':
+          description: Statutory result evidence
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/StatutoryResult'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+  StatutoryLedgerBatches:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    get:
+      tags:
+      - Statutory
+      summary: List statutory ledger batches
+      operationId: listStatutoryLedgerBatches
+      x-permission: statutory-ledger.read
+      responses:
+        '200':
+          description: Ledger batch history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/StatutoryLedgerBatch'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+  StatutoryLedgerEntries:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    get:
+      tags:
+      - Statutory
+      summary: List append-only statutory ledger entries
+      operationId: listStatutoryLedgerEntries
+      x-permission: statutory-ledger.read
+      responses:
+        '200':
+          description: Ledger entries ordered by posting
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/StatutoryLedgerEntry'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+  StatutoryBalanceSnapshots:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    get:
+      tags:
+      - Statutory
+      summary: List immutable PTD, cycle and YTD balance snapshots
+      operationId: listStatutoryBalanceSnapshots
+      x-permission: statutory-balance.read
+      responses:
+        '200':
+          description: Balance snapshots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/StatutoryBalanceSnapshot'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+  StatutoryReconciliations:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    get:
+      tags:
+      - Statutory
+      summary: List zero-variance statutory reconciliations
+      operationId: listStatutoryReconciliations
+      x-permission: statutory-reconciliation.read
+      responses:
+        '200':
+          description: Reconciliation evidence
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/StatutoryReconciliation'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+  StatutoryRemittanceSummaries:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    get:
+      tags:
+      - Statutory
+      summary: List remittance-ready preparation summaries
+      operationId: listStatutoryRemittanceSummaries
+      x-permission: statutory-remittance.read
+      responses:
+        '200':
+          description: Preparation summaries; no filing or payment status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/StatutoryRemittanceSummary'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/Problem'
+schemas:
+  Uuid:
+    type: string
+    format: uuid
+  Money:
+    type: string
+    description: Exact signed decimal string with up to 15 integer and 4 fraction digits
+    pattern: '^-?(?:0|[1-9][0-9]{0,14})(?:\.[0-9]{1,4})?$'
+    example: '1234.5600'
+  Hash:
+    type: string
+    pattern: ^[0-9a-f]{64}$
+  Instant:
+    type: string
+    format: date-time
+  StatutoryEvaluationCommand:
+    type: object
+    additionalProperties: false
+    required:
+    - calculationRequestId
+    properties:
+      calculationRequestId:
+        $ref: '#/schemas/Uuid'
+  StatutoryLedgerPostingCommand:
+    type: object
+    additionalProperties: false
+    required:
+    - evaluationRequestId
+    properties:
+      evaluationRequestId:
+        $ref: '#/schemas/Uuid'
+  StatutoryCorrectionCommand:
+    type: object
+    additionalProperties: false
+    required:
+    - statutoryResultId
+    - employeeAmountDelta
+    - employerAmountDelta
+    - reason
+    properties:
+      statutoryResultId:
+        $ref: '#/schemas/Uuid'
+      employeeAmountDelta:
+        $ref: '#/schemas/Money'
+      employerAmountDelta:
+        $ref: '#/schemas/Money'
+      reason:
+        type: string
+        minLength: 8
+        maxLength: 500
+  StatutoryEvaluationExecution:
+    type: object
+    required:
+    - cycleId
+    - calculationRequestId
+    - evaluationRequestId
+    - payrollResultCount
+    - statutoryResultCount
+    - employeeTotal
+    - employerTotal
+    - postStatutoryNetTotal
+    - evidenceSetHash
+    - cycleVersionNo
+    - completedAt
+    - completedBy
+    properties:
+      cycleId:
+        $ref: '#/schemas/Uuid'
+      calculationRequestId:
+        $ref: '#/schemas/Uuid'
+      evaluationRequestId:
+        $ref: '#/schemas/Uuid'
+      payrollResultCount:
+        type: integer
+        minimum: 1
+      statutoryResultCount:
+        type: integer
+        minimum: 0
+      employeeTotal:
+        $ref: '#/schemas/Money'
+      employerTotal:
+        $ref: '#/schemas/Money'
+      postStatutoryNetTotal:
+        $ref: '#/schemas/Money'
+      evidenceSetHash:
+        $ref: '#/schemas/Hash'
+      cycleVersionNo:
+        type: integer
+        format: int64
+        minimum: 0
+      completedAt:
+        $ref: '#/schemas/Instant'
+      completedBy:
+        type: string
+  StatutoryLedgerPostingExecution:
+    allOf:
+    - $ref: '#/schemas/LedgerExecutionBase'
+    - type: object
+      required:
+      - evaluationRequestId
+      - batchKind
+      properties:
+        evaluationRequestId:
+          $ref: '#/schemas/Uuid'
+        batchKind:
+          type: string
+          enum:
+          - INITIAL
+          - REPLACEMENT
+  StatutoryCorrectionExecution:
+    allOf:
+    - $ref: '#/schemas/LedgerExecutionBase'
+    - type: object
+      required:
+      - statutoryResultId
+      properties:
+        statutoryResultId:
+          $ref: '#/schemas/Uuid'
+  LedgerExecutionBase:
+    type: object
+    required:
+    - cycleId
+    - ledgerBatchId
+    - attemptNo
+    - postedEntryCount
+    - employeeDeltaTotal
+    - employerDeltaTotal
+    - cycleEmployeeTotal
+    - cycleEmployerTotal
+    - ledgerSetHash
+    - cycleVersionNo
+    - completedAt
+    - completedBy
+    properties:
+      cycleId:
+        $ref: '#/schemas/Uuid'
+      ledgerBatchId:
+        $ref: '#/schemas/Uuid'
+      attemptNo:
+        type: integer
+        minimum: 1
+      postedEntryCount:
+        type: integer
+        minimum: 1
+      employeeDeltaTotal:
+        $ref: '#/schemas/Money'
+      employerDeltaTotal:
+        $ref: '#/schemas/Money'
+      cycleEmployeeTotal:
+        $ref: '#/schemas/Money'
+      cycleEmployerTotal:
+        $ref: '#/schemas/Money'
+      ledgerSetHash:
+        $ref: '#/schemas/Hash'
+      cycleVersionNo:
+        type: integer
+        format: int64
+        minimum: 0
+      completedAt:
+        $ref: '#/schemas/Instant'
+      completedBy:
+        type: string
+  StatutoryEvaluationRequest:
+    type: object
+    required:
+    - id
+    - cycleId
+    - calculationRequestId
+    - status
+    - engineVersion
+    - expectedCycleVersion
+    - calculationResultSetHash
+    - startedAt
+    - versionNo
+    properties:
+      id:
+        $ref: '#/schemas/Uuid'
+      cycleId:
+        $ref: '#/schemas/Uuid'
+      calculationRequestId:
+        $ref: '#/schemas/Uuid'
+      status:
+        type: string
+        enum:
+        - EVALUATING
+        - COMPLETED
+        - FAILED
+      engineVersion:
+        type: string
+      expectedCycleVersion:
+        type: integer
+        format: int64
+      calculationResultSetHash:
+        $ref: '#/schemas/Hash'
+      startedAt:
+        $ref: '#/schemas/Instant'
+      completedAt:
+        $ref: '#/schemas/Instant'
+      completedBy:
+        type: string
+      payrollResultCount:
+        type: integer
+      statutoryResultCount:
+        type: integer
+      employeeTotal:
+        $ref: '#/schemas/Money'
+      employerTotal:
+        $ref: '#/schemas/Money'
+      postStatutoryNetTotal:
+        $ref: '#/schemas/Money'
+      evidenceSetHash:
+        $ref: '#/schemas/Hash'
+      versionNo:
+        type: integer
+        format: int64
+  StatutoryResult:
+    type: object
+    additionalProperties: true
+    required:
+    - id
+    - evaluationRequestId
+    - payrollResultId
+    - statutoryInputSnapshotId
+    - employeeStatutoryProfileId
+    - employeeStatutoryRuleAssignmentId
+    - statutoryRuleId
+    - statutoryRuleVersionId
+    - currency
+    - employeeAmount
+    - employerAmount
+    - resultHash
+    - createdAt
+    properties:
+      id:
+        $ref: '#/schemas/Uuid'
+      evaluationRequestId:
+        $ref: '#/schemas/Uuid'
+      payrollResultId:
+        $ref: '#/schemas/Uuid'
+      statutoryInputSnapshotId:
+        $ref: '#/schemas/Uuid'
+      employeeStatutoryProfileId:
+        $ref: '#/schemas/Uuid'
+      employeeStatutoryRuleAssignmentId:
+        $ref: '#/schemas/Uuid'
+      statutoryRuleId:
+        $ref: '#/schemas/Uuid'
+      statutoryRuleVersionId:
+        $ref: '#/schemas/Uuid'
+      currency:
+        type: string
+        pattern: ^[A-Z]{3}$
+      employeeAmount:
+        $ref: '#/schemas/Money'
+      employerAmount:
+        $ref: '#/schemas/Money'
+      resultHash:
+        $ref: '#/schemas/Hash'
+      createdAt:
+        $ref: '#/schemas/Instant'
+  StatutoryLedgerBatch:
+    type: object
+    additionalProperties: true
+  StatutoryLedgerEntry:
+    type: object
+    additionalProperties: true
+  StatutoryBalanceSnapshot:
+    type: object
+    additionalProperties: true
+  StatutoryReconciliation:
+    type: object
+    additionalProperties: true
+  StatutoryRemittanceSummary:
+    type: object
+    additionalProperties: true
+  Problem:
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+        format: uri
+      title:
+        type: string
+      status:
+        type: integer
+      detail:
+        type: string
+      instance:
+        type: string
+        format: uri

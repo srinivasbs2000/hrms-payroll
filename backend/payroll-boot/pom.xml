@@ -12,6 +12,7 @@
     <dependency><groupId>com.acme.hrms</groupId><artifactId>organisation</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>com.acme.hrms</groupId><artifactId>compensation</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>com.acme.hrms</groupId><artifactId>employee-payroll</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>com.acme.hrms</groupId><artifactId>statutory-deductions</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>com.acme.hrms</groupId><artifactId>payroll-operations</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>com.acme.hrms</groupId><artifactId>calculation-engine</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>com.acme.hrms</groupId><artifactId>documents-reporting</artifactId><version>${project.version}</version></dependency>

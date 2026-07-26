@@ -1,5 +1,21 @@
 # HRMS Payroll Repository Instructions
 
+## Project continuation and evidence discipline
+
+Before continuing a prior design or implementation session, read
+`docs/runbooks/project-continuation-handoff.md`, then validate it against the
+current local working tree and live GitHub branch, pull request and CI state.
+
+Do not reconstruct repository state from conversation memory. Do not infer
+filenames, migrations, routes, permissions, statuses, test results, dependency
+policy or architecture decisions. Classify material statements as verified,
+derived or not verified. Record source conflicts explicitly and ask before
+choosing among materially different valid options.
+
+Current repository evidence overrides an older handoff entry. Update the
+running handoff after every committed increment and before every thread or
+session transition.
+
 ## Model and Agent Routing Policy
 
 Use the lowest-cost agent capable of producing a complete and verified result.
@@ -87,33 +103,110 @@ A task is complete only when:
 * no unrelated changes are included; and
 * no commit or merge has been performed unless explicitly requested.
 
-
 ## Scope and architecture
 
-This repository is the organisation-to-draft-payslip vertical-slice baseline. It is a Java 21 Spring Boot modular monolith with a React 18 SPA, PostgreSQL, Flyway, and Keycloak/OIDC. Keep code grouped by payroll capability under `backend/`; the composition root is `backend/payroll-boot`. Only a module's public API may be consumed by another module. Do not add cross-module JPA relationships, repository access, or internal-package imports.
+This repository is the organisation-to-statutory-evidence vertical-slice
+baseline through Sprint 4. It is a Java 21 Spring Boot modular monolith with a
+React 18 SPA, PostgreSQL, Flyway, and Keycloak/OIDC. Keep code grouped by
+payroll capability under `backend/`; the composition root is
+`backend/payroll-boot`. Only a module's public API may be consumed by another
+module. Do not add cross-module JPA relationships, repository access, or
+internal-package imports.
 
-The approved starter scope is fixed monthly gross-to-net payroll with BASIC, HRA, SPECIAL_ALLOWANCE, calendar-day proration, immutable calculation results and a draft payslip. Do not add PF, EPS, EDLI, ESI, professional tax, labour welfare fund, NPS, salary TDS, tax declarations, retro, off-cycle payroll, recoveries, final settlement, banking, payments or accounting.
+The approved implemented regular-payroll scope is fixed monthly gross-to-net
+payroll with BASIC, HRA, SPECIAL_ALLOWANCE, calendar-day proration, immutable
+calculation evidence and a draft payslip.
+
+The approved implemented statutory scope is jurisdiction-neutral rule,
+profile, assignment, evaluation, ledger, balance, reconciliation, remittance
+preparation, API and operator-workspace infrastructure. It does not establish
+country-specific rates, legal tax interpretation, statutory filing/returns,
+acknowledgements, remittance payment/settlement or legal payslip obligations.
+
+Do not add jurisdiction-specific PF, EPS, EDLI, ESI, professional tax, labour
+welfare fund, NPS, salary TDS or tax-declaration logic without a separately
+approved design, authoritative legal source review, effective-date model,
+test matrix and critical review. Retro payroll, off-cycle payroll, recoveries,
+final settlement, banking, payments, accounting and legal/final payslip
+publication also remain excluded unless separately approved.
 
 ## Contract and domain constraints
 
-`contracts/openapi/payroll-vertical-slice-openapi-v1.yaml` is the approved wire contract. Do not weaken or change it merely to make code or tests pass. Money uses `BigDecimal` in Java and decimal strings plus ISO currency codes at API boundaries; never use binary floating point. Effective ranges are half-open: `[effective_from, effective_to)`. Inject `Clock` for time-dependent behavior and keep calculation inputs deterministic and snapshot-based.
+`contracts/openapi/payroll-vertical-slice-openapi-v1.yaml` is the aggregate
+wire contract. `contracts/openapi/statutory-deductions-openapi-v1.yaml` is the
+statutory bounded-context contract. Do not weaken or change either merely to
+make code or tests pass.
+
+Money uses `BigDecimal` in Java and decimal strings plus ISO currency codes at
+API boundaries; never use binary floating point. Effective ranges are
+half-open: `[effective_from, effective_to)`. Inject `Clock` for time-dependent
+behavior and keep calculation and statutory inputs deterministic and
+snapshot-based.
 
 ## Security and tenancy
 
-Every tenant-owned table and relationship must be tenant-safe. Tenant-owned foreign keys include `tenant_id`; PostgreSQL row-level security is enabled and forced; the runtime role is a non-owner `NOBYPASSRLS` principal. Application transactions must set `app.tenant_id` with `SET LOCAL` before accessing tenant data. OIDC principals are identified by issuer plus subject, never email. Fail closed when tenant or audience claims are absent. Never log employee personal data, tokens, salaries or payroll response bodies, and never persist tokens or payroll payloads in browser storage.
+Every tenant-owned table and relationship must be tenant-safe. Tenant-owned
+foreign keys include `tenant_id`; PostgreSQL row-level security is enabled and
+forced; the runtime role is a non-owner `NOBYPASSRLS` principal. Application
+transactions must set `app.tenant_id` with `SET LOCAL` before accessing tenant
+data. OIDC principals are identified by issuer plus subject, never email. Fail
+closed when tenant or audience claims are absent. Never log employee personal
+data, tokens, salaries or payroll response bodies, and never persist tokens or
+payroll payloads in browser storage.
 
 ## Database migrations
 
-`database/flyway/sql` is the single source of ordered versioned migrations. Versioned migrations are immutable after review and must fail loudly; do not add permissive `IF NOT EXISTS` clauses to them. V001-V013 are frozen; Sprint 1 is forward-only from V014. The `backend/database-migrations` Maven module packages this canonical directory as `db/migration`. Administrator bootstrap, development seed and verification SQL remain separate. Application roles never own schemas or tables. Sealed input snapshots, payroll results, component results, calculation trace, draft payslips and audit rows are append-only.
+`database/flyway/sql` is the single source of ordered versioned migrations.
+V001–V030 are committed and immutable. Future schema work is forward-only from
+V031. Versioned migrations must fail loudly; do not add permissive
+`IF NOT EXISTS` clauses to them. The `backend/database-migrations` Maven module
+packages the canonical directory as `db/migration`. Administrator bootstrap,
+development seed and verification SQL remain separate. Application roles never
+own schemas or tables. Sealed input snapshots, payroll results, component
+results, calculation trace, draft payslips, statutory inputs/results, ledger
+entries, balance snapshots, reconciliation, remittance summaries and audit rows
+are append-only.
 
-Legal entities, payroll statutory units and establishments use stable identity rows plus exact effective-dated version rows. PSU versions reference exact legal-entity versions; establishment versions reference exact PSU versions. Approved ranges for one identity never overlap. Business attributes and superseded drafts are not rewritten; approval and end-dating use the narrow database lifecycle commands and always produce audit/outbox evidence in the same transaction.
+Legal entities, payroll statutory units and establishments use stable identity
+rows plus exact effective-dated version rows. PSU versions reference exact
+legal-entity versions; establishment versions reference exact PSU versions.
+Approved ranges for one identity never overlap. Business attributes and
+superseded drafts are not rewritten; approval and end-dating use the narrow
+database lifecycle commands and always produce audit/outbox evidence in the
+same transaction.
 
-Mutable payroll source inputs belong in domain-owned source or staging structures. Insert an immutable `input_snapshot` only after tenant, assignment, cycle, effective-date, required-component and canonical-payload validation succeeds in the sealing transaction. Corrections create a new sealed snapshot. Draft-payslip regeneration creates a new append-only version that supersedes the prior draft; never update a draft payslip in place.
+Mutable payroll source inputs belong in domain-owned source or staging
+structures. Insert an immutable input snapshot only after tenant, assignment,
+cycle, effective-date, required-component and canonical-payload validation
+succeeds in the sealing transaction. Corrections create new immutable evidence.
+Draft-payslip regeneration creates a new append-only version that supersedes
+the prior draft; never update a draft payslip in place. Statutory corrections
+append signed ledger deltas and never rewrite prior postings.
 
 ## Testing and delivery
 
-Use the Maven Wrapper and make `mvnw verify` the backend quality command. Every change must keep normal behavior, validation, boundary, rounding, date, tenancy and immutability checks deterministic. Run React tests and the production build, validate OpenAPI, and exercise clean database migration plus verification for integration changes. Never use real credentials, employee records or payroll data in source or tests; only clearly synthetic fixtures are permitted.
+Use the Maven Wrapper and make `mvnw verify` the backend quality command. Every
+change must keep normal behavior, validation, boundary, rounding, date,
+tenancy, idempotency and immutability checks deterministic. Run React tests and
+the production build, validate relevant OpenAPI contracts, exercise clean
+database migration plus verification for integration changes and enforce the
+repository scoped npm-audit policy. Never use real credentials, employee
+records or payroll data in source or tests; only clearly synthetic fixtures are
+permitted.
 
-Before handoff, run `git status --short`, list verification performed, and disclose configuration, schema, security or unresolved impacts. Do not commit unless the user explicitly asks.
+For the full Sprint 4 baseline, run `scripts/verify-sprint-4.ps1`. Before merge,
+complete `docs/runbooks/sprint-4-manual-smoke.md` and an independent critical
+review of the complete Sprint 4 diff.
 
-Before the first real domain event is published in Sprint 1, the outbox/inbox reliability entry gate must prove transactional outbox persistence, stable event identity, duplicate-dispatch safety and tenant-and-consumer-scoped inbox deduplication. No business feature may publish events before that gate passes. Once enabled, producers use the integrations module public `OutboxWriter`; consumers commit their inbox record and effect atomically. Retry, poison-message and replay policy is recorded in `docs/runbooks/event-reliability.md`.
+Before handoff, run `git status --short`, list verification performed, and
+disclose configuration, schema, security or unresolved impacts. Do not commit
+unless the user explicitly asks.
+
+Before the first real domain event is published in Sprint 1, the outbox/inbox
+reliability entry gate must prove transactional outbox persistence, stable
+event identity, duplicate-dispatch safety and tenant-and-consumer-scoped inbox
+deduplication. No business feature may publish events before that gate passes.
+Once enabled, producers use the integrations module public `OutboxWriter`;
+consumers commit their inbox record and effect atomically. Retry,
+poison-message and replay policy is recorded in
+`docs/runbooks/event-reliability.md`.

@@ -27,3 +27,9 @@ Sprint 3,S3-04,Calculation,Must,Implement calendar-day proration,Full and partia
 Sprint 3,S3-05,Calculation,Must,Persist immutable result and component trace,Same snapshot produces same result hash; mutation rejected,13,,Engineering
 Sprint 3,S3-06,Documents,Must,Generate immutable draft-payslip snapshot,Document shows DRAFT and reconciles to result,8,,Engineering
 Sprint 3,S3-07,End-to-end,Must,Execute organisation-to-payslip golden scenario,"Basic 50k, HRA 20k, Special 20k, gross/net 90k",13,,Engineering
+Sprint 4,S4-01B,Statutory foundation,Must,Create jurisdiction-neutral statutory rule foundation,"Stable rule identities, approved versions, portions, slabs, RLS and lifecycle evidence pass",,,Engineering
+Sprint 4,S4-02,Statutory assignment,Must,Create employee statutory profiles and exact rule assignments,Effective-dated profile and assignment lineage is tenant safe and auditable,,,Engineering
+Sprint 4,S4-03,Statutory calculation,Must,Implement deterministic statutory evaluation,"Exact payroll, profile, assignment and rule evidence produces immutable statutory results",,,Engineering
+Sprint 4,S4-04,Statutory ledger,Must,"Create append-only statutory ledger, balances and reconciliation","Posting, replacement epochs, signed corrections, balances and reconciliation remain immutable",,,Engineering
+Sprint 4,S4-05A,Statutory API,Must,Expose controlled statutory execution and evidence APIs,"Permission, idempotency, optimistic-concurrency, audit and outbox controls pass",,,Engineering
+Sprint 4,S4-05B,Statutory UI,Must,Create permission-aware statutory execution and evidence workspace,"Evaluation, posting, correction and evidence workflows pass frontend and full regression gates",,,Engineering
