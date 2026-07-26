@@ -2,8 +2,8 @@ openapi: 3.1.0
 info:
   title: HRMS Payroll Vertical Slice API
   version: 1.0.0
-  description: Organisation-to-draft-payslip implementation contract. Statutory, tax,
-    banking, accounting, retro and final settlement are outside this contract.
+  description: Organisation-to-statutory-ledger implementation contract. Tax filing,
+    banking, accounting, retro, final settlement and payment execution remain outside this contract.
   license:
     name: Proprietary
     identifier: LicenseRef-Proprietary
@@ -24,6 +24,8 @@ tags:
   description: Regular cycle, population and sealed inputs.
 - name: Calculation
   description: Deterministic gross-to-net results and trace.
+- name: Statutory
+  description: Statutory evaluation, posting, balances and reconciliation.
 - name: Documents
   description: Draft payslip generation and retrieval.
 paths:
@@ -346,6 +348,24 @@ paths:
     $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleResultIdentity'
   /payroll-cycles/{cycleId}/results/{resultId}/trace:
     $ref: './payroll-calculation-openapi-v1.yaml#/pathItems/PayrollCycleResultTrace'
+  /payroll-cycles/{cycleId}/statutory/evaluations:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/StatutoryEvaluations'
+  /payroll-cycles/{cycleId}/statutory/postings:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/StatutoryPostings'
+  /payroll-cycles/{cycleId}/statutory/corrections:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/StatutoryCorrections'
+  /payroll-cycles/{cycleId}/statutory/results:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/StatutoryResults'
+  /payroll-cycles/{cycleId}/statutory/ledger-batches:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/StatutoryLedgerBatches'
+  /payroll-cycles/{cycleId}/statutory/ledger-entries:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/StatutoryLedgerEntries'
+  /payroll-cycles/{cycleId}/statutory/balance-snapshots:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/StatutoryBalanceSnapshots'
+  /payroll-cycles/{cycleId}/statutory/reconciliations:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/StatutoryReconciliations'
+  /payroll-cycles/{cycleId}/statutory/remittance-summaries:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/StatutoryRemittanceSummaries'
   /payroll-results/{resultId}/draft-payslip:
     parameters:
     - $ref: '#/components/parameters/ResultId'

@@ -146,7 +146,15 @@
                                                              "payroll-calculation.execute",
                                                              "payroll-calculation.recalculate",
                                                              "payroll-result.read",
-                                                             "payroll-result.trace.read"
+                                                             "payroll-result.trace.read",
+                                                             "statutory-evaluation.execute",
+                                                             "statutory-evaluation.read",
+                                                             "statutory-ledger.post",
+                                                             "statutory-ledger.correct",
+                                                             "statutory-ledger.read",
+                                                             "statutory-balance.read",
+                                                             "statutory-reconciliation.read",
+                                                             "statutory-remittance.read"
                                                          ]
                                      }
                   },
@@ -189,7 +197,12 @@
                                                              "payroll-cycle.read",
                                                              "payroll-cycle.inputs.read",
                                                              "payroll-result.read",
-                                                             "payroll-result.trace.read"
+                                                             "payroll-result.trace.read",
+                                                             "statutory-evaluation.read",
+                                                             "statutory-ledger.read",
+                                                             "statutory-balance.read",
+                                                             "statutory-reconciliation.read",
+                                                             "statutory-remittance.read"
                                                          ]
                                      }
                   }
