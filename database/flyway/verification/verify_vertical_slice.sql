@@ -77,7 +77,13 @@ BEGIN
          'payroll_cycle','population_member',
          'population_resolution','population_decision','input_snapshot'
        ))
-      OR (tenant_table.nspname = 'payroll_calc'));
+      OR (tenant_table.nspname = 'payroll_calc')
+      OR (tenant_table.nspname = 'statutory'
+       AND tenant_table.relname IN (
+         'statutory_evaluation_request','statutory_input_snapshot',
+         'statutory_result','statutory_portion_result',
+         'payroll_statutory_summary'
+       )));
     IF has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') <> insert_expected THEN
       RAISE EXCEPTION 'payroll_app INSERT grant does not match baseline for %', tenant_table.relation;
     END IF;
@@ -106,7 +112,11 @@ BEGIN
   FOREACH immutable IN ARRAY ARRAY['audit.audit_event'::regclass,
     'payroll_ops.input_snapshot'::regclass, 'payroll_ops.population_decision'::regclass,
     'payroll_calc.payroll_result'::regclass, 'payroll_calc.component_result'::regclass,
-    'payroll_calc.calculation_trace'::regclass, 'documents.draft_payslip'::regclass] LOOP
+    'payroll_calc.calculation_trace'::regclass, 'documents.draft_payslip'::regclass,
+    'statutory.statutory_input_snapshot'::regclass,
+    'statutory.statutory_result'::regclass,
+    'statutory.statutory_portion_result'::regclass,
+    'statutory.payroll_statutory_summary'::regclass] LOOP
     IF has_table_privilege('payroll_app', immutable, 'UPDATE') OR has_table_privilege('payroll_app', immutable, 'DELETE')
       THEN RAISE EXCEPTION 'payroll_app can mutate immutable relation %', immutable; END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid = immutable AND NOT tgisinternal
@@ -159,7 +169,11 @@ BEGIN
       ('statutory.employee_statutory_profile_version'::regclass,
        'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
       ('statutory.employee_statutory_rule_assignment'::regclass,
-       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure)
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_component_classification'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_evaluation_request'::regclass,
+       'statutory.reject_uncontrolled_statutory_evaluation_mutation()'::regprocedure)
     ) expected(relation, trigger_function)
   LOOP
     IF NOT EXISTS (
@@ -200,7 +214,10 @@ BEGIN
     'statutory.approve_employee_statutory_profile_version(uuid,uuid,character varying,timestamp with time zone)',
     'statutory.end_date_employee_statutory_profile_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
     'statutory.approve_employee_statutory_rule_assignment(uuid,uuid,character varying,timestamp with time zone)',
-    'statutory.end_date_employee_statutory_rule_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)'
+    'statutory.end_date_employee_statutory_rule_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.approve_statutory_component_classification(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_statutory_component_classification(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.evaluate_calculated_payroll(uuid,uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)'
   ]
   LOOP
     lifecycle_oid := to_regprocedure(lifecycle_signature);
@@ -824,6 +841,183 @@ BEGIN
   ) THEN
     RAISE EXCEPTION
       'approved V028 assignments contain inconsistent stable lineage';
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  SELECT string_agg(required.table_name, ', ' ORDER BY required.table_name)
+  INTO missing
+  FROM (VALUES
+    ('statutory_component_classification'),
+    ('statutory_evaluation_request'),
+    ('statutory_input_snapshot'),
+    ('statutory_result'),
+    ('statutory_portion_result'),
+    ('payroll_statutory_summary')
+  ) required(table_name)
+  WHERE to_regclass(
+    format('statutory.%I', required.table_name)
+  ) IS NULL;
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION 'V029 statutory evaluation tables are missing: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+      'statutory.statutory_component_classification'::regclass
+      AND conname =
+        'statutory_component_classification_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'V029 component classifications lack approved-range exclusion';
+  END IF;
+
+  IF to_regclass(
+       'statutory.statutory_component_classification_one_successor_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'V029 component classifications lack one-successor enforcement';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.payroll_result'::regclass
+      AND conname = 'payroll_result_statutory_summary_uk'
+      AND contype = 'u'
+  ) OR NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_calc.payroll_result'::regclass
+      AND conname = 'payroll_result_statutory_lineage_uk'
+      AND contype = 'u'
+  ) THEN
+    RAISE EXCEPTION
+      'V029 payroll results lack exact statutory lineage keys';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_component_classification classification
+    JOIN compensation.pay_component_version component_version
+      ON component_version.tenant_id = classification.tenant_id
+     AND component_version.id = classification.component_version_id
+     AND component_version.component_id = classification.component_id
+    WHERE classification.approval_status = 'APPROVED'
+      AND (
+        component_version.approval_status <> 'APPROVED'
+        OR classification.effective_from < component_version.effective_from
+        OR component_version.effective_to IS NOT NULL
+           AND (
+             classification.effective_to IS NULL
+             OR classification.effective_to > component_version.effective_to
+           )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'approved V029 classifications violate exact component-version lineage';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_evaluation_request request
+    WHERE request.status = 'COMPLETED'
+      AND (
+        request.payroll_result_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.payroll_statutory_summary summary
+          WHERE summary.tenant_id = request.tenant_id
+            AND summary.evaluation_request_id = request.id
+        )
+        OR request.statutory_result_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.statutory_result result
+          WHERE result.tenant_id = request.tenant_id
+            AND result.evaluation_request_id = request.id
+        )
+        OR request.employee_total IS DISTINCT FROM (
+          SELECT coalesce(sum(summary.employee_statutory_amount), 0)
+          FROM statutory.payroll_statutory_summary summary
+          WHERE summary.tenant_id = request.tenant_id
+            AND summary.evaluation_request_id = request.id
+        )
+        OR request.employer_total IS DISTINCT FROM (
+          SELECT coalesce(sum(summary.employer_statutory_amount), 0)
+          FROM statutory.payroll_statutory_summary summary
+          WHERE summary.tenant_id = request.tenant_id
+            AND summary.evaluation_request_id = request.id
+        )
+        OR request.post_statutory_net_total IS DISTINCT FROM (
+          SELECT coalesce(sum(summary.post_statutory_net_amount), 0)
+          FROM statutory.payroll_statutory_summary summary
+          WHERE summary.tenant_id = request.tenant_id
+            AND summary.evaluation_request_id = request.id
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'completed V029 evaluation totals do not match immutable evidence';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_result result
+    WHERE result.employee_amount IS DISTINCT FROM (
+      SELECT coalesce(sum(portion.calculated_amount), 0)
+      FROM statutory.statutory_portion_result portion
+      WHERE portion.tenant_id = result.tenant_id
+        AND portion.statutory_result_id = result.id
+        AND portion.liable_party = 'EMPLOYEE'
+    )
+       OR result.employer_amount IS DISTINCT FROM (
+      SELECT coalesce(sum(portion.calculated_amount), 0)
+      FROM statutory.statutory_portion_result portion
+      WHERE portion.tenant_id = result.tenant_id
+        AND portion.statutory_result_id = result.id
+        AND portion.liable_party = 'EMPLOYER'
+    )
+  ) THEN
+    RAISE EXCEPTION
+      'V029 statutory-result totals do not match portion evidence';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_input_snapshot snapshot
+    WHERE snapshot.snapshot_hash <> encode(
+      public.digest(snapshot.snapshot_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_result result
+    WHERE result.result_hash <> encode(
+      public.digest(result.result_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_portion_result portion
+    WHERE portion.result_hash <> encode(
+      public.digest(portion.result_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.payroll_statutory_summary summary
+    WHERE summary.summary_hash <> encode(
+      public.digest(summary.summary_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) THEN
+    RAISE EXCEPTION 'V029 immutable evidence contains a hash mismatch';
   END IF;
 END $$;
 
