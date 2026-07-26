@@ -14,7 +14,7 @@ public record StatutoryResultView(
     UUID statutoryRuleId,
     UUID statutoryRuleVersionId,
     String currency,
-    BigDecimal employeeAmount,
-    BigDecimal employerAmount,
+    @DecimalString BigDecimal employeeAmount,
+    @DecimalString BigDecimal employerAmount,
     String resultHash,
     Instant createdAt) {}

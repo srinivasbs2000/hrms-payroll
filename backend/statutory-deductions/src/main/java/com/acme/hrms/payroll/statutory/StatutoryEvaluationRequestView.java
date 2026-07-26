@@ -17,8 +17,8 @@ public record StatutoryEvaluationRequestView(
     String completedBy,
     Integer payrollResultCount,
     Integer statutoryResultCount,
-    BigDecimal employeeTotal,
-    BigDecimal employerTotal,
-    BigDecimal postStatutoryNetTotal,
+    @DecimalString BigDecimal employeeTotal,
+    @DecimalString BigDecimal employerTotal,
+    @DecimalString BigDecimal postStatutoryNetTotal,
     String evidenceSetHash,
     long versionNo) {}

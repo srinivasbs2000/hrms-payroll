@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public record StatutoryCorrectionCommand(
     @NotNull UUID statutoryResultId,
-    @NotNull BigDecimal employeeAmountDelta,
-    @NotNull BigDecimal employerAmountDelta,
+    @NotNull @DecimalString BigDecimal employeeAmountDelta,
+    @NotNull @DecimalString BigDecimal employerAmountDelta,
     @NotBlank @Size(min = 8, max = 500) String reason) {}
