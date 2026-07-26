@@ -82,7 +82,9 @@ BEGIN
        AND tenant_table.relname IN (
          'statutory_evaluation_request','statutory_input_snapshot',
          'statutory_result','statutory_portion_result',
-         'payroll_statutory_summary'
+         'payroll_statutory_summary','statutory_ledger_batch',
+         'statutory_ledger_entry','statutory_balance_snapshot',
+         'statutory_reconciliation','statutory_remittance_summary'
        )));
     IF has_table_privilege('payroll_app', tenant_table.relation, 'INSERT') <> insert_expected THEN
       RAISE EXCEPTION 'payroll_app INSERT grant does not match baseline for %', tenant_table.relation;
@@ -116,7 +118,11 @@ BEGIN
     'statutory.statutory_input_snapshot'::regclass,
     'statutory.statutory_result'::regclass,
     'statutory.statutory_portion_result'::regclass,
-    'statutory.payroll_statutory_summary'::regclass] LOOP
+    'statutory.payroll_statutory_summary'::regclass,
+    'statutory.statutory_ledger_entry'::regclass,
+    'statutory.statutory_balance_snapshot'::regclass,
+    'statutory.statutory_reconciliation'::regclass,
+    'statutory.statutory_remittance_summary'::regclass] LOOP
     IF has_table_privilege('payroll_app', immutable, 'UPDATE') OR has_table_privilege('payroll_app', immutable, 'DELETE')
       THEN RAISE EXCEPTION 'payroll_app can mutate immutable relation %', immutable; END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid = immutable AND NOT tgisinternal
@@ -173,7 +179,11 @@ BEGIN
       ('statutory.statutory_component_classification'::regclass,
        'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
       ('statutory.statutory_evaluation_request'::regclass,
-       'statutory.reject_uncontrolled_statutory_evaluation_mutation()'::regprocedure)
+       'statutory.reject_uncontrolled_statutory_evaluation_mutation()'::regprocedure),
+      ('statutory.statutory_balance_year'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.statutory_ledger_batch'::regclass,
+       'statutory.reject_uncontrolled_statutory_ledger_batch_mutation()'::regprocedure)
     ) expected(relation, trigger_function)
   LOOP
     IF NOT EXISTS (
@@ -217,7 +227,11 @@ BEGIN
     'statutory.end_date_employee_statutory_rule_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
     'statutory.approve_statutory_component_classification(uuid,uuid,character varying,timestamp with time zone)',
     'statutory.end_date_statutory_component_classification(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
-    'statutory.evaluate_calculated_payroll(uuid,uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)'
+    'statutory.evaluate_calculated_payroll(uuid,uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)',
+    'statutory.approve_statutory_balance_year(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_statutory_balance_year(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.post_statutory_evaluation(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)',
+    'statutory.post_statutory_correction(uuid,uuid,uuid,numeric,numeric,character varying,bigint,character varying,character varying,character varying,timestamp with time zone)'
   ]
   LOOP
     lifecycle_oid := to_regprocedure(lifecycle_signature);
@@ -1018,6 +1032,263 @@ BEGIN
     )
   ) THEN
     RAISE EXCEPTION 'V029 immutable evidence contains a hash mismatch';
+  END IF;
+END $$;
+
+DO $$
+DECLARE
+  v_missing text;
+BEGIN
+  SELECT string_agg(required.table_name, ', ' ORDER BY required.table_name)
+  INTO v_missing
+  FROM (VALUES
+    ('statutory_balance_year'),
+    ('statutory_ledger_batch'),
+    ('statutory_ledger_entry'),
+    ('statutory_balance_snapshot'),
+    ('statutory_reconciliation'),
+    ('statutory_remittance_summary')
+  ) required(table_name)
+  WHERE to_regclass(
+    format('statutory.%I', required.table_name)
+  ) IS NULL;
+
+  IF v_missing IS NOT NULL THEN
+    RAISE EXCEPTION 'V030 statutory ledger tables are missing: %',
+      v_missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'statutory.statutory_balance_year'::regclass
+      AND conname = 'statutory_balance_year_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'V030 balance years lack approved-range exclusion';
+  END IF;
+
+  IF to_regclass(
+       'statutory.statutory_balance_year_one_successor_uk'
+     ) IS NULL OR to_regclass(
+       'statutory.statutory_ledger_batch_one_successor_uk'
+     ) IS NULL OR to_regclass(
+       'statutory.statutory_ledger_batch_one_evaluation_posting_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'V030 balance-year or ledger-batch history enforcement is missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns column_info
+    WHERE column_info.table_schema = 'payroll_ops'
+      AND column_info.table_name = 'payroll_cycle'
+      AND column_info.column_name =
+          'active_statutory_ledger_batch_id'
+  ) OR NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'payroll_ops.payroll_cycle'::regclass
+      AND conname = 'payroll_cycle_active_statutory_batch_fk'
+      AND contype = 'f'
+  ) THEN
+    RAISE EXCEPTION
+      'V030 payroll cycles lack active statutory ledger lineage';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_ledger_batch ledger_batch
+    WHERE ledger_batch.status = 'COMPLETED'
+      AND (
+        ledger_batch.entry_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = ledger_batch.tenant_id
+            AND ledger_entry.ledger_batch_id = ledger_batch.id
+        )
+        OR ledger_batch.balance_snapshot_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.statutory_balance_snapshot balance_snapshot
+          WHERE balance_snapshot.tenant_id = ledger_batch.tenant_id
+            AND balance_snapshot.ledger_batch_id = ledger_batch.id
+        )
+        OR ledger_batch.remittance_summary_count IS DISTINCT FROM (
+          SELECT count(*)::integer
+          FROM statutory.statutory_remittance_summary remittance
+          WHERE remittance.tenant_id = ledger_batch.tenant_id
+            AND remittance.ledger_batch_id = ledger_batch.id
+        )
+        OR ledger_batch.employee_delta_total IS DISTINCT FROM (
+          SELECT coalesce(
+            sum(ledger_entry.employee_amount_delta),
+            0
+          )::numeric(19,4)
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = ledger_batch.tenant_id
+            AND ledger_entry.ledger_batch_id = ledger_batch.id
+        )
+        OR ledger_batch.employer_delta_total IS DISTINCT FROM (
+          SELECT coalesce(
+            sum(ledger_entry.employer_amount_delta),
+            0
+          )::numeric(19,4)
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = ledger_batch.tenant_id
+            AND ledger_entry.ledger_batch_id = ledger_batch.id
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'completed V030 ledger-batch totals do not match immutable evidence';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM payroll_ops.payroll_cycle cycle
+    JOIN statutory.statutory_ledger_batch ledger_batch
+      ON ledger_batch.tenant_id = cycle.tenant_id
+     AND ledger_batch.id = cycle.active_statutory_ledger_batch_id
+    WHERE cycle.active_statutory_ledger_batch_id IS NOT NULL
+      AND (
+        ledger_batch.payroll_cycle_id <> cycle.id
+        OR ledger_batch.status <> 'COMPLETED'
+        OR cycle.statutory_employee_total IS DISTINCT FROM (
+          SELECT coalesce(
+            sum(ledger_entry.employee_amount_delta),
+            0
+          )::numeric(19,4)
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = cycle.tenant_id
+            AND ledger_entry.payroll_cycle_id = cycle.id
+        )
+        OR cycle.statutory_employer_total IS DISTINCT FROM (
+          SELECT coalesce(
+            sum(ledger_entry.employer_amount_delta),
+            0
+          )::numeric(19,4)
+          FROM statutory.statutory_ledger_entry ledger_entry
+          WHERE ledger_entry.tenant_id = cycle.tenant_id
+            AND ledger_entry.payroll_cycle_id = cycle.id
+        )
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'V030 active cycle posting does not match append-only ledger totals';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_reconciliation reconciliation
+    WHERE reconciliation.reconciliation_status <> 'MATCHED'
+       OR reconciliation.employee_variance <> 0
+       OR reconciliation.employer_variance <> 0
+       OR reconciliation.expected_employee_total <>
+          reconciliation.source_employee_total +
+            reconciliation.correction_employee_total
+       OR reconciliation.expected_employer_total <>
+          reconciliation.source_employer_total +
+            reconciliation.correction_employer_total
+       OR reconciliation.ledger_employee_total <>
+          reconciliation.expected_employee_total
+       OR reconciliation.ledger_employer_total <>
+          reconciliation.expected_employer_total
+  ) THEN
+    RAISE EXCEPTION
+      'V030 contains non-zero or internally inconsistent reconciliation';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_remittance_summary remittance
+    WHERE remittance.remittance_amount <>
+          remittance.period_employee_total +
+            remittance.period_employer_total
+       OR (
+         remittance.remittance_amount > 0
+         AND remittance.remittance_position <> 'PAYABLE'
+       )
+       OR (
+         remittance.remittance_amount < 0
+         AND remittance.remittance_position <> 'CREDIT'
+       )
+       OR (
+         remittance.remittance_amount = 0
+         AND remittance.remittance_position <> 'ZERO'
+       )
+  ) THEN
+    RAISE EXCEPTION
+      'V030 remittance-ready summaries contain an invalid position';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_ledger_entry reversal_entry
+    JOIN statutory.statutory_ledger_entry source_entry
+      ON source_entry.tenant_id = reversal_entry.tenant_id
+     AND source_entry.id = reversal_entry.source_entry_id
+    WHERE reversal_entry.entry_kind = 'REVERSAL'
+      AND source_entry.entry_kind = 'REVERSAL'
+  ) THEN
+    RAISE EXCEPTION
+      'V030 replacement batches reverse prior reversals instead of the active posting epoch';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_ledger_entry ledger_entry
+    JOIN organisation.pay_period period
+      ON period.tenant_id = ledger_entry.tenant_id
+     AND period.id = ledger_entry.pay_period_id
+    JOIN statutory.statutory_balance_year balance_year
+      ON balance_year.tenant_id = ledger_entry.tenant_id
+     AND balance_year.id = ledger_entry.balance_year_id
+    WHERE period.payment_date < balance_year.period_start
+       OR period.payment_date >= balance_year.period_end
+       OR balance_year.approval_status <> 'APPROVED'
+  ) THEN
+    RAISE EXCEPTION
+      'V030 ledger evidence is outside its approved balance year';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.statutory_ledger_entry ledger_entry
+    WHERE ledger_entry.entry_hash <> encode(
+      public.digest(ledger_entry.entry_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_balance_snapshot balance_snapshot
+    WHERE balance_snapshot.snapshot_hash <> encode(
+      public.digest(
+        balance_snapshot.snapshot_payload::text,
+        'sha256'::text
+      ),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_reconciliation reconciliation
+    WHERE reconciliation.reconciliation_hash <> encode(
+      public.digest(
+        reconciliation.reconciliation_payload::text,
+        'sha256'::text
+      ),
+      'hex'
+    )
+  ) OR EXISTS (
+    SELECT 1
+    FROM statutory.statutory_remittance_summary remittance
+    WHERE remittance.summary_hash <> encode(
+      public.digest(remittance.summary_payload::text, 'sha256'::text),
+      'hex'
+    )
+  ) THEN
+    RAISE EXCEPTION 'V030 immutable ledger evidence contains a hash mismatch';
   END IF;
 END $$;
 
