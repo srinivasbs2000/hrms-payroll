@@ -155,6 +155,10 @@ BEGIN
       ('statutory.statutory_rule_portion'::regclass,
        'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
       ('statutory.statutory_rule_slab'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.employee_statutory_profile_version'::regclass,
+       'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure),
+      ('statutory.employee_statutory_rule_assignment'::regclass,
        'statutory.reject_uncontrolled_statutory_configuration_mutation()'::regprocedure)
     ) expected(relation, trigger_function)
   LOOP
@@ -192,7 +196,11 @@ BEGIN
     'payroll_ops.seal_payroll_inputs(uuid,uuid,bigint,character varying,timestamp with time zone)',
     'payroll_calc.calculate_sealed_payroll(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)',
     'statutory.approve_statutory_rule_version(uuid,uuid,character varying,timestamp with time zone)',
-    'statutory.end_date_statutory_rule_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)'
+    'statutory.end_date_statutory_rule_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.approve_employee_statutory_profile_version(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_employee_statutory_profile_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'statutory.approve_employee_statutory_rule_assignment(uuid,uuid,character varying,timestamp with time zone)',
+    'statutory.end_date_employee_statutory_rule_assignment(uuid,uuid,date,bigint,character varying,timestamp with time zone)'
   ]
   LOOP
     lifecycle_oid := to_regprocedure(lifecycle_signature);
@@ -671,6 +679,151 @@ BEGIN
   ) THEN
     RAISE EXCEPTION
       'approved SLAB statutory portions exist without bands';
+  END IF;
+END $$;
+
+
+DO $$
+DECLARE
+  missing text;
+BEGIN
+  SELECT string_agg(required.table_name, ', ' ORDER BY required.table_name)
+  INTO missing
+  FROM (VALUES
+    ('employee_statutory_profile'),
+    ('employee_statutory_profile_version'),
+    ('employee_statutory_rule_assignment')
+  ) required(table_name)
+  WHERE to_regclass(
+    format('statutory.%I', required.table_name)
+  ) IS NULL;
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION 'V028 employee statutory tables are missing: %', missing;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_profile_version'::regclass
+      AND conname = 'employee_statutory_profile_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'employee statutory profile versions lack the V028 range exclusion';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_rule_assignment'::regclass
+      AND conname =
+          'employee_statutory_rule_assignment_approved_no_overlap'
+      AND contype = 'x'
+  ) THEN
+    RAISE EXCEPTION
+      'employee statutory rule assignments lack the V028 range exclusion';
+  END IF;
+
+  IF to_regclass(
+       'statutory.employee_statutory_profile_version_one_successor_uk'
+     ) IS NULL
+     OR to_regclass(
+       'statutory.employee_statutory_rule_assignment_one_successor_uk'
+     ) IS NULL THEN
+    RAISE EXCEPTION
+      'V028 employee statutory histories lack one-successor indexes';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_rule_assignment'::regclass
+      AND conname = 'employee_statutory_assignment_profile_version_fk'
+      AND contype = 'f'
+  )
+  OR NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_rule_assignment'::regclass
+      AND conname = 'employee_statutory_assignment_payroll_version_fk'
+      AND contype = 'f'
+  )
+  OR NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid =
+          'statutory.employee_statutory_rule_assignment'::regclass
+      AND conname = 'employee_statutory_assignment_rule_version_fk'
+      AND contype = 'f'
+  ) THEN
+    RAISE EXCEPTION
+      'V028 statutory assignments lack exact parent-version lineage';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid =
+          'statutory.employee_statutory_profile_version'::regclass
+      AND tgname =
+          'employee_statutory_profile_version_assignment_guard'
+      AND NOT tgisinternal
+      AND tgfoid =
+          'statutory.guard_employee_statutory_profile_version_end_date()'
+            ::regprocedure
+  )
+  OR NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid = 'statutory.statutory_rule_version'::regclass
+      AND tgname = 'statutory_rule_version_employee_assignment_guard'
+      AND NOT tgisinternal
+      AND tgfoid =
+          'statutory.guard_statutory_rule_version_assignment_end_date()'
+            ::regprocedure
+  )
+  OR NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger
+    WHERE tgrelid =
+          'employee_payroll.payroll_assignment_version'::regclass
+      AND tgname = 'payroll_assignment_version_statutory_guard'
+      AND NOT tgisinternal
+      AND tgfoid =
+          'statutory.guard_payroll_assignment_version_statutory_end_date()'
+            ::regprocedure
+  ) THEN
+    RAISE EXCEPTION
+      'V028 exact-parent end-date guards are incomplete';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM statutory.employee_statutory_rule_assignment assignment
+    JOIN statutory.employee_statutory_profile profile
+      ON profile.tenant_id = assignment.tenant_id
+     AND profile.id = assignment.employee_statutory_profile_id
+    JOIN employee_payroll.payroll_assignment payroll_assignment
+      ON payroll_assignment.tenant_id = assignment.tenant_id
+     AND payroll_assignment.id = assignment.payroll_assignment_id
+    JOIN statutory.statutory_rule rule
+      ON rule.tenant_id = assignment.tenant_id
+     AND rule.id = assignment.statutory_rule_id
+    WHERE assignment.approval_status = 'APPROVED'
+      AND (
+        profile.payroll_relationship_id <>
+          payroll_assignment.payroll_relationship_id
+        OR profile.jurisdiction_code <> rule.jurisdiction_code
+        OR profile.authority_code <> rule.authority_code
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'approved V028 assignments contain inconsistent stable lineage';
   END IF;
 END $$;
 
