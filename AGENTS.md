@@ -157,7 +157,7 @@ payroll payloads in browser storage.
 ## Database migrations
 
 `database/flyway/sql` is the single source of ordered versioned migrations.
-V001–V030 are committed and immutable. Future schema work is forward-only from
+V001â€“V030 are committed and immutable. Future schema work is forward-only from
 V031. Versioned migrations must fail loudly; do not add permissive
 `IF NOT EXISTS` clauses to them. The `backend/database-migrations` Maven module
 packages the canonical directory as `db/migration`. Administrator bootstrap,
@@ -210,3 +210,29 @@ Once enabled, producers use the integrations module public `OutboxWriter`;
 consumers commit their inbox record and effect atomically. Retry,
 poison-message and replay policy is recorded in
 `docs/runbooks/event-reliability.md`.
+
+<!-- LIVING-PROJECT-AUTHORITY:START -->
+## Living project authority and multi-thread maintenance
+
+For every HRMS Payroll thread or implementation session, read these files after
+this repository instruction file:
+
+1. `docs/design/hrms-payroll-master-design.md`
+2. `docs/design/decision-register.md`
+3. `docs/runbooks/project-continuation-handoff.md`
+4. `docs/governance/thread-registry.md`
+5. `docs/governance/thread-maintenance-protocol.md`
+
+The master design owns approved product scope and long-lived architecture. The
+running handoff owns current repository state and the next authorised action.
+The thread registry owns write coordination across parallel threads.
+
+Before writing, register the thread role, bounded scope, branch/PR, exact file
+allow-list and migration reservation. Only one thread or write-capable agent may
+own overlapping files or the next migration number at a time.
+
+Update the running handoff and thread registry before every thread transition.
+Update the master design and decision register only when their documented
+triggers are met. A durable decision that exists only in chat is not project
+authority.
+<!-- LIVING-PROJECT-AUTHORITY:END -->
