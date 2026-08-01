@@ -1,68 +1,56 @@
 # HRMS Payroll Master Design
 
-**Status:** Living approved-design authority
+**Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Current verified repository base:** `main` at PR #20 merge `4b5da975eb851434957667bdecf138ea9b43f929`
+**Publication source baseline:** `main` at PR #21 merge `18d5ca3554ff217140b7e3c443d086d63bd02070`
 **Current product implementation baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 **Last verified:** 1 August 2026
-**Maintainers:** Project owner and the currently authorised implementation thread
+**Maintainers:** Project owner and the currently authorised project thread
+**Full product scope authority:** `docs/product/payroll-product-scope-and-epic-catalog.md`
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
 
 ## 1. Purpose and authority
 
-This document is the repository-owned authority for the approved product scope,
-architecture, cross-cutting design rules and long-lived decisions of the HRMS
-Payroll system.
+This document owns approved architecture, cross-cutting design rules and the
+relationship between the complete Payroll product scope and the implemented
+repository baseline.
 
-It is intentionally different from the running continuation handoff:
+The complete product capability and epic authority is:
 
-- this master design answers **what the system is and why it is designed this way**;
-- the continuation handoff answers **where implementation currently stands and
-  what may happen next**;
-- ADRs provide the detailed rationale for individual architecture decisions;
-- migrations, code, tests and OpenAPI provide executable implementation truth;
-- immutable checkpoints record durable transitions but do not replace this
-  document.
+`docs/product/payroll-product-scope-and-epic-catalog.md`
 
-Conversation history is never the authoritative project record. A decision that
-must survive a thread boundary must be recorded in the repository.
+The machine-readable source backlog and delivery lineage are:
+
+- `backlog/payroll-master-implementation-backlog.csv`
+- `docs/governance/payroll-feature-delivery-lineage.md`
+
+The current repository is a bounded vertical slice and must not be read as the
+complete Payroll product.
 
 ## 2. Source-of-truth hierarchy
 
-Use this order whenever sources disagree:
+1. current local working tree and complete uncommitted diff;
+2. live remote branch, commit, pull request and CI evidence;
+3. committed migrations, code, tests, OpenAPI, security policy and `AGENTS.md`;
+4. full product scope/epic catalog and source register;
+5. this master design and decision register;
+6. continuation handoff and thread registry;
+7. quality, closure and reconciliation records;
+8. conversation history only as a locator.
 
-1. Current local working tree and complete uncommitted diff.
-2. Current remote branch, commit, pull request and CI evidence.
-3. Committed migrations, code, tests, OpenAPI, ADRs, `AGENTS.md`, backlog and
-   security policies.
-4. This master design for approved product and architecture intent.
-5. The running continuation handoff for current sequence, blockers and next
-   authorised action.
-6. Committed verification reports and immutable transition checkpoints.
-7. Thread extracts and conversation summaries only as historical locators.
+Record disagreements as `DOCUMENTATION CONFLICT`. Never silently reduce the
+original approved product scope.
 
-Do not silently reconcile a conflict. Record it as `DOCUMENTATION CONFLICT`,
-identify the sources, and resolve it through an approved repository change.
+## 3. Complete product objective
 
-A documentation or recovery failure must not silently narrow the original
-approved deliverable. Before a phase is declared complete, reconcile the
-original file/scope checklist against the actual committed result. Any omission
-or deferral requires explicit project-owner approval.
+Build an India-first, enterprise-grade, multi-tenant Payroll operating
+platform that can operate independently and integrate with the wider HRMS.
 
-## 3. Product objective
+End-to-end product journey:
 
-Build an India-first, enterprise-grade, multi-tenant payroll operating platform
-that can function as an independently deployable payroll subsystem while
-integrating with the wider HRMS.
+`configuration -> onboarding/readiness -> inputs -> calculation -> validation -> approval -> payments -> statutory processing -> accounting -> documents/reporting -> reconciliation -> corrections -> audit -> migration/cutover -> BAU`
 
-The target product journey is:
-
-`configuration -> approved inputs -> deterministic gross-to-net calculation ->
-validation -> approval -> payment preparation -> statutory evidence ->
-reconciliation -> correction -> audit`
-
-The current repository is a bounded vertical slice, not the complete target
-product.
+The complete product contains 18 epics across original releases R1-R4.
 
 ## 4. Implemented scope through Sprint 4
 
@@ -70,320 +58,165 @@ product.
 
 - tenant context and PostgreSQL RLS;
 - legal entities, payroll statutory units and establishments;
-- stable identities plus immutable effective-dated versions;
-- exact-version hierarchy and parent-range containment;
-- approval, correction and controlled end-date lifecycle;
-- audit and transactional outbox evidence.
+- stable identities and immutable effective-dated versions;
+- hierarchy, lifecycle, audit and transactional outbox evidence.
 
 ### 4.2 Payroll configuration and employee payroll
 
 - pay groups and deterministic monthly calendars/periods;
-- pay-component catalogue;
-- salary structures and immutable component lines;
-- payroll relationships and assignments;
-- employee payroll profiles;
+- starter BASIC, HRA and SPECIAL_ALLOWANCE catalog;
+- starter salary structures and immutable component lines;
+- payroll relationships, assignments and employee payroll profiles;
 - pay-group and salary assignments;
-- permission-aware backend APIs and React workspaces.
+- permission-aware APIs and React workspaces.
 
 ### 4.3 Regular payroll execution
 
-- fixed monthly BASIC, HRA and SPECIAL_ALLOWANCE;
+- fixed monthly starter calculation;
 - calendar-day proration;
-- controlled payroll-cycle and population resolution;
-- immutable sealed input snapshots;
-- deterministic calculation requests, results, component results and trace;
-- controlled recalculation preserving history;
-- persisted draft payslip explicitly marked non-legal and not for payment.
+- controlled cycle and population resolution;
+- immutable input snapshots;
+- deterministic result, component and trace evidence;
+- controlled recalculation;
+- non-legal persisted draft-payslip view.
 
 ### 4.4 Jurisdiction-neutral statutory evidence
 
-- effective-dated statutory rule identities and versions;
+- effective-dated generic statutory rules;
 - employee statutory profiles and exact assignments;
-- deterministic statutory evaluation;
-- append-only ledger posting and signed correction deltas;
-- PTD/YTD balances, reconciliation and remittance-preparation evidence;
-- secured APIs and permission-aware operator UI.
+- deterministic evaluation;
+- append-only ledger, signed corrections and balances;
+- reconciliation and remittance-preparation evidence;
+- secured APIs and operator workspace.
 
-This foundation does not establish a legal India rule pack or authoritative
-country-specific calculation.
+This does not establish an India legal rule pack.
 
-## 5. Explicitly excluded until separately approved
+## 5. Full-product implementation qualification
 
-The following remain outside the implemented baseline:
+- 11 epics are `PARTIALLY IMPLEMENTED`;
+- 6 epics are `NOT STARTED`;
+- E09 is `REQUIRES LEGAL OR DOMAIN REVALIDATION`;
+- no original epic is fully implemented against all source acceptance.
 
-- jurisdiction-specific PF, EPS, EDLI, ESI, professional tax, labour welfare
-  fund, NPS and salary-TDS rules;
-- legal interpretation of statutory rates, thresholds, forms or filing duties;
-- statutory return generation, submission, acknowledgements and remittance
-  settlement;
-- retroactive payroll and arrears processing;
-- off-cycle and supplementary payroll;
-- recoveries, salary advances and employee receivables;
-- final settlement;
-- banking, payment files/APIs and payment settlement;
-- payroll accounting and general-ledger integration;
-- legal/final payslip publication.
+This prevents bounded Sprint slices from being misrepresented as complete
+product epics.
 
-Each excluded area requires an approved design, authoritative source review,
-effective-date model, complete test matrix and independent critical review.
+## 6. Material remaining capabilities
 
-## 6. Architecture
+- complete jurisdiction and registration foundation;
+- general components, named bases, CTC and salary structures;
+- complete bank/statutory/tax readiness;
+- general formula and balance engines;
+- complete input, cut-off, trial, approval, lock and release operations;
+- current India statutory and salary-tax rule packs;
+- retro, arrears, off-cycle, recoveries and final settlement;
+- payments and banking;
+- accounting, costing and ERP integration;
+- legal documents, ESS, reporting, analytics and communications;
+- complete SoD, access governance, retention, BCP, performance and DR;
+- data migration, parallel Payroll, cutover and hypercare.
 
-### 6.1 Composition
+## 7. Architecture
 
 - Java 21 and Spring Boot modular monolith.
 - Maven multi-module repository under `backend/`.
 - `backend/payroll-boot` is the composition root.
 - React 18, TypeScript and Vite frontend.
 - PostgreSQL 17 with Flyway.
-- Keycloak/OIDC for development identity.
+- Keycloak/OIDC development identity.
 - OpenAPI 3.1 contracts.
 
-### 6.2 Module boundaries
+Direct cross-module repository access, internal-package imports and
+unapproved shared ownership are prohibited. Spring Modulith and ArchUnit
+remain mandatory.
 
-A module may consume another module only through its public API.
+## 8. Data and migration rules
 
-Prohibited across modules:
+- `database/flyway/sql` is the ordered migration authority.
+- V001-V030 are immutable.
+- V031 is unreserved.
+- future migrations are forward-only and separately authorised;
+- tenant-owned FKs include tenant ownership;
+- stable identity plus immutable effective-dated versions preserve lineage;
+- consumed evidence is never rewritten;
+- the original 112-table DDL is a logical design source, not a migration to
+  apply directly.
 
-- direct repository access;
-- cross-module JPA relationships;
-- imports from another module's `internal` packages;
-- shared mutable database ownership without an approved boundary;
-- bypassing application services to mutate another bounded context.
+## 9. Security, reliability and API rules
 
-Spring Modulith and ArchUnit verification are mandatory boundary gates.
+- ENABLE/FORCE RLS for tenant-owned tables;
+- runtime roles are non-owner and `NOBYPASSRLS`;
+- transactions use `SET LOCAL`;
+- identity is issuer plus subject;
+- aggregate, idempotency, audit and outbox commit atomically;
+- money uses `BigDecimal` and decimal strings;
+- writes use idempotency keys where needed;
+- optimistic changes use ETag/`If-Match`;
+- errors use RFC 9457 and do not leak sensitive existence.
 
-### 6.3 Core capability ownership
+## 10. Deterministic calculation and evidence rules
 
-| Capability | Primary owner |
-|---|---|
-| Tenant transaction and shared platform contracts | `platform-core` |
-| Authentication and authorization | `security` |
-| Idempotency, outbox and integration reliability | `integrations` |
-| Legal entity, PSU and establishment | `organisation` |
-| Pay group, calendar, components and structures | configuration/compensation modules |
-| Payroll relationship, assignment and profile | `employee-payroll` |
-| Payroll-cycle orchestration | `payroll-operations` |
-| Deterministic calculation and trace | `calculation-engine` |
-| Statutory rules, evaluation and ledger | statutory bounded context |
-| Draft-payslip/document views | `documents-reporting` |
-| Runtime composition | `payroll-boot` |
+The same immutable employee/configuration/input evidence and engine version
+must reproduce the same result and hash.
 
-The exact committed package structure remains implementation truth.
+Inject `Clock`, retain exact lineage and trace, avoid ordering dependence and
+append corrections rather than mutating history.
 
-## 7. Data and migration model
+## 11. Delivery and quality gates
 
-### 7.1 Migration authority
-
-`database/flyway/sql` is the canonical ordered migration directory.
-
-- V001-V030 are committed and immutable.
-- V031 is currently unreserved.
-- Future schema work begins at V031 only after explicit reservation.
-- Versioned migrations are forward-only and fail loudly.
-- Do not add permissive `IF NOT EXISTS` clauses to hide drift.
-- Bootstrap, development seed and verification SQL remain separate.
-- Application roles do not own schemas or tables.
-
-### 7.2 Stable identity and exact version
-
-Long-lived business concepts use:
-
-1. a stable identity row for enduring navigation and aggregate identity;
-2. immutable effective-dated version rows for historical state;
-3. exact version foreign keys wherever payroll lineage must prove the state used.
-
-Legacy UUIDs are preserved as historical version identifiers where practical.
-A new migration must document the old-to-new identity/version mapping.
-
-### 7.3 Effective dating
-
-- Ranges are half-open: `[effective_from, effective_to)`.
-- Approved ranges for the same identity never overlap.
-- Child versions must fit within the applicable exact parent-version range.
-- Future-effective versions are the normal change mechanism.
-- Backdated changes require impact assessment and controlled processing.
-- Approved or consumed historical evidence is never rewritten.
-
-### 7.4 Immutable evidence
-
-The following are append-only after sealing or completion:
-
-- input snapshots;
-- payroll results and component results;
-- calculation trace;
-- draft-payslip versions;
-- statutory inputs/evaluations;
-- statutory ledger entries and correction deltas;
-- balance snapshots;
-- reconciliation and remittance summaries;
-- audit and outbox evidence.
-
-Corrections create new evidence linked to the prior evidence.
-
-## 8. Security and tenancy
-
-- Every tenant-owned table contains tenant ownership.
-- Tenant-owned foreign keys include `tenant_id`.
-- PostgreSQL RLS is enabled and forced.
-- Runtime roles are non-owner and `NOBYPASSRLS`.
-- Application transactions set `app.tenant_id` with `SET LOCAL`.
-- Cross-tenant reads, writes and references must fail.
-- OIDC principals are identified by issuer plus subject, never email.
-- Missing tenant or audience claims fail closed.
-- Tokens, employee personal data, salary data and payroll payloads must not be
-  logged or persisted in browser storage.
-- Authorization must align across Keycloak, backend, OpenAPI and UI controls.
-
-## 9. Reliability and transaction rules
-
-A business write that produces evidence commits atomically with:
-
-- the aggregate change;
-- idempotency result;
-- audit record;
-- outbox event.
-
-Outbox/inbox rules:
-
-- stable event identity;
-- tenant and consumer scoped inbox deduplication;
-- retry and poison-message handling;
-- explicit dead-letter/replay policy;
-- no producer may bypass the public integrations contract.
-
-## 10. API and error rules
-
-- OpenAPI contracts are wire-contract authorities.
-- Writes use an `Idempotency-Key` where retry duplication is possible.
-- Calls propagate `X-Correlation-ID`.
-- Optimistic lifecycle changes use ETag/`If-Match`.
-- Errors use RFC 9457 problem details.
-- Money uses decimal strings plus ISO currency codes at API boundaries.
-- Java money uses `BigDecimal`; binary floating point is prohibited.
-- Error details must not leak cross-tenant existence or sensitive values.
-
-## 11. Deterministic calculation rules
-
-The same immutable employee, configuration and input snapshots plus the same
-engine version must reproduce the same result and result hash.
-
-- Inject `Clock`; do not consult uncontrolled current time.
-- Do not depend on database retrieval order or worker execution order.
-- Retain formula/rule version, input source, intermediate values, rounding and
-  result trace.
-- Calculation workers are stateless.
-- Employee-level failure must not silently corrupt other employees.
-- Missing required data produces an explicit default, warning or blocker.
-
-## 12. Delivery and quality gates
-
-The canonical verification order is:
-
-1. static validation/compile of affected modules;
+1. static validation/compile;
 2. focused unit tests;
 3. focused integration tests;
-4. migration, RLS and tenant-isolation tests when applicable;
-5. backend Maven `verify`;
-6. frontend lint, focused/full tests and production build when affected;
+4. migration/RLS/tenant tests when applicable;
+5. full Maven `verify`;
+6. frontend lint, tests and build when applicable;
 7. OpenAPI validation when contracts change;
 8. dependency, secret and security checks;
-9. final diff review;
-10. independent critical review for high-risk payroll work.
+9. planned-versus-actual file review;
+10. independent critical review for high-risk Payroll work.
 
-`mvn test` is not sufficient because Failsafe integration tests may be skipped.
+A story is complete only when acceptance, verification, lineage and residual
+risk are committed.
 
-A change is done only when the acceptance criteria, targeted and full
-verification, security/tenancy controls, final diff review, documented residual
-risks and required critical review are complete.
+## 12. Sprint baseline ledger
 
-### 12.1 Sprint 4 closure qualification
-
-Sprint 4 is functionally implemented and merged. It is not described as fully
-automated because the repository does not yet contain:
-
-- a real secured Spring Boot HTTP/PostgreSQL statutory integration test covering
-  the controller-to-database path; or
-- a statutory-specific Playwright browser scenario.
-
-S4-06A is the next selected quality increment and must close the statutory API
-integration gap without reserving a migration. S4-06B remains planned but is
-not authorised.
-
-The unsigned `docs/runbooks/sprint-4-manual-smoke.md` template is not evidence
-that a live manual smoke was completed.
-
-## 13. Sprint baseline ledger
-
-| Sprint | Durable outcome | Migration range | Repository status |
+| Sprint | Durable outcome | Migration range | Status |
 |---|---|---|---|
-| Sprint 0 | Repository, security, tenancy, migration and vertical-slice baseline | V001-V013 | Merged |
-| Sprint 1 | Organisation lifecycle, event reliability, audit and architecture boundaries | V014-V016 | Merged |
-| Sprint 2 | Payroll configuration and employee payroll foundation | V017-V022 | Merged through PR #3 |
-| Sprint 3 | Regular payroll execution, sealed inputs, calculation evidence and draft payslip | V023-V026 | Merged through PR #18 |
-| Sprint 4 | Jurisdiction-neutral statutory lifecycle, evaluation and ledger evidence | V027-V030 | Merged through PR #19; automation debt tracked as S4-06A/S4-06B |
+| Sprint 0 | Repository/security/tenancy baseline | V001-V013 | Merged |
+| Sprint 1 | Organisation, reliability, audit and architecture | V014-V016 | PR #2 merged |
+| Sprint 2 | Configuration and employee-payroll foundation | V017-V022 | PR #3 merged |
+| Sprint 3 | Regular execution and deterministic evidence | V023-V026 | PR #18 merged |
+| Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; quality debt remains |
+| Governance | Living design and reconciliation controls | None | PR #20 and PR #21 merged |
 
-Migration descriptions and exact implementation files remain the executable
-source of truth.
+## 13. Current controlled debt and planning
+
+- S4-06A is selected but not started.
+- S4-06B is planned but not authorised.
+- `PLN-01` epic-to-detailed-story decomposition is required after this
+  publication and before the next new product-feature sprint.
+- E09 requires current legal/domain revalidation.
+- V031 remains unreserved.
+- Thread 6 remains inactive.
 
 ## 14. Documentation model
 
-| Document | Responsibility | Update trigger |
-|---|---|---|
-| This master design | Approved product scope and long-lived architecture | Approved scope/architecture decision or durable implemented capability |
-| `docs/design/decision-register.md` | Decision index and status | Every approved material decision, supersession or conflict |
-| `docs/runbooks/project-continuation-handoff.md` | Current branch/PR/CI/worktree state and next action | Every committed increment and every thread transition |
-| `docs/governance/thread-registry.md` | Thread ownership, active scope and checkpoint links | Thread start, ownership change and thread close |
-| ADRs | Detailed architecture rationale | New or materially changed architecture choice |
-| Backlog | Approved implementation sequencing | Scope, estimate or acceptance-criteria change |
-| Quality/closure reports | Verification evidence | Durable phase or sprint closure |
-| Thread extracts | Historical evidence recovery only | Completed historical extraction |
+| Artifact | Responsibility |
+|---|---|
+| Product scope and epic catalog | Complete intended capability boundary |
+| Master backlog | Original 72-row control list and evidence classification |
+| Feature delivery lineage | Story/migration/commit/PR/closure mapping |
+| Gap assessment | Implemented, partial, missing and revalidation baseline |
+| Roadmap | Controlled future sequence and planning gates |
+| Master design | Architecture and product-to-implementation relationship |
+| Decision register | Stable material decisions |
+| Handoff | Current state and next authorised action |
+| Thread registry | Ownership and write boundaries |
 
-## 15. Master-design update rules
-
-Update this document only when one of these occurs:
-
-- approved product scope changes;
-- architecture or module ownership changes;
-- a cross-cutting security, tenancy, data or reliability rule changes;
-- a formerly excluded capability becomes implemented;
-- an implemented capability is superseded;
-- a migration baseline advances after merge;
-- a material documentation conflict is resolved.
-
-Do not update it for:
-
-- routine bug fixes;
-- local retries;
-- temporary diagnostics;
-- unapproved ideas;
-- work not yet committed and verified.
-
-Every change must include:
-
-- date;
-- affected section;
-- decision/register reference;
-- implementation or evidence link;
-- whether the change is approved, implemented or only planned.
-
-## 16. Open decisions and controlled debt
-
-At this baseline:
-
-- S4-06A Statutory API Integration Closure is the next selected implementation
-  increment after the documentation restart is merged and separately authorised;
-- S4-06B statutory-specific Playwright E2E is planned but not authorised;
-- jurisdiction-specific legal rule packs require separate approval and research;
-- production broker operations, replay and alerting remain operational debt;
-- cached/scheduled OWASP Dependency Check data remains follow-up work;
-- V031 remains unreserved;
-- multiple project threads must coordinate through the thread registry and one
-  active write owner.
-
-## 17. Change history
+## 15. Change history
 
 | Date | Change | Evidence |
 |---|---|---|
-| 1 Aug 2026 | Initial repository-owned living master design, seeded from merged Sprint 0-4 state and recovered Thread 1 decisions | PR #20 merge `4b5da975...`; PR #3, PR #18 and PR #19 |
-| 1 Aug 2026 | Cross-thread restart reconciliation: separated repository and product baselines, qualified Sprint 4 automation closure, selected S4-06A, retained S4-06B as unauthorised, and added completion-control discipline | Phase A documentation branch `docs/cross-thread-reconciliation`; MDR-021 through MDR-027 |
+| 1 Aug 2026 | Initial living master design | PR #20 |
+| 1 Aug 2026 | Cross-thread completion controls | PR #21 `18d5ca3554ff217140b7e3c443d086d63bd02070` |
+| 1 Aug 2026 | Recovered 18-epic/72-row product baseline and recorded PLN-01 | Full-product reconciliation; MDR-028-MDR-033 |
