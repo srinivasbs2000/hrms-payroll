@@ -1,11 +1,11 @@
-# HRMS Payroll Sprint 1â€“4 vertical slice
+# HRMS Payroll Sprint 1-4 vertical slice
 
 Runnable payroll vertical slice covering tenant-safe organisation, payroll
 configuration, employee payroll identity, controlled regular payroll execution
 and jurisdiction-neutral statutory evidence. The repository contains a Java
 21/Spring Boot modular monolith, React 18/Vite web application, OpenAPI 3.1
 contracts, PostgreSQL 17/Flyway schema, Keycloak development realm, Docker
-Compose stack and a Sprint 0â€“4 delivery backlog.
+Compose stack and a Sprint 0-4 delivery backlog.
 
 The implemented regular-payroll path supports approved fixed monthly BASIC,
 HRA and SPECIAL_ALLOWANCE components, immutable sealed inputs, deterministic
@@ -24,6 +24,20 @@ settlement, retro and off-cycle payroll, final settlement, banking/payment
 files, accounting/GL integration and legal/final payslip publication remain
 explicitly excluded.
 
+## Current controlled restart state
+
+- Current verified repository base: PR #20 merge
+  `4b5da975eb851434957667bdecf138ea9b43f929`.
+- Latest product implementation baseline: Sprint 4 merge
+  `def3dd2e212f85c440eee5497e292be2f1f2bf64`.
+- V001-V030 are committed and immutable.
+- V031 remains unreserved.
+- S4-06A Statutory API Integration Closure is the next selected implementation
+  increment after the documentation restart is merged and separately authorised.
+- S4-06B statutory-specific Playwright E2E is planned but not authorised.
+- The Sprint 4 manual-smoke file is an unsigned historical checklist and is not
+  proof that a live manual smoke was completed.
+
 ## Repository layout
 
 - `backend/` - Maven modules and Spring Boot composition root
@@ -35,7 +49,7 @@ explicitly excluded.
 - `docs/baseline/` - implementation packs and historical integration reports
 - `docs/quality/` - schema audits, negative-path evidence and Sprint closure reports
 - `docs/runbooks/` - API, UI, operational and project-continuation guidance
-- `backlog/` - Sprint 0â€“4 delivery backlog
+- `backlog/` - Sprint 0-4 delivery backlog
 
 ## Regular payroll execution flow
 
@@ -49,7 +63,7 @@ explicitly excluded.
 
 The draft payslip remains explicitly marked:
 
-`DRAFT Â· NOT FOR PAYMENT Â· NOT A LEGAL PAYSLIP`
+`DRAFT - NOT FOR PAYMENT - NOT A LEGAL PAYSLIP`
 
 Use `docs/runbooks/payroll-execution-ui.md` for the regular-payroll workspace.
 
@@ -63,18 +77,29 @@ Use `docs/runbooks/payroll-execution-ui.md` for the regular-payroll workspace.
    evidence.
 5. Append a signed correction with an auditable reason when authorised.
 
-Use `docs/runbooks/statutory-execution-ui.md` for normal operation and
-`docs/runbooks/sprint-4-manual-smoke.md` for the pre-merge live validation.
+Use `docs/runbooks/statutory-execution-ui.md` for normal operation.
+`docs/runbooks/sprint-4-manual-smoke.md` is retained as a historical unsigned
+checklist, not as completed closure evidence.
 
 ## Project continuation
 
 Before continuing design or implementation in a new thread or session, read:
 
-`docs/runbooks/project-continuation-handoff.md`
+1. `AGENTS.md`
+2. `docs/design/hrms-payroll-master-design.md`
+3. `docs/design/decision-register.md`
+4. `docs/runbooks/project-continuation-handoff.md`
+5. `docs/governance/thread-registry.md`
+6. `docs/governance/thread-maintenance-protocol.md`
 
-Then validate that handoff against the current local working tree, live GitHub
+Then validate the handoff against the current local working tree and live GitHub
 branch, pull request and CI evidence. Unknown or conflicting facts must be
 reported rather than guessed.
+
+Before declaring a documentation or implementation phase complete, compare the
+original approved scope/file checklist with the actual staged or committed
+result. An omitted item must be completed or explicitly deferred by the project
+owner.
 
 ## Prerequisites
 

@@ -16,6 +16,53 @@ Current repository evidence overrides an older handoff entry. Update the
 running handoff after every committed increment and before every thread or
 session transition.
 
+## Scope-completion and recovery discipline
+
+Keep an explicit checklist of the original approved deliverables, files,
+acceptance criteria and prohibited actions for every multi-step increment.
+
+When an error, recovery action or tooling workaround occurs:
+
+1. fix only the bounded failure;
+2. retain the original approved checklist;
+3. record any changed approach without silently changing the intended outcome;
+4. compare planned scope with actual changed/staged/committed scope before
+   declaring completion;
+5. list every omitted or deferred item; and
+6. obtain explicit project-owner approval for each deferral.
+
+A phase, sprint, pull request or thread transition must not be called complete
+while planned items are silently omitted. Recovery convenience does not
+override the approved business objective.
+
+After two failures from custom repository-update automation, stop extending the
+custom updater. Prefer standard tools, deterministic complete-file payloads and
+small verifiable commands.
+
+## PowerShell and repository-update safety
+
+Generated PowerShell must not assume command output shape.
+
+- Capture output with `@(...)`.
+- Validate zero, one or multiple results explicitly.
+- Cast the selected value to `[string]` before calling string methods.
+- Do not index `[0]` on an expression that may collapse to a scalar string.
+- Check `$LASTEXITCODE` for native commands.
+- Do not interpret harmless warning text on stderr as command failure when the
+  process exit code is zero.
+- Parser checks do not replace runtime checks.
+
+Repository update automation must not depend on exact full-line or
+full-paragraph literal preimages in living Markdown files. Prefer, in order:
+
+1. standard Git operations;
+2. deterministic complete-file payloads with SHA-256 manifests;
+3. marker-bounded or uniquely headed sections with uniqueness validation.
+
+Normalize line endings for comparison, preserve the repository's intended text
+encoding and run `git diff --check`. Repository text files must be valid UTF-8
+and must not contain mojibake.
+
 ## Model and Agent Routing Policy
 
 Use the lowest-cost agent capable of producing a complete and verified result.
@@ -92,6 +139,8 @@ Do not repeatedly run the complete verification suite while a known targeted fai
 
 A task is complete only when:
 
+* the original approved scope checklist is reconciled with the actual result;
+* every omission or deferral is explicitly approved;
 * the approved acceptance criteria are satisfied;
 * the implementation is complete rather than illustrative;
 * relevant targeted tests pass;
@@ -157,15 +206,15 @@ payroll payloads in browser storage.
 ## Database migrations
 
 `database/flyway/sql` is the single source of ordered versioned migrations.
-V001â€“V030 are committed and immutable. Future schema work is forward-only from
-V031. Versioned migrations must fail loudly; do not add permissive
-`IF NOT EXISTS` clauses to them. The `backend/database-migrations` Maven module
-packages the canonical directory as `db/migration`. Administrator bootstrap,
-development seed and verification SQL remain separate. Application roles never
-own schemas or tables. Sealed input snapshots, payroll results, component
-results, calculation trace, draft payslips, statutory inputs/results, ledger
-entries, balance snapshots, reconciliation, remittance summaries and audit rows
-are append-only.
+V001-V030 are committed and immutable. V031 remains unreserved. Future schema
+work is forward-only from V031 after explicit reservation. Versioned migrations
+must fail loudly; do not add permissive `IF NOT EXISTS` clauses to them. The
+`backend/database-migrations` Maven module packages the canonical directory as
+`db/migration`. Administrator bootstrap, development seed and verification SQL
+remain separate. Application roles never own schemas or tables. Sealed input
+snapshots, payroll results, component results, calculation trace, draft
+payslips, statutory inputs/results, ledger entries, balance snapshots,
+reconciliation, remittance summaries and audit rows are append-only.
 
 Legal entities, payroll statutory units and establishments use stable identity
 rows plus exact effective-dated version rows. PSU versions reference exact
@@ -194,12 +243,16 @@ repository scoped npm-audit policy. Never use real credentials, employee
 records or payroll data in source or tests; only clearly synthetic fixtures are
 permitted.
 
-For the full Sprint 4 baseline, run `scripts/verify-sprint-4.ps1`. Before merge,
-complete `docs/runbooks/sprint-4-manual-smoke.md` and an independent critical
-review of the complete Sprint 4 diff.
+For the full Sprint 4 baseline, run `scripts/verify-sprint-4.ps1`.
 
-Before handoff, run `git status --short`, list verification performed, and
-disclose configuration, schema, security or unresolved impacts. Do not commit
+`docs/runbooks/sprint-4-manual-smoke.md` is an unsigned historical checklist.
+Do not claim it proves a completed live smoke. S4-06A must close the real
+statutory API integration-test gap before the next feature increment. S4-06B is
+a planned statutory-specific Playwright follow-up and is not authorised.
+
+Before handoff, run `git status --short`, list verification performed, compare
+the original scope checklist with the actual changed files, and disclose
+configuration, schema, security, deferred or unresolved impacts. Do not commit
 unless the user explicitly asks.
 
 Before the first real domain event is published in Sprint 1, the outbox/inbox

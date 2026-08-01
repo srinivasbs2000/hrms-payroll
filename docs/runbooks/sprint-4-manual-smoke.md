@@ -1,21 +1,42 @@
 # Sprint 4 Manual Statutory Execution Smoke
 
+## Evidence status
+
+**Status:** Historical unsigned checklist - not completed closure evidence.
+
+PR #19 was merged with final feature-branch head
+`b2a220461cf5ba581b5f67e7619ec146bf7982ed` and product merge
+`def3dd2e212f85c440eee5497e292be2f1f2bf64`.
+
+The committed checklist contains no tester, date/time, exact tested commit,
+PASS/FAIL results or sign-offs. Therefore:
+
+- do not claim that a live manual statutory smoke was completed from this file;
+- preserve the blank checklist as historical process evidence;
+- use the automated repository evidence as the verified Sprint 4 evidence;
+- track the missing real statutory API integration path as S4-06A; and
+- track the statutory-specific Playwright path as S4-06B, planned but not
+  authorised.
+
 ## Purpose
 
-Run one live, browser-driven statutory workflow before merging PR #19.
-Automated CI validates migrations/RLS, APIs, permissions, frontend components,
-build output and the existing generic Payroll browser suite. This checklist
-validates the integrated authenticated statutory operator path introduced in
-Sprint 4.
+This checklist was created to run one live, browser-driven statutory workflow
+before merging PR #19. It is retained for historical reference and may be reused
+only after recording a new exact commit, tester, results and sign-offs.
+
+Automated CI validated migrations/RLS, APIs, permissions, frontend components,
+build output and the existing generic Payroll browser suite. It did not provide
+a dedicated statutory-specific browser scenario.
 
 ## Reviewed implementation baseline
 
-- branch: `feature/sprint-4-statutory-deductions`
-- implementation head before closure documentation: `6cf39fc1734a50a514cfee22db2fd78bd41b80cc`
+- historical branch: `feature/sprint-4-statutory-deductions`
+- final verified feature-branch head: `b2a220461cf5ba581b5f67e7619ec146bf7982ed`
+- product merge: `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 - latest migration: V030
 
-Record the exact tested closure commit below. Do not rely on the baseline SHA
-when a later closure commit is under review.
+Record the exact tested commit below whenever this checklist is executed. Do
+not infer completion from the historical baseline.
 
 ## Preconditions
 

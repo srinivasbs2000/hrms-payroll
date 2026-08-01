@@ -1,10 +1,11 @@
 # HRMS Payroll Master Design
 
-**Status:** Living approved-design authority  
-**Repository:** `srinivasbs2000/hrms-payroll`  
-**Current verified baseline:** `main` at Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`  
-**Last verified:** 1 August 2026  
-**Maintainers:** Project owner and the currently authorised implementation thread  
+**Status:** Living approved-design authority
+**Repository:** `srinivasbs2000/hrms-payroll`
+**Current verified repository base:** `main` at PR #20 merge `4b5da975eb851434957667bdecf138ea9b43f929`
+**Current product implementation baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
+**Last verified:** 1 August 2026
+**Maintainers:** Project owner and the currently authorised implementation thread
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
 
 ## 1. Purpose and authority
@@ -43,6 +44,11 @@ Use this order whenever sources disagree:
 Do not silently reconcile a conflict. Record it as `DOCUMENTATION CONFLICT`,
 identify the sources, and resolve it through an approved repository change.
 
+A documentation or recovery failure must not silently narrow the original
+approved deliverable. Before a phase is declared complete, reconcile the
+original file/scope checklist against the actual committed result. Any omission
+or deferral requires explicit project-owner approval.
+
 ## 3. Product objective
 
 Build an India-first, enterprise-grade, multi-tenant payroll operating platform
@@ -51,9 +57,9 @@ integrating with the wider HRMS.
 
 The target product journey is:
 
-`configuration → approved inputs → deterministic gross-to-net calculation →
-validation → approval → payment preparation → statutory evidence →
-reconciliation → correction → audit`
+`configuration -> approved inputs -> deterministic gross-to-net calculation ->
+validation -> approval -> payment preparation -> statutory evidence ->
+reconciliation -> correction -> audit`
 
 The current repository is a bounded vertical slice, not the complete target
 product.
@@ -171,8 +177,9 @@ The exact committed package structure remains implementation truth.
 
 `database/flyway/sql` is the canonical ordered migration directory.
 
-- V001–V030 are committed and immutable.
-- New schema work begins at V031.
+- V001-V030 are committed and immutable.
+- V031 is currently unreserved.
+- Future schema work begins at V031 only after explicit reservation.
 - Versioned migrations are forward-only and fail loudly.
 - Do not add permissive `IF NOT EXISTS` clauses to hide drift.
 - Bootstrap, development seed and verification SQL remain separate.
@@ -290,15 +297,31 @@ A change is done only when the acceptance criteria, targeted and full
 verification, security/tenancy controls, final diff review, documented residual
 risks and required critical review are complete.
 
+### 12.1 Sprint 4 closure qualification
+
+Sprint 4 is functionally implemented and merged. It is not described as fully
+automated because the repository does not yet contain:
+
+- a real secured Spring Boot HTTP/PostgreSQL statutory integration test covering
+  the controller-to-database path; or
+- a statutory-specific Playwright browser scenario.
+
+S4-06A is the next selected quality increment and must close the statutory API
+integration gap without reserving a migration. S4-06B remains planned but is
+not authorised.
+
+The unsigned `docs/runbooks/sprint-4-manual-smoke.md` template is not evidence
+that a live manual smoke was completed.
+
 ## 13. Sprint baseline ledger
 
 | Sprint | Durable outcome | Migration range | Repository status |
 |---|---|---|---|
-| Sprint 0 | Repository, security, tenancy, migration and vertical-slice baseline | V001–V013 | Merged |
-| Sprint 1 | Organisation lifecycle, event reliability, audit and architecture boundaries | V014–V016 | Merged |
-| Sprint 2 | Payroll configuration and employee payroll foundation | V017–V022 | Merged through PR #3 |
-| Sprint 3 | Regular payroll execution, sealed inputs, calculation evidence and draft payslip | V023–V026 | Merged |
-| Sprint 4 | Jurisdiction-neutral statutory lifecycle, evaluation and ledger evidence | V027–V030 | Merged through PR #19 |
+| Sprint 0 | Repository, security, tenancy, migration and vertical-slice baseline | V001-V013 | Merged |
+| Sprint 1 | Organisation lifecycle, event reliability, audit and architecture boundaries | V014-V016 | Merged |
+| Sprint 2 | Payroll configuration and employee payroll foundation | V017-V022 | Merged through PR #3 |
+| Sprint 3 | Regular payroll execution, sealed inputs, calculation evidence and draft payslip | V023-V026 | Merged through PR #18 |
+| Sprint 4 | Jurisdiction-neutral statutory lifecycle, evaluation and ledger evidence | V027-V030 | Merged through PR #19; automation debt tracked as S4-06A/S4-06B |
 
 Migration descriptions and exact implementation files remain the executable
 source of truth.
@@ -348,11 +371,13 @@ Every change must include:
 
 At this baseline:
 
-- the next feature increment after Sprint 4 is not selected by this document;
+- S4-06A Statutory API Integration Closure is the next selected implementation
+  increment after the documentation restart is merged and separately authorised;
+- S4-06B statutory-specific Playwright E2E is planned but not authorised;
 - jurisdiction-specific legal rule packs require separate approval and research;
 - production broker operations, replay and alerting remain operational debt;
 - cached/scheduled OWASP Dependency Check data remains follow-up work;
-- any new migration must start at V031;
+- V031 remains unreserved;
 - multiple project threads must coordinate through the thread registry and one
   active write owner.
 
@@ -360,4 +385,5 @@ At this baseline:
 
 | Date | Change | Evidence |
 |---|---|---|
-| 1 Aug 2026 | Initial repository-owned living master design, seeded from merged Sprint 0–4 state and recovered Thread 1 decisions | `main` at `def3dd2...`; PR #3 and PR #19 merged; existing README, AGENTS and continuation handoff |
+| 1 Aug 2026 | Initial repository-owned living master design, seeded from merged Sprint 0-4 state and recovered Thread 1 decisions | PR #20 merge `4b5da975...`; PR #3, PR #18 and PR #19 |
+| 1 Aug 2026 | Cross-thread restart reconciliation: separated repository and product baselines, qualified Sprint 4 automation closure, selected S4-06A, retained S4-06B as unauthorised, and added completion-control discipline | Phase A documentation branch `docs/cross-thread-reconciliation`; MDR-021 through MDR-027 |
