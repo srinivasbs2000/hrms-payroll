@@ -1,82 +1,65 @@
 # HRMS Payroll Thread Registry
 
 **Last verified:** 1 August 2026
-**Current repository HEAD:** `main` at `4b5da975eb851434957667bdecf138ea9b43f929`
-**Current product implementation baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
+**Publication source baseline:** `main` at `18d5ca3554ff217140b7e3c443d086d63bd02070`
+**Product implementation baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 
-This register coordinates project threads. It does not replace Git branches,
-pull requests, code, migrations or the running continuation handoff.
-
-## Active ownership rule
-
-Only one thread may own write access to overlapping files or the next Flyway
-migration number. A thread not marked as the active `IMPLEMENTATION OWNER` is
-read-only for that scope.
-
-During the Phase A Lite documentation reconciliation, Thread 1 is the only
-active write owner and only for the exact eight-file authority/history subset
-listed below. Thread 6 remains planned and inactive until Phase A Lite is merged
-and ownership is explicitly transferred.
+Only one thread may own overlapping write scope. A thread not explicitly
+registered as active has no write ownership.
 
 ## Thread ledger
 
-| Thread | Role/status | Recovered scope | Branch/PR | Write ownership | Latest durable record | Next action |
+| Thread | Role/status | Scope | Branch/PR | Write ownership | Durable record | Next action |
 |---|---|---|---|---|---|---|
-| Thread 1 | RECOVERY/HANDOFF - active Phase A governance owner | Original product design and Sprint 0-2 recovery; living-design bootstrap; cross-thread reconciliation | Historical PR #20 merged; Phase A branch `docs/cross-thread-reconciliation`; no PR yet | Approved Phase A documentation/governance allow-list only; no application files and no migration | `docs/history/thread-1-decision-extract.md`; `docs/history/cross-thread-project-restart-record.md` | Prepare and verify Phase A documentation changes; publication actions remain separate |
-| Thread 2 | CLOSED - historical Sprint 2 and early Sprint 3 implementation owner | Completed Sprint 2 and delivered Sprint 3 cycle, population, snapshots, deterministic calculation and recalculation foundation through V026 | PR #3 merged; PR #18 later merged; Thread 2 exit `db644298ab3197a6931cd9c6b8d9875ef30d28c5` | None | `docs/history/thread-2-reconciliation.md` | Historical reference only |
-| Thread 3 | CLOSED - historical Sprint 3 completion owner | Completed recalculation application path, execution/draft-payslip UI, browser authentication, Playwright E2E and PR #18 closure | `feature/sprint-3-payroll-execution`; PR #18 merged; final head `ebd2603d91551c6f9e60dc57e2d3500948015703`; merge `73c356662b1888194a72c7006a66bd91443550ca` | None | `docs/history/thread-3-reconciliation.md` | Historical reference only |
-| Thread 4 | CLOSED - historical Sprint 4 implementation owner | Implemented V027-V030 statutory rules, profiles, evaluation, ledger, balances, reconciliation, API/UI and exact-money correction | `feature/sprint-4-statutory-deductions`; PR #19 merged; final head `b2a220461cf5ba581b5f67e7619ec146bf7982ed`; merge `def3dd2e212f85c440eee5497e292be2f1f2bf64` | None | `docs/history/thread-4-reconciliation.md` | Historical reference; automation debt transferred to the planned next owner |
-| Thread 5 | RECOVERY/HANDOFF - no write ownership | Sprint 4 closure transition, process audit and multi-thread recovery | Historical PR #19 merged; no active Thread 5 branch or PR verified | None | `docs/history/thread-5-reconciliation.md` | Hand approved automation-closure scope to Thread 6, then close |
-| Thread 6 | PLANNED IMPLEMENTATION OWNER - inactive | S4-06A statutory API integration closure | Proposed `quality/s4-06a-statutory-api-integration`; no branch or PR yet | None until Phase A is merged and Thread 6 accepts the handoff; no migration reservation | Not started | Read repository authorities, verify local state, register active ownership, then implement only S4-06A |
+| Thread 1 | DESIGN-RESEARCH / DOCUMENTATION OWNER - active | Full-product reconciliation/publication; later PLN-01 | Proposed `docs/full-product-scope-authority`; PR none at preparation | Exact 12-file publication allow-list only | `docs/history/full-product-scope-reconciliation-record.md` after publication | Create branch/apply payload only after approval |
+| Thread 2 | CLOSED | Sprint 2 and early Sprint 3 | Historical PR #3/#18 | None | `docs/history/thread-2-reconciliation.md` | Reference only |
+| Thread 3 | CLOSED | Sprint 3 completion/E2E | PR #18 merged | None | `docs/history/thread-3-reconciliation.md` | Reference only |
+| Thread 4 | CLOSED | Sprint 4 generic statutory foundation | PR #19 merged | None | `docs/history/thread-4-reconciliation.md` | Reference only |
+| Thread 5 | CLOSED | Recovery/handoff/process audit | No active branch/PR | None | `docs/history/thread-5-reconciliation.md` | Reference only |
+| Thread 6 | PLANNED / INACTIVE | S4-06A | Proposed quality branch; no PR | None; migration `NONE` if activated | Not started | Wait for separate activation |
 
-## Approved Phase A Lite documentation allow-list
+## Exact publication allow-list
 
-Thread 1 may prepare only these files during Phase A Lite:
+### New files
 
-1. `docs/governance/thread-registry.md`
-2. `docs/runbooks/project-continuation-handoff.md`
-3. `docs/quality/sprint-4-closure-report.md`
-4. `docs/history/thread-2-reconciliation.md`
-5. `docs/history/thread-3-reconciliation.md`
-6. `docs/history/thread-4-reconciliation.md`
-7. `docs/history/thread-5-reconciliation.md`
-8. `docs/history/cross-thread-project-restart-record.md`
+1. `docs/product/payroll-product-scope-and-epic-catalog.md`
+2. `docs/product/payroll-design-source-register.md`
+3. `docs/product/payroll-design-source-register.csv`
+4. `backlog/payroll-master-implementation-backlog.csv`
+5. `docs/governance/payroll-feature-delivery-lineage.md`
+6. `docs/quality/payroll-original-design-to-current-implementation-gap-assessment.md`
+7. `docs/roadmap/payroll-release-and-sprint-roadmap.md`
+8. `docs/history/full-product-scope-reconciliation-record.md`
 
-The following previously proposed documentation changes are deliberately
-deferred so they do not block business-value delivery: `AGENTS.md`, `README.md`,
-the master design metadata, decision-register indexing, backlog rows and the
-manual-smoke checklist. Their known conflicts remain recorded in the handoff.
+### Modified files
 
-Phase A Lite does not authorise application code, migrations, dependencies,
-OpenAPI, Keycloak, frontend, CI, staging, commit, push, PR updates or merge.
+9. `docs/design/hrms-payroll-master-design.md`
+10. `docs/design/decision-register.md`
+11. `docs/runbooks/project-continuation-handoff.md`
+12. `docs/governance/thread-registry.md`
 
-## Ownership transfer to Thread 6
+No other file is authorised.
 
-Thread 6 becomes active only after all of the following are true:
+## Acceptance criteria
 
-1. Phase A Lite is reviewed, committed, pushed and merged through separately
-   authorised actions.
-2. Local `main` is synchronized to the Phase A merge commit.
-3. The local working tree and index are clean.
-4. Thread 6 reads the master design, decision register, this registry and the
-   running handoff.
-5. Thread 6 accepts S4-06A, the exact file allow-list and `NONE` as the migration
-   reservation.
-6. This registry is updated from `PLANNED` to active `IMPLEMENTATION OWNER`
-   before the first implementation write.
+- 18-epic scope is repository-owned;
+- all 72 original rows are retained;
+- source checksums/hierarchy are recorded;
+- Sprint 0-4 lineage is preserved;
+- partial/missing/revalidation classifications are explicit;
+- PLN-01 is durably recorded;
+- pre-PR-21 status is corrected;
+- V001-V030 remain unchanged and V031 unreserved;
+- Thread 6 remains inactive;
+- actual changed files exactly match this allow-list;
+- `git diff --check` passes.
 
-## Registration template
+## PLN-01 boundary
 
-| Field | Required value |
-|---|---|
-| Thread | Exact thread name/number |
-| Role | IMPLEMENTATION OWNER / DESIGN-RESEARCH / REVIEW / RECOVERY-HANDOFF / PAUSED / CLOSED |
-| Branch/PR | Exact branch, PR and head SHA |
-| Approved scope | Capability/story and exclusions |
-| File allow-list | Exact paths or bounded modules |
-| Migration reservation | Exact next migration, or `NONE` |
-| Verification | Required focused/full gates |
-| Latest checkpoint | Repository path |
-| Blockers | Verified blockers only |
-| Next authorised action | One exact action |
-| Prohibited actions | Stage/commit/push/merge/migration restrictions |
+PLN-01 requires a separate planning-only file plan and approval after this
+publication is merged. It is not part of the current allow-list.
+
+## Prohibited actions
+
+This registration does not authorise staging, commit, push, PR creation, merge,
+branch deletion, V031 reservation, S4-06A/S4-06B or PLN-01 execution.
