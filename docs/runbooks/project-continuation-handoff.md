@@ -1,284 +1,236 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Repository revision:** Sprint 4 closure alignment<br>
-**Updated:** 26 July 2026<br>
-**Repository:** `srinivasbs2000/hrms-payroll`<br>
-**Local repository:** `C:\dev\hrms-payroll`<br>
-**Mandatory status:** This is the first project document to read in every continuation thread. It is subordinate only to current local and remote repository evidence.
+**Repository revision:** Cross-thread Phase A Lite reconciliation prepared
+**Updated:** 1 August 2026
+**Repository:** `srinivasbs2000/hrms-payroll`
+**Local repository:** `C:\dev\hrms-payroll`
+**Mandatory status:** Read this after `AGENTS.md` and validate it against live local and remote evidence.
 
-## 1. Mandatory introspection entry point
-
-Before answering a continuation request, designing an increment, changing a dependency, generating a migration, producing a verifier, publishing code, or recommending a merge:
-
-1. Locate and read **`docs/runbooks/project-continuation-handoff.md`**.
-2. Inspect the local repository at `C:\dev\hrms-payroll`: branch, HEAD, index, status, changed files and complete diff.
-3. Inspect the live GitHub repository, active branch and PR.
-4. Read the exact repository files governing the requested area: `AGENTS.md`, README, ADRs, backlog, migrations, OpenAPI, tests, runbooks, CI and security policies.
-5. Compare this handoff with live evidence. Current repository evidence overrides an older handoff fact.
-6. Record disagreements as **DOCUMENTATION CONFLICT**. Do not silently reconcile them.
-7. Mark unavailable evidence as **NOT VERIFIED**. Do not infer filenames, routes, migrations, statuses, test results or architecture decisions.
-8. Present materially different valid options to the user before selecting one.
-9. Do not reconstruct project state from conversation memory alone.
-
-### Evidence labels
-
-| Label | Meaning |
-|---|---|
-| VERIFIED - REMOTE | Confirmed from the connected GitHub repository, PR, commit, workflow or committed file. |
-| VERIFIED - REPORT | Confirmed from an uploaded local verification report or log. |
-| THREAD-RECORDED - LOCAL | Reported for the local checkout but not independently visible remotely. |
-| DERIVED | Logical conclusion from identified verified evidence. |
-| DESIGN BASELINE | Approved decision not necessarily implemented yet. |
-| DOCUMENTATION CONFLICT | Authoritative project sources disagree and require explicit resolution. |
-| NOT VERIFIED | Exact evidence is unavailable; no assumption is permitted. |
-
-## 2. Source precedence
-
-1. Current local working tree and uncommitted diff.
-2. Current remote branch, commit, PR and CI.
-3. Committed migrations, code, tests, OpenAPI, ADRs, backlog, README, `AGENTS.md`, CI and security policies.
-4. Uploaded verification reports and logs.
-5. This running handoff for sequence, decisions and known hazards.
-6. Conversation summaries only as locators.
-
-## 3. Verified continuation card
+## 1. Current verified checkpoint
 
 | Item | Current fact | Evidence class |
 |---|---|---|
-| Main baseline | `73c356662b1888194a72c7006a66bd91443550ca` | VERIFIED - REMOTE |
-| Active branch | `feature/sprint-4-statutory-deductions` | VERIFIED - REMOTE |
-| Active PR | PR #19, open, mergeable, not merged | VERIFIED - REMOTE |
-| Current remote head | `6cf39fc1734a50a514cfee22db2fd78bd41b80cc` | VERIFIED - REMOTE |
-| Current PR size | 6 commits, 51 changed files | VERIFIED - REMOTE |
-| S4-05B commit | `feat(statutory): add execution and evidence workspace` | VERIFIED - REMOTE |
-| CI | `payroll-baseline` run #77, ID `30197879363`, completed successfully | VERIFIED - REMOTE |
-| CI gates | Dependency review, Flyway/RLS, frontend test/build/audit policy, auth smoke, Maven verify, browser E2E, SBOM, secret scan and OpenAPI all passed | VERIFIED - REMOTE |
-| Committed migrations | V001-V030; immutable | VERIFIED - REMOTE |
-| Sprint 4 delivered | S4-01/V027, S4-02/V028, S4-03/V029, S4-04/V030, S4-05A API and S4-05B UI | VERIFIED - REMOTE |
-| Merge status | Do not merge PR #19 until closure alignment and final review are complete | PROJECT CONTROL |
-| Next feature increment | Not selected from verified backlog evidence | NOT VERIFIED / JOINT DECISION |
+| Current remote `main` | `4b5da975eb851434957667bdecf138ea9b43f929` | VERIFIED - REMOTE |
+| Current repository commit | PR #20 living-design/thread-governance merge | VERIFIED - REMOTE |
+| Current product implementation baseline | Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64` | VERIFIED - REMOTE |
+| Latest merged product sprint | Sprint 4 | VERIFIED - REMOTE |
+| Open pull requests | None established at the reconciliation cut-off | VERIFIED - REMOTE |
+| Latest verified CI | `payroll-baseline` run 83 succeeded on PR #20 head `20935aa4f73dc7e6262cf4bf5f82a3d0b81c2395` | VERIFIED - REMOTE |
+| CI directly on merge commit `4b5da975...` | No run returned by the available lookup | NOT VERIFIED |
+| Migrations | V001-V030 committed and immutable | VERIFIED - REMOTE |
+| Next possible migration | V031, unreserved | DESIGN BASELINE |
+| Current active implementation branch | None | VERIFIED - REMOTE |
+| Current local Phase A branch after package application | `docs/cross-thread-reconciliation` at `4b5da975...` | EXPECTED LOCAL STATE |
+| Current local Phase A working tree after package application | Exact approved 8-file Phase A Lite authority/history subset modified; Git index empty | EXPECTED LOCAL STATE |
+| Current persistent PostgreSQL/Flyway state | Not supplied for this reconciliation | NOT VERIFIED |
 
-## 4. Sprint 4 completion ledger
+The repository HEAD and product implementation baseline are deliberately
+recorded separately. The governance merge changed repository documentation but
+did not add a later product sprint.
 
-| Increment | State | Delivered |
-|---|---|---|
-| S4-01 / V027 | Committed and green | Statutory rule identities, versions, portions and controlled lifecycle. |
-| S4-02 / V028 | Committed and green | Employee statutory profiles and exact assignment lineage. |
-| S4-03 / V029 | Committed and green | Deterministic statutory classification/evaluation and immutable evidence. |
-| S4-04 / V030 | Committed and green | Append-only ledger, balances, reconciliation and remittance preparation. |
-| S4-05A | Committed and green | Evaluation, posting and correction API; permissions, OpenAPI and evidence reads. |
-| S4-05B | Committed at `6cf39fc1734a50a514cfee22db2fd78bd41b80cc` and CI green | Permission-aware React statutory execution and evidence workspace. |
+## 2. Current stage
 
-## 5. React Router scoped audit decision
+**Stage:** Phase A Lite documentation-only cross-thread reconciliation.
 
-- Keep `react-router-dom` and transitive `react-router` pinned to `7.18.1`.
-- The executable policy is `frontend/payroll-web/scripts/verify-npm-audit.mjs`.
-- CI invokes it from `.github/workflows/ci.yml`.
-- The policy permits only `GHSA-qwww-vcr4-c8h2` while the frontend remains declarative `BrowserRouter` and outside RSC, Framework, Data and server modes.
-- It rejects additional high/critical advisories and prohibited dependencies/source patterns.
-- Review deadline: **2026-10-31**.
-- The withdrawn downgrade to 7.11.0 must never be used.
-- Raw `npm audit` is diagnostic input, not the final architecture-aware decision.
+**Active owner:** Thread 1, `RECOVERY/HANDOFF`, limited to the exact Phase A
+documentation allow-list in `docs/governance/thread-registry.md`.
 
-## 6. Verified documentation conflicts after S4-05B
+**Current goal:** publish the reconciled Thread 2-5 history, normalize the
+thread registry and running handoff, preserve final Sprint 4 closure evidence
+and unblock the S4-06A implementation transition.
 
-### Conflict A - PR metadata is stale
+Mojibake cleanup, master-design metadata, decision-register indexing, README,
+AGENTS, backlog and manual-smoke wording are deliberately deferred so
+governance maintenance does not continue to block business-value work.
 
-PR #19 still has the title **â€œSprint 4: V027 statutory rule foundationâ€** and a body that describes only the first statutory-rule increment. The branch now contains all Sprint 4 increments through S4-05B.
+**Next proposed implementation:** S4-06A statutory API integration closure in a
+new Thread 6. S4-06B remains planned but is not authorised for implementation.
+No Sprint 5 feature has been selected.
 
-**Required resolution:** update the PR title and body only after the full Sprint 4 closure scope and evidence are agreed.
+## 3. Thread disposition
 
-### Conflict B - README is stale
+| Thread | Current disposition |
+|---|---|
+| Thread 1 | Active Phase A governance/recovery owner |
+| Thread 2 | CLOSED |
+| Thread 3 | CLOSED |
+| Thread 4 | CLOSED |
+| Thread 5 | RECOVERY/HANDOFF, no write ownership; close after transfer |
+| Thread 6 | Planned and inactive until Phase A merge and explicit ownership transfer |
 
-The committed README still describes a Sprint 1-3 vertical slice and says statutory deductions and tax are intentionally excluded. Sprint 4 statutory foundation, execution API and UI are now committed and green.
+## 4. Verified delivery baseline
 
-**Required resolution:** update README scope, execution flow, verification instructions and exclusions. Retain explicit exclusions for jurisdiction-specific rules, filing, payment/settlement, legal/final payslips, retro and off-cycle payroll unless separately approved.
+| Sprint | Durable outcome | Migration range | Status |
+|---|---|---|---|
+| Sprint 0 | Repository, security, tenancy, migration and vertical-slice baseline | V001-V013 | Merged |
+| Sprint 1 | Organisation lifecycle, event reliability, audit and architecture boundaries | V014-V016 | Merged through PR #2 |
+| Sprint 2 | Payroll configuration and employee-payroll foundation | V017-V022 | Merged through PR #3 |
+| Sprint 3 | Payroll execution, sealed inputs, deterministic calculation, recalculation, draft payslip and browser E2E | V023-V026 | Merged through PR #18 |
+| Sprint 4 | Jurisdiction-neutral statutory rules, profiles, evaluation, ledger, balances, reconciliation, API/UI and exact money | V027-V030 | Merged through PR #19 |
+| Governance | Master design, decision register, registry and thread protocol | None | Merged through PR #20 |
 
-### Conflict C - AGENTS.md scope is stale
+## 5. Open controlled debt
 
-`AGENTS.md` still says the approved starter scope must not add statutory deductions such as PF, ESI, professional tax or salary TDS. The repository now contains a country-neutral statutory foundation and execution capability.
+1. **S4-06A:** no dedicated Spring Boot/PostgreSQL 17 statutory real-HTTP
+   integration test currently proves the complete secured statutory lifecycle
+   and resulting database evidence.
+2. **S4-06B:** no dedicated statutory Playwright full-stack scenario currently
+   extends the generic Payroll browser suite.
+3. The committed Sprint 4 manual-smoke checklist has no completed signed tester
+   and reviewer record. PR #19 metadata records successful checks, but a blank
+   template is not equivalent to durable signed evidence.
+4. Cached/scheduled OWASP Dependency Check data remains follow-up work.
+5. Production broker replay, alerting and operational controls remain debt.
+6. Country-specific legal statutory rules, returns, settlement, retro,
+   off-cycle, final settlement, payments, accounting and legal payslips remain
+   excluded.
 
-**Required resolution:** distinguish the implemented country-neutral statutory engine from still-excluded jurisdiction-specific rates, filings, legal calculations and settlement. Do not weaken security, tenant, review or verification rules.
+## 6. S4-06A approved design boundary
 
-### Conflict D - repository backlog is stale or incomplete
+**Story:** S4-06A - Statutory API Integration Closure.
+**Proposed branch:** `quality/s4-06a-statutory-api-integration`.
+**Migration reservation:** `NONE`.
+**Initial production-code changes:** prohibited.
+**Initial dependency, migration, OpenAPI, Keycloak, frontend and CI changes:** prohibited.
 
-The README identifies `backlog/` as Sprint 0-3 only. No verified Sprint 4 closure backlog item was located through the connected repository search.
+Initial implementation allow-list after Thread 6 is activated:
 
-**Required resolution:** inspect the local `backlog/` directory and exact files before selecting or naming the next story. Record the outcome here.
+1. `backend/payroll-boot/src/test/java/com/acme/hrms/payroll/StatutoryApiIT.java`
+2. `docs/quality/s4-06a-statutory-api-integration.md`
+3. `docs/runbooks/project-continuation-handoff.md`
+4. `docs/governance/thread-registry.md`
 
-### Conflict E - running handoff is not yet repository-resident
+If the test exposes a production defect, Thread 6 must stop, record the evidence
+and request a separate bounded increment. It must not fix the defect inside the
+test-only scope without approval.
 
-This file is the approved repository-resident running handoff location.
+## 7. Source precedence
 
-**Resolution:** the approved repository path is `docs/runbooks/project-continuation-handoff.md`.
+1. Current local working tree and complete uncommitted diff.
+2. Current remote branch, commit, PR and CI evidence.
+3. Committed migrations, code, tests, OpenAPI, ADRs, backlog, README,
+   `AGENTS.md`, CI and security policies.
+4. Master design and decision register.
+5. This running handoff.
+6. Committed quality reports and history records.
+7. Conversation summaries only as locators.
 
-## 7. Current stage - Sprint 4 closure alignment
+Record disagreements as `DOCUMENTATION CONFLICT`. Mark unavailable evidence as
+`NOT VERIFIED`. Do not silently resolve or infer missing state.
 
-**APPROVED stage:** align README, repository instructions, backlog, closure evidence, manual smoke, this handoff and the local full-regression script before PR metadata or merge decisions.
+## 8. PowerShell output-shape rule
 
-No invented closure story ID is used. Verified implemented Sprint 4 increments are recorded with blank Story Points because no historical estimates were found.
+Phase A package v1.0 exposed a recurring PowerShell failure: a function that
+returned one Git output line collapsed to a scalar string, and direct `[0]`
+indexing returned `System.Char`; `.Trim()` then failed.
 
-### Candidate closure scope for joint approval
+Permanent rule for every project thread and generated script:
 
-1. Add the running handoff to an agreed repository path.
-2. Update README from Sprint 1-3 to Sprint 1-4 current state.
-3. Update `AGENTS.md` to distinguish generic statutory infrastructure from jurisdiction-specific payroll law.
-4. Add or update the Sprint 4 backlog/closure report based on the actual local backlog structure.
-5. Add a Sprint 4 manual smoke/closure runbook if not already present.
-6. Perform an independent critical review of the full PR diff.
-7. Update PR #19 title/body to describe the complete Sprint 4 delivery and evidence.
-8. Decide merge only after all closure gates pass.
+- capture variable-cardinality output with `@(...)`;
+- validate its exact cardinality;
+- cast the selected element to `[string]`;
+- only then invoke string methods;
+- keep logging out of data-producing pipelines;
+- runtime-test zero, one and many output cases in the actual PowerShell host.
 
-Items 1-5 change repository files and require an exact allow-list after local inspection. Item 7 is a GitHub metadata write and requires explicit authorization. Item 8 remains a separate explicit decision.
+This rule is binding through this running handoff, which every continuation
+thread must read. Formal AGENTS/decision-register indexing is deferred and must
+not block S4-06A.
 
-## 8. No-guesswork implementation protocol
+### Structural repository-update rule
 
-1. Start from verified local and remote state.
-2. Read exact repository contracts before design.
-3. Search for existing executable policy before proposing replacement logic.
-4. Use repository-native validators for ecosystem-native files.
-5. Label statements VERIFIED, DERIVED or NOT VERIFIED.
-6. Ask before choosing among materially different valid options.
-7. Keep each increment bounded with an exact file allow-list.
-8. Apply without Git writes; verify; review evidence; publish only after explicit authorization.
-9. Never merge a sprint PR before all increments and closure verification complete.
-10. Update this handoff after every committed increment and before every thread transition.
+Phase A package v1.1 exposed another recurring generated-script failure: an
+exact full-line Markdown preimage did not match because the committed row used
+different Unicode punctuation. The intended document structure was present,
+but the updater treated byte-level text identity as the contract.
 
-## 9. Cumulative failure-learning register
+Permanent rule for repository update automation:
 
-| ID | Failure | Permanent prevention |
-|---|---|---|
-| T4-001 | PowerShell variable followed by colon parsed as scope | Use `${variable}` before punctuation and parser-check scripts. |
-| T4-002 | Restricted trigger could not lock parent row | Use narrowly scoped SECURITY DEFINER functions with fixed search_path and revoked PUBLIC. |
-| T4-003 | Native output treated as character/scalar | Capture native output with `@(...)`, check cardinality, then cast. |
-| T4-004 | Unqualified `version_no` caused ambiguity | Qualify mutation targets and visible query columns. |
-| T4-005 | Fixture reused a natural key | Maintain an explicit test-fixture identity matrix. |
-| T4-006 | Expected SQL error aborted transaction | Use a JDBC savepoint for every expected database error. |
-| T4-007 | Failure evidence was trapped in timestamped logs | Copy a concise failure report to Downloads root. |
-| T4-008 | INSERT-only chain rule ran on UPDATE | Guard creation-chain logic by `TG_OP` and test lifecycle updates. |
-| T4-009 | Draft SQL assumed a nonexistent field/status | Audit every referenced element against committed schema. |
-| T4-010 | PL/pgSQL variable collided with query column | Use `p_`/`v_` prefixes, aliases and record-qualified fields. |
-| T4-011 | Hosted CI infrastructure timeout | Classify infrastructure failures before changing code. |
-| T4-012 | Replacement ledger reversed excessive history | Reverse only the active posting epoch. |
-| T4-013 | Empty pipeline result lost array identity | Wrap collection output at receiving assignment with `@(...)`. |
-| T4-014 | Inline `if` used inside hashtable property expression | Compute conditional values before constructing hashtables. |
-| T4-015 | Generic .NET list triggered PowerShell binder error | Prefer plain PowerShell arrays and raw evidence. |
-| T4-016 | Scanner suggestion conflicted with architecture | Use bounded reviewed security decisions; never uncontrolled `npm audit fix`. |
-| T4-017 | Existing policy not discovered before remediation | Search policies, ADRs, CI and handoffs before changing dependencies or gates. |
-| T4-018 | Workflow display name treated as filename | Resolve exact committed paths; never derive from display names. |
-| T4-019 | PowerShell parsed npm lockfile v3 unnecessarily | Delegate ecosystem-native parsing to repository-native validator. |
-| T4-020 | New-thread state reconstructed without a running authority | Begin every thread with this handoff and then validate against live evidence. |
-| T4-021 | Repository documentation drifted behind delivered Sprint 4 | Treat README, AGENTS, backlog and PR metadata alignment as a closure gate. |
+- prefer complete payload replacement from a pinned commit/blob;
+- otherwise update a marker-bounded block or a unique heading/metadata prefix;
+- normalize line endings before structural matching;
+- require exactly one structural anchor and report missing/ambiguous anchors;
+- do not use exact full-line/full-paragraph preimages in living documents;
+- keep the operation idempotent and roll back all file writes on failure;
+- provide a plan-only mode that resolves all anchors and validates the allow-list without writing;
+- test the updater against the exact pinned repository base before publication.
 
-## 10. New-thread continuation protocol
+This rule is binding through this running handoff. Formal AGENTS/decision-
+register indexing is deferred and must not block S4-06A.
 
-A continuation thread must receive or locate this exact document before project work begins.
+### Native command exit-code and whitespace rule
 
-Paste-ready starter:
+Phase A package v1.2 exposed two more automation defects:
 
-```text
-Continue the HRMS Payroll project. First locate and read HRMS_Payroll_Project_Running_Handoff. Do not reconstruct state from conversation memory and do not guess.
+1. harmless Git CRLF warnings written to stderr were treated as command failure
+   even though the native process could succeed;
+2. Markdown hard-break spaces were generated while `git diff --check` correctly
+   rejects trailing whitespace.
 
-Then inspect the local repository at C:\dev\hrms-payroll: branch, HEAD, Git index, status, changed files and complete diff. Inspect the live GitHub repository srinivasbs2000/hrms-payroll and PR #19. Read the exact repository policies, README, ADRs, backlog, migrations, tests, OpenAPI, runbooks and CI files relevant to the next action.
+Permanent rule for every generated command wrapper:
 
-Classify each material statement as VERIFIED, DERIVED or NOT VERIFIED. Record conflicts instead of silently resolving them. Ask before choosing among materially different valid options. Do not create a new PR, rewrite V001-V030, change dependencies, stage, commit, push, update PR metadata or merge unless the running handoff and explicit user authorization support that action.
+- determine native-command success from its exit code, not from the presence of
+  stderr text;
+- preserve stderr as diagnostics and throw only when the exit code is non-zero;
+- do not generate Markdown hard line breaks using trailing spaces; use blank
+  lines or explicit markup where a break is necessary;
+- run a trailing-whitespace scan before packaging;
+- prefer deterministic full-file payload copy over generated patch logic.
+
+These rules are binding through this handoff and are carried in the Thread 5
+failure register.
+
+## 9. Phase A verification checkpoint
+
+After copying the Phase A Lite payload and before any staging action, verify:
+
+```powershell
+git branch --show-current
+git rev-parse HEAD
+git status --short
+git diff --check
+git diff --name-only
+git diff --cached --name-only
 ```
 
-## 11. Current stop condition
+Expected:
 
-S4-05B is committed and CI green. The closure-alignment files are the current bounded increment. PR #19 remains open and unmerged.
+- branch `docs/cross-thread-reconciliation`;
+- HEAD `4b5da975eb851434957667bdecf138ea9b43f929`;
+- only the approved 8 Phase A Lite paths differ;
+- `git diff --check` passes;
+- Git index remains empty.
 
-Before publication or merge:
+## 10. Prohibited actions at this checkpoint
 
-- inspect the local backlog directory and repository documentation;
-- agree the exact closure scope and repository path for this handoff;
-- define an exact file allow-list;
-- verify locally before any Git write;
-- keep PR metadata and merge as separate explicitly authorized actions.
+Until separately authorised:
 
+- do not stage;
+- do not commit;
+- do not push;
+- do not create or update a pull request;
+- do not merge;
+- do not reserve V031;
+- do not begin S4-06A or S4-06B implementation;
+- do not modify application code, migrations, dependencies, contracts,
+  Keycloak, frontend or CI;
+- do not delete historical branches.
 
-## 12. Closure alignment approval
+## 11. Durable history
 
-The user approved:
+- `docs/history/thread-1-decision-extract.md`
+- `docs/history/thread-2-reconciliation.md`
+- `docs/history/thread-3-reconciliation.md`
+- `docs/history/thread-4-reconciliation.md`
+- `docs/history/thread-5-reconciliation.md`
+- `docs/history/cross-thread-project-restart-record.md`
 
-- repository handoff path `docs/runbooks/project-continuation-handoff.md`;
-- verified Sprint 4 backlog rows with blank Story Points; and
-- a seven-file closure package covering README, AGENTS, backlog, closure report, manual smoke, this handoff and `scripts/verify-sprint-4.ps1`.
+Historical continuation cards and thread checkpoints are evidence, not current
+state. Current live evidence and this normalized checkpoint supersede the old
+pre-merge PR #19 card.
 
-This approval does not authorise staging, commit, push, PR metadata update or merge.
+## 12. Next authorised action
 
-## 13. Checkpoint and thread-load policy
-
-The project uses a continuously maintained running handoff plus sparse,
-transition-based checkpoints.
-
-### Create or update a checkpoint only when
-
-1. an architecture or scope decision is approved and changes the execution plan;
-2. an implementation phase reaches a durable verified state;
-3. a material failure changes architecture, scope, security posture or the next action;
-4. a commit is published and its exact CI result is known;
-5. critical review or manual smoke changes merge readiness; or
-6. a thread transition is imminent or context-loss risk is high.
-
-### Do not create a checkpoint for
-
-- routine commands or status messages;
-- retries that keep the same scope and design;
-- a verifier correction that does not change project state;
-- duplicate evidence already captured in a verification summary; or
-- exploratory diagnostics that do not alter the plan.
-
-### Failure handling
-
-Add a failure-register entry without creating a new checkpoint when the failure
-is local, understood and resolved inside the same approved phase. Create a
-checkpoint only when the failure changes the plan, exposes a new risk, leaves
-the repository in a materially different state or must be carried into another
-thread.
-
-### Minimum checkpoint content
-
-Each checkpoint records the branch, HEAD, PR state, working-tree/index state,
-approved scope, immutable migrations, decisions, evidence, blockers, next
-authorised action, prohibited actions and only the failure-register delta since
-the prior checkpoint.
-
-When adjacent gates belong to the same phaseâ€”for example automated
-verification, critical review and manual smokeâ€”combine them into one phase
-checkpoint unless an intervening material failure changes the plan.
-
-The running handoff remains the first document for every continuation. A
-checkpoint is an immutable transition snapshot; it never replaces the running
-handoff or the detailed verification evidence.
-
-<!-- LIVING-DESIGN-AUTHORITY:START -->
-## Living master-design authority and superseding remote checkpoint
-
-The approved product and architecture authority is
-`docs/design/hrms-payroll-master-design.md`. Material decisions are indexed in
-`docs/design/decision-register.md`.
-
-This running handoff continues to own current branch, PR, CI, working-tree,
-blocker and next-action state. It must not duplicate the complete master design.
-
-### Superseding remote checkpoint â€” 1 August 2026
-
-The earlier continuation card in this document predates the Sprint 4 merge.
-Connected GitHub evidence established:
-
-- PR #19 is merged;
-- merge commit and current verified `main` baseline:
-  `def3dd2e212f85c440eee5497e292be2f1f2bf64`;
-- V001â€“V030 are committed and immutable;
-- no post-Sprint-4 active feature branch or pull request is established by this
-  bootstrap and must be marked `NOT VERIFIED` until live inspection.
-
-Current local working-tree and branch state must still be inspected before any
-write.
-
-All project threads must register ownership in
-`docs/governance/thread-registry.md` and follow
-`docs/governance/thread-maintenance-protocol.md`. Only one thread may own
-overlapping writes or the next Flyway migration number.
-<!-- LIVING-DESIGN-AUTHORITY:END -->
+Copy and verify the deterministic Phase A Lite full-file payload on the dedicated branch.
+Then present the unstaged diff and verification result for review. Staging,
+commit, push, PR creation and merge remain separate future decisions.
