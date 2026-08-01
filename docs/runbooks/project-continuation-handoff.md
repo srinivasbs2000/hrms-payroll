@@ -84,7 +84,7 @@ Before answering a continuation request, designing an increment, changing a depe
 
 ### Conflict A - PR metadata is stale
 
-PR #19 still has the title **“Sprint 4: V027 statutory rule foundation”** and a body that describes only the first statutory-rule increment. The branch now contains all Sprint 4 increments through S4-05B.
+PR #19 still has the title **â€œSprint 4: V027 statutory rule foundationâ€** and a body that describes only the first statutory-rule increment. The branch now contains all Sprint 4 increments through S4-05B.
 
 **Required resolution:** update the PR title and body only after the full Sprint 4 closure scope and evidence are agreed.
 
@@ -244,10 +244,41 @@ approved scope, immutable migrations, decisions, evidence, blockers, next
 authorised action, prohibited actions and only the failure-register delta since
 the prior checkpoint.
 
-When adjacent gates belong to the same phase—for example automated
-verification, critical review and manual smoke—combine them into one phase
+When adjacent gates belong to the same phaseâ€”for example automated
+verification, critical review and manual smokeâ€”combine them into one phase
 checkpoint unless an intervening material failure changes the plan.
 
 The running handoff remains the first document for every continuation. A
 checkpoint is an immutable transition snapshot; it never replaces the running
 handoff or the detailed verification evidence.
+
+<!-- LIVING-DESIGN-AUTHORITY:START -->
+## Living master-design authority and superseding remote checkpoint
+
+The approved product and architecture authority is
+`docs/design/hrms-payroll-master-design.md`. Material decisions are indexed in
+`docs/design/decision-register.md`.
+
+This running handoff continues to own current branch, PR, CI, working-tree,
+blocker and next-action state. It must not duplicate the complete master design.
+
+### Superseding remote checkpoint â€” 1 August 2026
+
+The earlier continuation card in this document predates the Sprint 4 merge.
+Connected GitHub evidence established:
+
+- PR #19 is merged;
+- merge commit and current verified `main` baseline:
+  `def3dd2e212f85c440eee5497e292be2f1f2bf64`;
+- V001â€“V030 are committed and immutable;
+- no post-Sprint-4 active feature branch or pull request is established by this
+  bootstrap and must be marked `NOT VERIFIED` until live inspection.
+
+Current local working-tree and branch state must still be inspected before any
+write.
+
+All project threads must register ownership in
+`docs/governance/thread-registry.md` and follow
+`docs/governance/thread-maintenance-protocol.md`. Only one thread may own
+overlapping writes or the next Flyway migration number.
+<!-- LIVING-DESIGN-AUTHORITY:END -->

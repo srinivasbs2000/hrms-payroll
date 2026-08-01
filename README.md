@@ -1,11 +1,11 @@
-# HRMS Payroll Sprint 1–4 vertical slice
+# HRMS Payroll Sprint 1â€“4 vertical slice
 
 Runnable payroll vertical slice covering tenant-safe organisation, payroll
 configuration, employee payroll identity, controlled regular payroll execution
 and jurisdiction-neutral statutory evidence. The repository contains a Java
 21/Spring Boot modular monolith, React 18/Vite web application, OpenAPI 3.1
 contracts, PostgreSQL 17/Flyway schema, Keycloak development realm, Docker
-Compose stack and a Sprint 0–4 delivery backlog.
+Compose stack and a Sprint 0â€“4 delivery backlog.
 
 The implemented regular-payroll path supports approved fixed monthly BASIC,
 HRA and SPECIAL_ALLOWANCE components, immutable sealed inputs, deterministic
@@ -35,7 +35,7 @@ explicitly excluded.
 - `docs/baseline/` - implementation packs and historical integration reports
 - `docs/quality/` - schema audits, negative-path evidence and Sprint closure reports
 - `docs/runbooks/` - API, UI, operational and project-continuation guidance
-- `backlog/` - Sprint 0–4 delivery backlog
+- `backlog/` - Sprint 0â€“4 delivery backlog
 
 ## Regular payroll execution flow
 
@@ -49,7 +49,7 @@ explicitly excluded.
 
 The draft payslip remains explicitly marked:
 
-`DRAFT · NOT FOR PAYMENT · NOT A LEGAL PAYSLIP`
+`DRAFT Â· NOT FOR PAYMENT Â· NOT A LEGAL PAYSLIP`
 
 Use `docs/runbooks/payroll-execution-ui.md` for the regular-payroll workspace.
 
@@ -204,3 +204,25 @@ Stop without deleting the database volume:
 ```powershell
 docker compose --env-file deploy/local/.env -f deploy/local/compose.yaml down
 ```
+
+<!-- LIVING-PROJECT-DESIGN:START -->
+## Living project design and multi-thread continuation
+
+The repository-owned product and architecture authority is:
+
+`docs/design/hrms-payroll-master-design.md`
+
+Material decisions are indexed in:
+
+`docs/design/decision-register.md`
+
+Parallel ChatGPT/Codex threads coordinate through:
+
+- `docs/governance/thread-registry.md`
+- `docs/governance/thread-maintenance-protocol.md`
+- `docs/governance/thread-start-prompt.md`
+
+The running handoff remains the authority for current branch, PR, CI, blockers
+and next authorised action. Separate chat threads do not automatically share
+complete context; seed each thread once with the standard thread-start prompt.
+<!-- LIVING-PROJECT-DESIGN:END -->
