@@ -1,4 +1,4 @@
-﻿Sprint,Story ID,Epic,Priority,User Story / Task,Acceptance Summary,Story Points,Dependencies,Owner
+Sprint,Story ID,Epic,Priority,User Story / Task,Acceptance Summary,Story Points,Dependencies,Owner
 Sprint 0,S0-01,Engineering baseline,Must,Freeze approved versions and dependency policy,"Version matrix, SBOM and upgrade owner approved",3,,Engineering
 Sprint 0,S0-02,Repository,Must,"Create monorepo, branch protections and CODEOWNERS",Build can run from clean checkout; protected main branch,3,,Engineering
 Sprint 0,S0-03,Architecture,Must,"Approve ADRs for modular monolith, RLS and outbox",ADRs reviewed and recorded,5,,Engineering
@@ -33,3 +33,5 @@ Sprint 4,S4-03,Statutory calculation,Must,Implement deterministic statutory eval
 Sprint 4,S4-04,Statutory ledger,Must,"Create append-only statutory ledger, balances and reconciliation","Posting, replacement epochs, signed corrections, balances and reconciliation remain immutable",,,Engineering
 Sprint 4,S4-05A,Statutory API,Must,Expose controlled statutory execution and evidence APIs,"Permission, idempotency, optimistic-concurrency, audit and outbox controls pass",,,Engineering
 Sprint 4,S4-05B,Statutory UI,Must,Create permission-aware statutory execution and evidence workspace,"Evaluation, posting, correction and evidence workflows pass frontend and full regression gates",,,Engineering
+Sprint 4,S4-06A,Statutory quality closure,Must,Close the statutory API integration gap through a real secured HTTP and PostgreSQL integration test,"PostgreSQL 17 Testcontainers, Flyway V001-V030, runtime RLS, secured controller-to-database flow, money, idempotency, concurrency, tenant isolation, audit and outbox evidence pass without production changes",8,S4-05A,Engineering
+Sprint 4,S4-06B,Statutory quality closure,Planned,Add a statutory-specific Playwright end-to-end scenario after S4-06A and separate authorisation,"Authenticated evaluation, posting, correction, evidence, permission and browser-storage safety pass; implementation remains unauthorised until separately approved",5,S4-06A,Engineering
