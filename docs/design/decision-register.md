@@ -32,13 +32,13 @@ evidence.
 | MDR-012 | Frontend lint, tests and build are separate gates | Process | IMPLEMENTED | CI | Verify separately |
 | MDR-013 | High-risk Payroll changes require independent critical review | Process | IMPLEMENTED | `AGENTS.md` | Attach findings |
 | MDR-014 | One write-capable thread owns overlapping files | Process | APPROVED | Registry/protocol | Track explicitly |
-| MDR-015 | V001-V030 are immutable; V031 remains unreserved | Database | IMPLEMENTED | Merged main | Reserve explicitly |
+| MDR-015 | V001-V030 are immutable; V031 is reserved by Thread 6 for P5-A1 | Database | APPROVED | P5-G05 approval and Thread 6 registry | Do not reuse or renumber V031 |
 | MDR-016 | Generic statutory infrastructure is implemented; country-specific legal rules remain excluded | Product | CONTROLLED | Sprint 4 | Require legal design |
 | MDR-017 | Retro, off-cycle, settlement, payments, accounting and legal payslip remain outside implemented baseline | Product | APPROVED | Master design/gap assessment | Remove only through approved stories |
 | MDR-018 | Historical Thread 1 decisions are evidence, not automatic current state | Process | APPROVED | Thread 1 extract | Reconcile first |
 | MDR-019 | Feed-dependent OWASP data requires cached/scheduled handling | Security | TEMPORARY/DEBT | CI/handoff | Close with cache design |
 | MDR-020 | Each chat thread starts from repository authorities | Process | APPROVED | Thread protocol | Use start prompt |
-| MDR-021 | Repository HEAD and latest product merge are distinct baselines | Process | APPROVED | PR #21 and Sprint 4 | Preserve both |
+| MDR-021 | Repository HEAD and latest product merge are distinct baselines | Process | APPROVED | PR #22 and Sprint 4 | Preserve both |
 | MDR-022 | Sprint 4 is functionally merged but not fully automated until S4-06A/S4-06B are resolved | Quality | APPROVED | Closure report | Keep separate |
 | MDR-023 | Text artifacts use UTF-8 and must not contain mojibake | Process | APPROVED | Repository cleanup | Reject corruption |
 | MDR-024 | Identify historical work by capability, migration, commit and PR when labels diverge | Process | APPROVED | Reconciliation | Use durable identifiers |
@@ -49,8 +49,20 @@ evidence.
 | MDR-029 | `docs/product/payroll-product-scope-and-epic-catalog.md` is the complete Payroll scope authority | Product | APPROVED | Full-product publication | Sprint backlog cannot replace it |
 | MDR-030 | Original implementation control structure is 18 epics and 72 backlog rows across R1-R4 | Planning | APPROVED | Master backlog | Retain source IDs/acceptance |
 | MDR-031 | Sprint 0-4 is a bounded vertical slice; no original epic is complete against all source acceptance | Product/Quality | APPROVED | Gap assessment/lineage | Report partial scope honestly |
-| MDR-032 | PLN-01 decomposition of E01-E18 using Iterations 1-12 is mandatory before the next new product-feature sprint | Planning | APPROVED | Scope catalog/roadmap | Complete in Thread 1 |
+| MDR-032 | PLN-01 decomposition of E01-E18 using Iterations 1-12 is mandatory before the next new product-feature sprint | Planning | APPROVED | Scope catalog/roadmap | P5-A1 package selection is the approved planning result |
 | MDR-033 | Original canonical DDL is logical design and must not be applied directly as a current Flyway migration | Database | APPROVED | Source register/master design | Reconcile via forward migrations |
+| MDR-034 | Every project task defaults to non-Codex downloadable payload execution; Downloads/repository path conventions and explicit user-action sections are standing requirements | Process/Cost control | APPROVED | `docs/governance/hrms-payroll-execution-norm.md` | Carry into every handoff and response |
+| MDR-035 | Organisation identities use `PENDING_APPROVAL`, `ACTIVE`, `RETIRED`; first independent approval activates and controlled retirement preserves immutable version history | Architecture/Governance | APPROVED | P5-A1 design and V031 | Verify maker-checker, dependency and concurrency evidence |
+| MDR-036 | PSU responsibility scope and establishment type are effective-dated version attributes with controlled vocabularies | Domain | APPROVED | P5-A1 design and V031 | Revalidate vocabulary before jurisdiction-specific expansion |
+| MDR-037 | Every project-supplied PowerShell script must pass the real PowerShell parser before execution; validator-first wrappers fail closed and ambiguous `$name:` interpolation is prohibited | Engineering/Quality | APPROVED | P5-A1 G05 v1.0 parser failure and v1.1 correction | Apply to every package and handoff |
+
+| MDR-038 | PowerShell native-command helpers preserve flat zero/one/many output cardinality; unary-comma nested-array returns are prohibited and semantic cardinality tests are mandatory | Engineering | APPROVED | P5-A1 G05 v1.1 failure evidence and v1.2 semantic gate | Apply to every generated script and handoff |
+
+| MDR-039 | GitHub-dependent scripts perform bounded remote connectivity, exact base-SHA and branch-state checks before mutation; offline bypass is prohibited | Engineering | APPROVED | P5-A1 G05 v1.2 network failure evidence and v1.3 network gate | Apply to every GitHub-dependent package and handoff |
+
+| MDR-040 | Git commands whose stdout is consumed as data must capture stdout and stderr separately; diagnostic warnings must never enter path, SHA or allow-list comparisons | Engineering | APPROVED | P5-A1 G05 v1.2 allow-list false positive after LF-to-CRLF warnings | Use stream-separated native execution and semantic warning tests in every generated script |
+
+| MDR-041 | Generated PowerShell must obtain native success/failure from the launched process object's ExitCode; `$LASTEXITCODE` is not authoritative for controlled gates | Engineering | APPROVED | P5-A1 G05 v1.4 returned the approved SHA while `$LASTEXITCODE` remained -1 | Use `System.Diagnostics.Process`, separate streams and semantic nonzero-exit tests |
 
 ## Adding a decision
 

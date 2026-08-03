@@ -91,6 +91,7 @@
                                                              "organisation.version.correct",
                                                              "organisation.version.end-date",
                                                              "organisation.approve",
+                                                             "organisation.retire",
                                                              "audit.read",
                                                              "pay-group.read",
                                                              "pay-group.create",

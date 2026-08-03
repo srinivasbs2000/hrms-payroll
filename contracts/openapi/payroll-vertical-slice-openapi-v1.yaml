@@ -41,6 +41,12 @@ paths:
     $ref: '#/components/pathItems/OrganisationIdentity'
   /establishments/{identityId}:
     $ref: '#/components/pathItems/OrganisationIdentity'
+  /legal-entities/{identityId}/retirement:
+    $ref: '#/components/pathItems/OrganisationRetirement'
+  /payroll-statutory-units/{identityId}/retirement:
+    $ref: '#/components/pathItems/OrganisationRetirement'
+  /establishments/{identityId}/retirement:
+    $ref: '#/components/pathItems/OrganisationRetirement'
   /legal-entities/{identityId}/versions:
     $ref: '#/components/pathItems/OrganisationVersions'
   /payroll-statutory-units/{identityId}/versions:
@@ -615,6 +621,31 @@ components:
           '403': {$ref: '#/components/responses/Forbidden'}
           '404': {$ref: '#/components/responses/NotFound'}
           '409': {$ref: '#/components/responses/Conflict'}
+    OrganisationRetirement:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: retireOrganisationIdentity
+        tags: [Organisation]
+        summary: Retire an active organisation identity without rewriting history
+        description: Uses the identityVersionNo ETag and end-dates the final approved version only when no dependent effective range extends beyond the requested retirement date.
+        x-permission: organisation.retire
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OrganisationRetirement'}
+        responses:
+          '200': {$ref: '#/components/responses/OrganisationVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
     OrganisationAudit:
       parameters:
       - $ref: '#/components/parameters/IdentityId'
@@ -1291,6 +1322,16 @@ components:
           type: [string, 'null']
           format: uuid
           description: Exact legal-entity version for a PSU or exact PSU version for an establishment.
+        responsibilityScope:
+          type: [string, 'null']
+          enum: [TAX_AND_STATUTORY, TAX_ONLY, STATUTORY_ONLY, PAYROLL_OPERATIONS, null]
+          default: TAX_AND_STATUTORY
+          description: Payroll-statutory-unit responsibility boundary; rejected for other organisation kinds.
+        establishmentType:
+          type: [string, 'null']
+          enum: [OFFICE, BRANCH, FACTORY, SHOP, CONSTRUCTION, OTHER, null]
+          default: OTHER
+          description: Effective-dated establishment classification; rejected for other organisation kinds.
         effectiveFrom: {type: string, format: date}
         effectiveTo: {type: [string, 'null'], format: date}
     OrganisationEndDate:
@@ -1299,16 +1340,53 @@ components:
       required: [effectiveTo]
       properties:
         effectiveTo: {type: string, format: date}
+    OrganisationRetirement:
+      type: object
+      additionalProperties: false
+      required: [effectiveDate, reason]
+      properties:
+        effectiveDate: {type: string, format: date}
+        reason: {type: string, minLength: 1, maxLength: 500}
     OrganisationVersion:
       type: object
       additionalProperties: false
-      required: [kind, identityId, code, identityStatus, versionId, versionSequence, versionNo,
-        name, effectiveFrom, approvalStatus, superseded]
+      required:
+      - kind
+      - identityId
+      - code
+      - identityStatus
+      - identityVersionNo
+      - retirementEffectiveDate
+      - retirementReason
+      - retiredAt
+      - retiredBy
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - countryCode
+      - currency
+      - stateCode
+      - parentVersionId
+      - responsibilityScope
+      - establishmentType
+      - effectiveFrom
+      - effectiveTo
+      - approvalStatus
+      - supersedesVersionId
+      - superseded
+      - createdBy
+      - approvedBy
       properties:
         kind: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT, ESTABLISHMENT]}
         identityId: {type: string, format: uuid}
-        code: {type: string}
-        identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
+        code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,39}$'}
+        identityStatus: {type: string, enum: [PENDING_APPROVAL, ACTIVE, RETIRED]}
+        identityVersionNo: {type: integer, format: int64, minimum: 0}
+        retirementEffectiveDate: {type: [string, 'null'], format: date}
+        retirementReason: {type: [string, 'null'], maxLength: 500}
+        retiredAt: {type: [string, 'null'], format: date-time}
+        retiredBy: {type: [string, 'null'], maxLength: 160}
         versionId: {type: string, format: uuid}
         versionSequence: {type: integer, minimum: 1}
         versionNo: {type: integer, format: int64, minimum: 0}
@@ -1317,11 +1395,19 @@ components:
         currency: {type: [string, 'null']}
         stateCode: {type: [string, 'null']}
         parentVersionId: {type: [string, 'null'], format: uuid}
+        responsibilityScope:
+          type: [string, 'null']
+          enum: [TAX_AND_STATUTORY, TAX_ONLY, STATUTORY_ONLY, PAYROLL_OPERATIONS, null]
+        establishmentType:
+          type: [string, 'null']
+          enum: [OFFICE, BRANCH, FACTORY, SHOP, CONSTRUCTION, OTHER, null]
         effectiveFrom: {type: string, format: date}
         effectiveTo: {type: [string, 'null'], format: date}
         approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
         supersedesVersionId: {type: [string, 'null'], format: uuid}
         superseded: {type: boolean}
+        createdBy: {type: string, maxLength: 160}
+        approvedBy: {type: [string, 'null'], maxLength: 160}
     OrganisationHierarchy:
       type: object
       required: [asOf, legalEntities]

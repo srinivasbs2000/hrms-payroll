@@ -1,5 +1,6 @@
 package com.acme.hrms.payroll.organisation;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -8,6 +9,11 @@ public record OrganisationView(
     UUID identityId,
     String code,
     String identityStatus,
+    long identityVersionNo,
+    LocalDate retirementEffectiveDate,
+    String retirementReason,
+    Instant retiredAt,
+    String retiredBy,
     UUID versionId,
     int versionSequence,
     long versionNo,
@@ -16,8 +22,12 @@ public record OrganisationView(
     String currency,
     String stateCode,
     UUID parentVersionId,
+    String responsibilityScope,
+    String establishmentType,
     LocalDate effectiveFrom,
     LocalDate effectiveTo,
     String approvalStatus,
     UUID supersedesVersionId,
-    boolean superseded) {}
+    boolean superseded,
+    String createdBy,
+    String approvedBy) {}

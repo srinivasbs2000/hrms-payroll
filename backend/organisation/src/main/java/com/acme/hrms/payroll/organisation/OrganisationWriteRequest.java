@@ -14,6 +14,10 @@ public record OrganisationWriteRequest(
     @Pattern(regexp = "^[A-Z]{3}$") String currency,
     @Pattern(regexp = "^[A-Z0-9]{2,3}$") String stateCode,
     UUID parentVersionId,
+    @Pattern(regexp = "^(TAX_AND_STATUTORY|TAX_ONLY|STATUTORY_ONLY|PAYROLL_OPERATIONS)$")
+        String responsibilityScope,
+    @Pattern(regexp = "^(OFFICE|BRANCH|FACTORY|SHOP|CONSTRUCTION|OTHER)$")
+        String establishmentType,
     @NotNull LocalDate effectiveFrom,
     LocalDate effectiveTo) {
 
@@ -24,11 +28,38 @@ public record OrganisationWriteRequest(
     if (effectiveTo != null && !effectiveTo.isAfter(effectiveFrom)) {
       throw new IllegalArgumentException("effectiveTo must be after effectiveFrom");
     }
-    if (kind != OrganisationKind.LEGAL_ENTITY && parentVersionId == null) {
-      throw new IllegalArgumentException("parentVersionId is required");
-    }
-    if (kind == OrganisationKind.ESTABLISHMENT && (stateCode == null || stateCode.isBlank())) {
-      throw new IllegalArgumentException("stateCode is required for an establishment");
+
+    switch (kind) {
+      case LEGAL_ENTITY -> {
+        if (parentVersionId != null || stateCode != null
+            || responsibilityScope != null || establishmentType != null) {
+          throw new IllegalArgumentException(
+              "legal entity requests cannot contain parent, state or classification fields");
+        }
+      }
+      case PAYROLL_STATUTORY_UNIT -> {
+        if (parentVersionId == null) {
+          throw new IllegalArgumentException("parentVersionId is required");
+        }
+        if (countryCode != null || currency != null
+            || stateCode != null || establishmentType != null) {
+          throw new IllegalArgumentException(
+              "payroll statutory unit requests can contain only PSU hierarchy and classification fields");
+        }
+      }
+      case ESTABLISHMENT -> {
+        if (parentVersionId == null) {
+          throw new IllegalArgumentException("parentVersionId is required");
+        }
+        if (stateCode == null || stateCode.isBlank()) {
+          throw new IllegalArgumentException("stateCode is required for an establishment");
+        }
+        if (countryCode != null || currency != null
+            || responsibilityScope != null) {
+          throw new IllegalArgumentException(
+              "establishment requests cannot contain legal-entity or PSU classification fields");
+        }
+      }
     }
   }
 }
