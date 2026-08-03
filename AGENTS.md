@@ -16,6 +16,19 @@ Current repository evidence overrides an older handoff entry. Update the
 running handoff after every committed increment and before every thread or
 session transition.
 
+## Mandatory assistant GitHub read-only boundary
+
+For this project, assistant and agent GitHub access is strictly read-only even
+when a connector advertises write-capable operations. Never attempt to create or
+update branches, refs, blobs, trees, commits, repository files, pull requests,
+reviews, comments, labels, workflow runs, auto-merge, or merges through a
+connected GitHub tool.
+
+When GitHub state must change, prepare a deterministic local package for the
+project owner to execute with the owner's authenticated `git`/`gh` environment,
+then verify the resulting remote state through read-only GitHub inspection and
+returned evidence. Do not spend time attempting connector mutations first.
+
 ## Scope-completion and recovery discipline
 
 Keep an explicit checklist of the original approved deliverables, files,
@@ -47,7 +60,8 @@ Generated PowerShell must not assume command output shape.
 - Validate zero, one or multiple results explicitly.
 - Cast the selected value to `[string]` before calling string methods.
 - Do not index `[0]` on an expression that may collapse to a scalar string.
-- Check `$LASTEXITCODE` for native commands.
+- Read native success or failure from the launched process object's
+  `ExitCode`; `$LASTEXITCODE` is not authoritative for controlled gates.
 - Do not interpret harmless warning text on stderr as command failure when the
   process exit code is zero.
 - Parser checks do not replace runtime checks.
@@ -251,9 +265,10 @@ payroll payloads in browser storage.
 ## Database migrations
 
 `database/flyway/sql` is the single source of ordered versioned migrations.
-V001-V030 are committed and immutable. V031 is reserved by Thread 6 for
-P5-A1 as V031__organisation_hierarchy_closure.sql. Later schema work is
-forward-only from V032 after separate reservation. Versioned migrations
+V001-V031 are committed and immutable. V031 is
+`V031__organisation_hierarchy_closure.sql`, merged through PR #25. V032 is
+unreserved. Later schema work is forward-only from V032 after explicit
+reservation by one active implementation owner. Versioned migrations
 must fail loudly; do not add permissive `IF NOT EXISTS` clauses to them. The
 `backend/database-migrations` Maven module packages the canonical directory as
 `db/migration`. Administrator bootstrap, development seed and verification SQL

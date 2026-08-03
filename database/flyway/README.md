@@ -5,6 +5,11 @@
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
 
+V001-V031 are committed and immutable. V031 is
+`V031__organisation_hierarchy_closure.sql`, merged through PR #25. V032 is
+unreserved and must not be used until one active implementation owner reserves
+it explicitly in the thread registry and decision register.
+
 Apply `bootstrap/001_admin_bootstrap.sql` once as a database administrator, then
 run Flyway as `payroll_migrator`. Application traffic uses `payroll_app`, which
 is non-owner and has no `BYPASSRLS` privilege.

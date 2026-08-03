@@ -1,17 +1,24 @@
 # Thread 6 — P5-A1 implementation record
 
 **Activated:** 2 August 2026
-**Gate:** P5-G05
-**Status after package application:** Implementation in progress, uncommitted
-**Base:** `d2df2e7a9cc597ea6e4a15de4ed9d1d040de8462`
-**Branch:** `feature/p5-a1-foundation-hierarchy-closure`
-**Migration:** `V031__organisation_hierarchy_closure.sql`
+**Closed:** 3 August 2026
+**Final status:** Merged and closed
+**Original base:** `d2df2e7a9cc597ea6e4a15de4ed9d1d040de8462`
+**Source commit:** `2e28a96939f8c86c7de26047b4666f77a0278cf9`
+**PR:** #25
+**Merge commit/current main:** `5b40904764e138a7019f5d5a2b905f7019df8465`
+**Branch:** `feature/p5-a1-foundation-hierarchy-closure` retained, inactive
+**Migration:** `V031__organisation_hierarchy_closure.sql` implemented
 
 ## Authorization boundary
 
-Authorized: create the local branch, reserve V031, modify the exact Thread 6
-allow-list and run validation. Not authorized: staging, commit, push, pull
-request, merge, branch deletion, P5-A2, S4-06A or S4-06B.
+Thread 6 originally owned only the approved P5-A1 allow-list and V031.
+Publication and merge were authorized through separately evidenced G08-G10
+local packages. The branch was not deleted. P5-A2, S4-06A and S4-06B were not
+included.
+
+Thread 6 is now closed. Its path and migration ownership are released. V032
+remains unreserved.
 
 ## Implemented intent
 
@@ -26,11 +33,19 @@ request, merge, branch deletion, P5-A2, S4-06A or S4-06B.
 - extend RFC 9457, OpenAPI, Keycloak and the existing React workspace;
 - add populated-V030 upgrade, API and frontend coverage.
 
-## Validation status
+## Final validation and publication
 
-No validation is claimed in this static record. The application script creates
-command logs and `P5-A1-run-summary.json`. Results must be reconciled before any
-staging authorization.
+- G05 full verification completed successfully.
+- Migration regression: 94/94 passed.
+- Targeted organisation backend and frontend tests passed.
+- Full Maven and frontend regressions passed.
+- OpenAPI, lint, production build, RLS and security checks passed.
+- GitHub Actions `payroll-baseline` run 94 completed with 9/9 successful jobs.
+- PR #25 contained one source commit and exactly 27 changed files.
+- Merge completed as merge commit
+  `5b40904764e138a7019f5d5a2b905f7019df8465`.
+- Remote `main` was verified identical to the merge commit.
+- The local feature checkout remained clean with an empty index.
 
 ## Recovery rule
 
@@ -74,3 +89,23 @@ without reapplying or rolling back the authorized changes.
 The v1.4 recovery package received the exact approved SHA from `git ls-remote`, but `$LASTEXITCODE` remained `-1` and the valid result was misclassified as a network failure. No resume mutation or test execution began.
 
 Recovery v1.5 replaces every controlled native execution gate with `System.Diagnostics.Process`, using the process object's `ExitCode` together with separately redirected stdout and stderr. Its semantic gate deliberately exits with code 7 and proves the exact exit code and both streams before the resume begins.
+
+## Final delivered capability
+
+P5-A1 closes the organisation hierarchy lifecycle foundation for legal
+entities, payroll statutory units and establishments. It implements stable
+identity, immutable effective versions, maker-checker approval, approved-parent
+and range controls, controlled classification vocabularies, retirement evidence
+and blockers, identity-level concurrency, RLS/least privilege, RFC 9457
+problems, audit/outbox evidence and aligned API, Keycloak and React behavior.
+
+## Closure state
+
+- Thread 6: closed.
+- Write ownership: released.
+- V001-V031: committed and immutable.
+- V032: unreserved.
+- P5-A2: not activated.
+- S4-06A: paused, not cancelled.
+- GitHub mutations: project-owner local execution only; assistant access is
+  strictly read-only.

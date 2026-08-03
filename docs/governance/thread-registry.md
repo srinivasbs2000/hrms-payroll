@@ -1,8 +1,9 @@
 # HRMS Payroll Thread Registry
 
-**Last verified:** 2 August 2026
-**Repository baseline:** `main` at `d2df2e7a9cc597ea6e4a15de4ed9d1d040de8462`
-**Product implementation baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
+**Last verified:** 3 August 2026
+**Repository baseline:** `main` at `5b40904764e138a7019f5d5a2b905f7019df8465`
+**Latest merged product increment:** P5-A1 through PR #25
+**Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 
 Only one thread or write-capable process may own overlapping files or the next
 migration number. A thread not explicitly registered as active has no write
@@ -15,58 +16,50 @@ ownership.
 | Thread 1 | DESIGN/PLANNING — inactive | Full-product authority and PLN-01 source | Historical PR #22 | None | None | Reference only |
 | Thread 2 | CLOSED | Sprint 2 and early Sprint 3 | Historical PR #3/#18 | None | Historical | Reference only |
 | Thread 3 | CLOSED | Sprint 3 completion/E2E | PR #18 merged | None | Historical | Reference only |
-| Thread 4 | CLOSED | Sprint 4 generic statutory foundation | PR #19 merged | None | Historical | Reference only |
+| Thread 4 | CLOSED | Sprint 4 generic statutory foundation | PR #19 merged | None | V027-V030 implemented | Reference only |
 | Thread 5 | CLOSED | Recovery/handoff/process audit | No active PR | None | None | Reference only |
-| Thread 6 | IMPLEMENTATION OWNER — active | P5-A1 Foundation hierarchy closure only | Local `feature/p5-a1-foundation-hierarchy-closure`; PR none | Exact allow-list below | V031 reserved | Run v1.1 parser gate, then apply, verify and critically review uncommitted diff |
+| Thread 6 | CLOSED | P5-A1 organisation hierarchy closure | PR #25 merged | None; released | V031 implemented | Reference and incident history only |
 
-## Thread 6 exact allow-list
+## Current ownership state
 
-### New files
+- No implementation thread is active.
+- No repository path has active write ownership.
+- V001-V031 are committed and immutable.
+- V032 is unreserved.
+- The retained remote branch
+  `feature/p5-a1-foundation-hierarchy-closure` has no active ownership and must
+  not be reused for later work.
+- P5-A2 is not activated.
+- S4-06A remains paused, not cancelled.
+- S4-06B remains planned and not authorized.
 
-1. `database/flyway/sql/V031__organisation_hierarchy_closure.sql`
-2. `backend/database-migrations/src/test/java/com/acme/hrms/payroll/migrations/OrganisationHierarchyClosureMigrationIT.java`
-3. `backend/organisation/src/main/java/com/acme/hrms/payroll/organisation/OrganisationRetirementRequest.java`
-4. `backend/organisation/src/main/java/com/acme/hrms/payroll/organisation/OrganisationProblemException.java`
-5. `backend/organisation/src/main/java/com/acme/hrms/payroll/organisation/OrganisationProblemAdvice.java`
-6. `docs/governance/hrms-payroll-execution-norm.md`
-7. `docs/history/thread-6-p5-a1-implementation-record.md`
-8. `docs/runbooks/organisation-hierarchy-closure.md`
+## P5-A1 closure evidence
 
-### Modified files
+- source commit:
+  `2e28a96939f8c86c7de26047b4666f77a0278cf9`;
+- PR #25;
+- CI workflow `payroll-baseline` run 94 with 9/9 successful jobs;
+- merge commit/current `main`:
+  `5b40904764e138a7019f5d5a2b905f7019df8465`;
+- V031:
+  `V031__organisation_hierarchy_closure.sql`;
+- 27 changed files, one source commit and one merge commit;
+- Thread 6 write ownership released after merge.
 
-9. `AGENTS.md`
-10. `docs/design/decision-register.md`
-11. `docs/runbooks/project-continuation-handoff.md`
-12. `docs/governance/thread-registry.md`
-13. `database/flyway/README.md`
-14. `database/flyway/verification/verify_vertical_slice.sql`
-15. `backend/organisation/src/main/java/com/acme/hrms/payroll/organisation/OrganisationWriteRequest.java`
-16. `backend/organisation/src/main/java/com/acme/hrms/payroll/organisation/OrganisationView.java`
-17. `backend/organisation/src/main/java/com/acme/hrms/payroll/organisation/OrganisationController.java`
-18. `backend/organisation/src/main/java/com/acme/hrms/payroll/organisation/internal/application/OrganisationService.java`
-19. `backend/organisation/src/main/java/com/acme/hrms/payroll/organisation/internal/infrastructure/OrganisationRepository.java`
-20. `backend/organisation/src/test/java/com/acme/hrms/payroll/organisation/OrganisationContractTest.java`
-21. `backend/payroll-boot/src/test/java/com/acme/hrms/payroll/OrganisationApiIT.java`
-22. `contracts/openapi/payroll-vertical-slice-openapi-v1.yaml`
-23. `deploy/local/keycloak/payroll-realm.json`
-24. `frontend/payroll-web/src/features/organisation/organisation-api.ts`
-25. `frontend/payroll-web/src/features/organisation/SetupPage.tsx`
-26. `frontend/payroll-web/src/features/organisation/SetupPage.test.tsx`
+## Activation requirements
 
-No other repository path is authorized.
+Before any new repository write:
 
-## Acceptance controls
+1. choose exactly one next increment;
+2. identify its source story and acceptance boundary;
+3. register one active implementation owner;
+4. reserve V032 only when a schema change is actually approved;
+5. define an exact path allow-list;
+6. validate the current `main` SHA and clean local state;
+7. retain P5-A1, S4-06A and P5-A2 as separate scopes.
 
-- V001-V030 remain byte-for-byte unchanged.
-- V031 is forward-only and preserves existing identity/version UUIDs.
-- Existing Sprint 0-4 behavior remains green.
-- Thread 6 remains the sole owner of V031 and listed paths.
-- The Git index remains empty and HEAD remains the approved base.
-- No commit, push, PR, merge or branch deletion occurs without separate approval.
-- The non-Codex standing execution norm applies to every future thread.
-- Every PowerShell apply/rollback script passes the real parser before execution.
+## Mandatory GitHub boundary
 
-## Deferred work
-
-S4-06A remains paused and P5-A2 is not authorized. Neither may be folded into the
-P5-A1 diff as recovery convenience.
+Assistant and agent GitHub access is strictly read-only. GitHub mutations are
+performed only by the project owner using a deterministic local package, then
+verified through read-only GitHub inspection and returned evidence.
