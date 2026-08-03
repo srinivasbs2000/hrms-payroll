@@ -1,111 +1,98 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 2 August 2026
+**Updated:** 3 August 2026
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\dev\hrms-payroll`
-**Repository baseline:** `main` at `d2df2e7a9cc597ea6e4a15de4ed9d1d040de8462`
-**Product implementation baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
-**Mandatory status:** Validate this file against local Git and live GitHub before writing.
+**Repository baseline:** `main` at `5b40904764e138a7019f5d5a2b905f7019df8465`
+**Latest merged product increment:** P5-A1 through PR #25
+**Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
+**Mandatory status:** Validate this file against local Git and live read-only
+GitHub evidence before writing.
 
 ## Current checkpoint
 
 | Item | Current fact |
 |---|---|
-| Remote `main` at activation | `d2df2e7a9cc597ea6e4a15de4ed9d1d040de8462` |
-| Latest repository publication | PR #22 |
-| Latest product sprint baseline | Sprint 4 |
-| Active implementation package | P5-A1 Foundation hierarchy closure |
-| Active thread | Thread 6 — implementation owner |
-| Local branch | `feature/p5-a1-foundation-hierarchy-closure` |
-| Migrations | V001-V030 immutable |
-| V031 | Reserved for `V031__organisation_hierarchy_closure.sql` |
-| Commit/push/PR | Not authorized; none exists at activation |
-| Package incident | v1.0 parser failure before repository change; v1.1 supersedes it |
-| S4-06A | Paused, not cancelled, not part of P5-A1 |
+| Remote `main` | `5b40904764e138a7019f5d5a2b905f7019df8465` |
+| Latest repository publication | PR #25 — merged |
+| P5-A1 source commit | `2e28a96939f8c86c7de26047b4666f77a0278cf9` |
+| CI evidence | `payroll-baseline` run 94; 9/9 jobs successful |
+| Active implementation package | None |
+| Active write owner | None |
+| Thread 6 | Closed; ownership released |
+| Migrations | V001-V031 committed and immutable |
+| Next migration | V032 unreserved |
+| P5-A2 | Not activated |
+| S4-06A | Paused, not cancelled |
 | S4-06B | Planned, not authorized |
+| GitHub access for assistant/agents | Strictly read-only |
 
-## P5-A1 approved scope
+## P5-A1 delivered state
 
-1. P5-E01-001 Organisation hierarchy identity and ownership constraints.
-2. P5-E01-002 Legal entity lifecycle and tenant-safe uniqueness.
-3. P5-E01-003 Payroll statutory unit responsibility boundaries.
-4. P5-E01-004 Establishment lifecycle and operational ownership.
+P5-A1 closes the bounded organisation hierarchy lifecycle foundation from
+V015/V016/V022 through V031:
 
-P5-A1 is a bounded closure of V015/V016/V022. It retains stable identity rows,
-exact immutable effective-dated versions, half-open ranges, approved-parent
-containment, tenant-safe relationships, forced RLS and controlled lifecycle
-commands.
-
-## P5-A1 intended change
-
-- identity lifecycle `PENDING_APPROVAL -> ACTIVE -> RETIRED`;
-- database code-format constraints and tenant-safe uniqueness behavior;
+- stable identities and immutable effective-dated exact versions;
+- `PENDING_APPROVAL -> ACTIVE -> RETIRED` identity lifecycle;
+- `DRAFT -> APPROVED` version lifecycle;
 - database-enforced maker-checker approval;
 - serialized version-sequence allocation;
+- approved-parent and effective-range enforcement;
 - PSU `responsibility_scope` and establishment `establishment_type`;
-- controlled retirement with reason, effective date and identity ETag;
-- complete audit state and schema-versioned, kind-specific organisation events;
-- RFC 9457 409/422 mapping without SQL leakage;
-- OpenAPI, Keycloak and existing React workspace extension;
-- migration, API, frontend and regression evidence.
+- controlled retirement with evidence, dependency blockers and identity ETag;
+- tenant RLS, least privilege, audit and outbox evidence;
+- RFC 9457 API problems without SQL leakage;
+- aligned OpenAPI, Keycloak and React workflows;
+- populated-V030 upgrade, API, concurrency, migration and frontend regression
+  coverage.
+
+PR #25 merged this state into `main` as
+`5b40904764e138a7019f5d5a2b905f7019df8465`.
+
+## Current ownership and migration boundary
+
+No thread currently owns repository writes. The retained P5-A1 feature branch is
+historical and must not be reused. V001-V031 are immutable. V032 may be reserved
+only after one next increment is selected and one active owner is registered
+with an exact allow-list.
+
+P5-A2 and S4-06A are separate choices. Neither is implicitly authorized by
+P5-A1 closure, and they must not be combined for convenience.
+
+## Mandatory GitHub read-only boundary
+
+Assistant and agent GitHub access is strictly read-only, even when a connector
+advertises write operations. Never attempt connector-based branch, ref, commit,
+file, PR, review, comment, label, workflow, ready/draft, auto-merge or merge
+mutations.
+
+When GitHub state must change, prepare a deterministic package for the project
+owner to run locally with authenticated `git`/`gh`, collect evidence, and verify
+the remote result using read-only GitHub access.
 
 ## Standing execution norm
 
 `docs/governance/hrms-payroll-execution-norm.md` is mandatory. Non-Codex local
-payload execution is the default. Downloads are assumed under `$HOME\Downloads`;
-scripts default to `C:\dev\hrms-payroll`, accept `-RepoRoot`, and resolve
-companions from `$PSScriptRoot`. Every `.ps1` must pass the repository's real
-PowerShell parser validator before execution; validator-first wrappers fail
-closed when this gate is skipped.
+payload execution remains the default. Downloads are assumed under
+`$HOME\Downloads`; scripts default to `C:\dev\hrms-payroll`, quote paths,
+support spaces and resolve companion files from the package directory.
 
-## Verification state
+Native processes must preserve stdout, stderr and the launched process object's
+exit code separately. `$LASTEXITCODE` is not authoritative for controlled
+gates. Every package fails closed on branch, SHA, index, path, hash or remote
+drift.
 
-This handoff is installed with the uncommitted implementation payload. No test
-result is claimed by this file. The application launcher writes command logs and
-a machine-readable summary under
-`C:\dev\hrms-payroll-artifacts\P5-A1\G05`.
+## Next controlled decision
 
-## Next controlled action
+After this post-merge authority reconciliation is merged, choose exactly one:
 
-Run only the corrected P5-A1 non-Codex v1.1 validator-first package, review all generated evidence and
-resolve any focused failure. Staging, commit, push and PR creation require a
-separate approval after verification and critical review.
+1. activate P5-A2 through source-linked planning and a new thread/allow-list; or
+2. resume S4-06A as the previously paused statutory API integration closure.
 
-## Prohibited actions
+Do not reserve V032 or start implementation until that choice is recorded.
 
-Do not modify V001-V030, start P5-A2, resume S4-06A/S4-06B, add country-specific
-legal rules, stage, commit, push, open a PR, merge or delete a branch under this
-authorization.
+## Prohibited assumptions
 
-## P5-A1 package v1.1 cardinality incident
-
-The v1.1 wrapper passed parser validation, but the apply script stopped during
-clean-worktree preflight because `Invoke-Git` used `return ,$output`. The unary
-comma nested the zero-line result and produced `System.Object[]`. Failure evidence
-confirmed `main`, approved HEAD, empty status, no commit, no push and no PR.
-Package v1.2 supersedes v1.1 and adds semantic zero/one/many output validation.
-Future threads enforce `MDR-038`.
-
-## P5-A1 G05 package v1.3 network resilience
-
-Package v1.3 supersedes v1.2 after an external HTTPS failure prevented
-`git fetch`. Failure evidence proved that the repository remained clean on
-`main` at the approved SHA. Future GitHub-dependent packages must run a bounded
-remote connectivity and exact-state gate before mutation and must not permit an
-offline bypass.
-
-## PowerShell native stream rule
-
-For Git or any native command whose output becomes repository data, capture
-stdout, stderr and exit code separately. Never use `2>&1` for changed-path,
-branch, SHA, migration or allow-list checks. Semantic package tests must prove
-that stderr warnings cannot enter the stdout data collection.
-
-When an implementation payload was already applied and the failure was only a
-post-application validation false positive, preserve the authorized changes and
-use a bounded resume package after verifying the exact branch, base SHA, empty
-index, changed-path set and payload hashes.
-
-## Native exit-code rule
-
-For every controlled child process, read success or failure from the launched process object's `ExitCode`. Do not rely on `$LASTEXITCODE` for generated repository scripts. Keep stdout and stderr separate and validate a deliberate known non-zero exit before any mutation.
+Do not infer that P5-A2, S4-06A, S4-06B, country-specific legal rules, branch
+deletion or V032 reservation is authorized. Do not treat the historical
+P5-A1 branch or Thread 6 allow-list as reusable ownership.

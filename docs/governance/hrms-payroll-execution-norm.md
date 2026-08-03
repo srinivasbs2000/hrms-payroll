@@ -13,6 +13,21 @@ file payloads and PowerShell launchers; the project owner runs them locally and
 returns the resulting evidence. The project owner must not have to restate this
 rule in a later conversation.
 
+## Mandatory assistant GitHub read-only mode
+
+Assistant and agent GitHub access is strictly read-only for this project,
+regardless of connector schemas or reported repository permissions. Connected
+GitHub tools may be used only to inspect repository metadata, branches, commits,
+pull requests, reviews, checks, workflow runs, artifacts, issues and diffs.
+
+Every GitHub mutation must be performed by the project owner through an exact
+local package using the owner's authenticated `git`/`gh` environment. This
+includes branch/ref changes, commits, pushes, repository-file updates, pull
+request creation or editing, comments, labels, reviewer actions, workflow
+reruns, ready/draft transitions, auto-merge and merge. The assistant prepares
+and validates the package, receives evidence, and verifies the resulting remote
+state read-only. It must not first attempt a connector mutation.
+
 Codex CLI, Codex desktop, Codex IDE extensions, Codex cloud tasks and API-key-
 backed Codex execution are prohibited unless the project owner gives explicit,
 task-specific override authorization. Generic approvals such as `Approved`,
