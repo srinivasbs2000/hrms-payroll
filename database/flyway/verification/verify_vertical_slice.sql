@@ -198,6 +198,7 @@ BEGIN
   FOREACH lifecycle_signature IN ARRAY ARRAY[
     'organisation.approve_version(character varying,uuid,uuid,character varying,timestamp with time zone)',
     'organisation.end_date_version(character varying,uuid,uuid,date,bigint,character varying,timestamp with time zone)',
+    'organisation.retire_identity(character varying,uuid,uuid,date,bigint,character varying,character varying,timestamp with time zone)',
     'organisation.approve_pay_group_version(uuid,uuid,character varying,timestamp with time zone)',
     'organisation.end_date_pay_group_version(uuid,uuid,date,bigint,character varying,timestamp with time zone)',
     'organisation.create_monthly_payroll_calendar(uuid,character varying,character varying,character varying,character varying,timestamp with time zone)',
@@ -1305,3 +1306,69 @@ SELECT con.conrelid::regclass AS child_table, con.conname, pg_get_constraintdef(
 
 SELECT rolname, rolsuper, rolcreaterole, rolcreatedb, rolbypassrls
   FROM pg_roles WHERE rolname IN ('payroll_owner', 'payroll_migrator', 'payroll_app') ORDER BY rolname;
+
+-- P5-A1 organisation hierarchy closure verification.
+DO $$
+DECLARE
+  target regclass;
+  constraint_name text;
+BEGIN
+  FOREACH target IN ARRAY ARRAY[
+    'organisation.legal_entity'::regclass,
+    'organisation.payroll_statutory_unit'::regclass,
+    'organisation.establishment'::regclass
+  ]
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1
+        FROM pg_attribute
+       WHERE attrelid = target
+         AND attname = 'retirement_effective_date'
+         AND NOT attisdropped
+    ) THEN
+      RAISE EXCEPTION '% lacks retirement evidence columns', target;
+    END IF;
+  END LOOP;
+
+  FOREACH constraint_name IN ARRAY ARRAY[
+    'legal_entity_status_ck',
+    'legal_entity_code_format_ck',
+    'legal_entity_retirement_evidence_ck',
+    'payroll_statutory_unit_status_ck',
+    'payroll_statutory_unit_code_format_ck',
+    'payroll_statutory_unit_retirement_evidence_ck',
+    'establishment_status_ck',
+    'establishment_code_format_ck',
+    'establishment_retirement_evidence_ck',
+    'psu_version_responsibility_scope_ck',
+    'establishment_version_type_ck'
+  ]
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint WHERE conname = constraint_name
+    ) THEN
+      RAISE EXCEPTION 'missing P5-A1 constraint %', constraint_name;
+    END IF;
+  END LOOP;
+
+  IF NOT has_function_privilege(
+    'payroll_app',
+    'organisation.retire_identity(character varying,uuid,uuid,date,bigint,character varying,character varying,timestamp with time zone)',
+    'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION 'payroll_app cannot execute organisation.retire_identity';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+      FROM pg_proc p
+      CROSS JOIN LATERAL aclexplode(
+        coalesce(p.proacl, acldefault('f', p.proowner))
+      ) privilege
+     WHERE p.oid = 'organisation.retire_identity(character varying,uuid,uuid,date,bigint,character varying,character varying,timestamp with time zone)'::regprocedure
+       AND privilege.grantee = 0
+       AND privilege.privilege_type = 'EXECUTE'
+  ) THEN
+    RAISE EXCEPTION 'PUBLIC can execute organisation.retire_identity';
+  END IF;
+END $$;

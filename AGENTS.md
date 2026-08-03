@@ -63,9 +63,54 @@ Normalize line endings for comparison, preserve the repository's intended text
 encoding and run `git diff --check`. Repository text files must be valid UTF-8
 and must not contain mojibake.
 
+## Standing non-Codex execution and response norm
+
+HRMS Payroll work defaults to deterministic downloadable payloads and local
+PowerShell execution. Do not invoke, require, recommend or install Codex CLI,
+Codex desktop, Codex IDE extensions, Codex cloud tasks or API-key-backed Codex
+execution unless the project owner gives explicit, task-specific override
+authorization. Generic approvals such as `Approved`, `Proceed` or `Start
+implementation` do not authorize Codex.
+
+Downloaded packages are assumed to be under `$HOME\Downloads`. Generated
+scripts default to `C:\dev\hrms-payroll`, accept `-RepoRoot` as an alias for
+`-RepositoryPath`, resolve companion files through `$PSScriptRoot`, quote all
+Windows paths and support profile names containing spaces.
+
+Every HRMS Payroll response ends with `What you need to do now` and `What I
+need from you`. Every downloadable artifact must state whether it is executable,
+reference-only, evidence, a checkpoint or superseded; whether to download,
+extract, execute, retain, archive, ignore or delete it; the exact command;
+expected output; and the evidence to return. See
+`docs/governance/hrms-payroll-execution-norm.md`.
+
+Every generated PowerShell script, including rollback scripts, must pass
+`[System.Management.Automation.Language.Parser]::ParseFile(...)` before
+execution. Package commands must run `scripts/Test-PowerShellScript.ps1` first
+and fail closed if validation is skipped or fails. Delimiter counting is not
+parser validation. Avoid ambiguous interpolation such as `$Path:`; use
+`${Path}:` or `$($Path):`.
+
+Native-command wrapper functions must preserve zero/one/many output cardinality.
+Do not return captured native output with a unary comma (`return ,$output`). Emit
+flat strings, capture variable output as `[string[]] @(…)`, and execute semantic
+empty/single/multiple cardinality checks before repository writes.
+### Native process stream separation
+
+When Git or another native command produces data that will be parsed, capture
+stdout, stderr and exit code separately. Never merge `2>&1` into changed-path,
+branch, SHA, migration or allow-list comparisons. Semantic package tests must
+prove that stderr warnings cannot enter stdout data collections.
+
+When an authorized payload is already applied and only a post-application
+validation false positive occurs, preserve it and use a bounded resume package
+after verifying the exact branch, base SHA, empty index, changed paths and
+payload hashes.
 ## Model and Agent Routing Policy
 
-Use the lowest-cost agent capable of producing a complete and verified result.
+This routing policy is dormant unless the project owner has explicitly authorized Codex for the specific task. The standing default remains non-Codex local payload execution.
+
+When explicitly activated, use the lowest-cost agent capable of producing a complete and verified result.
 
 ### Available agents
 
@@ -206,8 +251,9 @@ payroll payloads in browser storage.
 ## Database migrations
 
 `database/flyway/sql` is the single source of ordered versioned migrations.
-V001-V030 are committed and immutable. V031 remains unreserved. Future schema
-work is forward-only from V031 after explicit reservation. Versioned migrations
+V001-V030 are committed and immutable. V031 is reserved by Thread 6 for
+P5-A1 as V031__organisation_hierarchy_closure.sql. Later schema work is
+forward-only from V032 after separate reservation. Versioned migrations
 must fail loudly; do not add permissive `IF NOT EXISTS` clauses to them. The
 `backend/database-migrations` Maven module packages the canonical directory as
 `db/migration`. Administrator bootstrap, development seed and verification SQL

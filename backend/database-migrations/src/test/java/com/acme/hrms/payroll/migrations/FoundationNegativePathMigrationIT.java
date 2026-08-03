@@ -224,24 +224,29 @@ class FoundationNegativePathMigrationIT {
                     draftPsuId,
                     draftLegalVersionId));
 
-        assertFunctionResult(
-            statement,
-            """
-            SELECT organisation.approve_version(
-              'PAYROLL_STATUTORY_UNIT','%s','%s','test','%s'
-            )
-            """
-                .formatted(
-                    TENANT_A,
-                    draftPsuVersionId,
-                    Instant.parse("2026-07-23T00:00:00Z")),
-            0);
+        java.sql.Savepoint parentApprovalSavepoint =
+            connection.setSavepoint();
+        assertSqlState(
+            "P5A03",
+            () ->
+                statement.execute(
+                    """
+                    SELECT organisation.approve_version(
+                      'PAYROLL_STATUTORY_UNIT','%s','%s',
+                      'foundation-checker','%s'
+                    )
+                    """
+                        .formatted(
+                            TENANT_A,
+                            draftPsuVersionId,
+                            Instant.parse("2026-07-23T00:00:00Z"))));
+        connection.rollback(parentApprovalSavepoint);
 
         assertFunctionResult(
             statement,
             """
             SELECT organisation.approve_version(
-              'LEGAL_ENTITY','%s','%s','test','%s'
+              'LEGAL_ENTITY','%s','%s','foundation-checker','%s'
             )
             """
                 .formatted(
@@ -254,7 +259,7 @@ class FoundationNegativePathMigrationIT {
             statement,
             """
             SELECT organisation.approve_version(
-              'PAYROLL_STATUTORY_UNIT','%s','%s','test','%s'
+              'PAYROLL_STATUTORY_UNIT','%s','%s','foundation-checker','%s'
             )
             """
                 .formatted(
@@ -313,18 +318,20 @@ class FoundationNegativePathMigrationIT {
                     draftEstablishmentId,
                     secondPsuVersionId));
 
-        assertFunctionResult(
-            statement,
-            """
-            SELECT organisation.approve_version(
-              'ESTABLISHMENT','%s','%s','test','%s'
-            )
-            """
-                .formatted(
-                    TENANT_A,
-                    draftEstablishmentVersionId,
-                    Instant.parse("2026-07-23T00:03:00Z")),
-            0);
+        assertSqlState(
+            "P5A03",
+            () ->
+                statement.execute(
+                    """
+                    SELECT organisation.approve_version(
+                      'ESTABLISHMENT','%s','%s',
+                      'foundation-checker','%s'
+                    )
+                    """
+                        .formatted(
+                            TENANT_A,
+                            draftEstablishmentVersionId,
+                            Instant.parse("2026-07-23T00:03:00Z"))));
       }
       connection.rollback();
     }
