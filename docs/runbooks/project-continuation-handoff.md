@@ -1,9 +1,10 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 3 August 2026
+**Updated:** 4 August 2026
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\dev\hrms-payroll`
-**Repository baseline:** `main` at `5b40904764e138a7019f5d5a2b905f7019df8465`
+**Repository baseline:** `main` at `961465cb551f3757a6f51f1322e6b46c32317b16`
+**Latest repository publication:** PR #26 — merged
 **Latest merged product increment:** P5-A1 through PR #25
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 **Mandatory status:** Validate this file against local Git and live read-only
@@ -13,51 +14,65 @@ GitHub evidence before writing.
 
 | Item | Current fact |
 |---|---|
-| Remote `main` | `5b40904764e138a7019f5d5a2b905f7019df8465` |
-| Latest repository publication | PR #25 — merged |
-| P5-A1 source commit | `2e28a96939f8c86c7de26047b4666f77a0278cf9` |
-| CI evidence | `payroll-baseline` run 94; 9/9 jobs successful |
-| Active implementation package | None |
-| Active write owner | None |
+| Remote `main` | `961465cb551f3757a6f51f1322e6b46c32317b16` |
+| Latest repository publication | PR #26 — merged |
+| Latest product increment | P5-A1 through PR #25 |
+| Latest CI evidence | PR #26 run 96; 9/9 jobs successful |
+| Active implementation package | S4-06A statutory API integration closure |
+| Active write owner | Thread 7 |
+| Local implementation branch | `quality/s4-06a-statutory-api-integration` |
 | Thread 6 | Closed; ownership released |
 | Migrations | V001-V031 committed and immutable |
-| Next migration | V032 unreserved |
+| Next migration | V032 unreserved; not required by S4-06A |
 | P5-A2 | Not activated |
-| S4-06A | Paused, not cancelled |
+| S4-06A | Active, bounded and uncommitted |
 | S4-06B | Planned, not authorized |
 | GitHub access for assistant/agents | Strictly read-only |
 
+## S4-06A active boundary
+
+S4-06A closes the existing statutory API integration gap through one real
+secured HTTP/PostgreSQL integration suite. It does not add statutory product
+behavior.
+
+The implementation must prove:
+
+- PostgreSQL 17 Testcontainers and Flyway through V031;
+- runtime `payroll_app` with no superuser or RLS bypass;
+- secured controller-to-service-to-database execution;
+- evaluation, posting, correction and evidence reads;
+- decimal-string money with exact four-place values;
+- idempotent replay and changed-payload conflict;
+- optimistic concurrency and a real two-request race;
+- tenant isolation;
+- exactly-once audit and outbox evidence;
+- balances, zero-variance reconciliation and remittance preparation.
+
+## Exact Thread 7 allow-list
+
+1. `backend/payroll-boot/src/test/java/com/acme/hrms/payroll/StatutoryApiIT.java`
+2. `docs/quality/s4-06a-statutory-api-integration.md`
+3. `docs/design/hrms-payroll-master-design.md`
+4. `docs/design/decision-register.md`
+5. `docs/governance/thread-registry.md`
+6. `docs/runbooks/project-continuation-handoff.md`
+
+Any other path is outside the active package.
+
+## Migration and product boundary
+
+V001-V031 are immutable. V032 remains unreserved. S4-06A must not introduce a
+migration, production Java change, OpenAPI/Keycloak change, dependency/POM
+change, frontend/Playwright change, deployment/workflow change or
+jurisdiction-specific legal rule.
+
+A discovered need for one of those changes is a stop-and-split defect/design
+boundary, not implicit authorization.
+
 ## P5-A1 delivered state
 
-P5-A1 closes the bounded organisation hierarchy lifecycle foundation from
-V015/V016/V022 through V031:
-
-- stable identities and immutable effective-dated exact versions;
-- `PENDING_APPROVAL -> ACTIVE -> RETIRED` identity lifecycle;
-- `DRAFT -> APPROVED` version lifecycle;
-- database-enforced maker-checker approval;
-- serialized version-sequence allocation;
-- approved-parent and effective-range enforcement;
-- PSU `responsibility_scope` and establishment `establishment_type`;
-- controlled retirement with evidence, dependency blockers and identity ETag;
-- tenant RLS, least privilege, audit and outbox evidence;
-- RFC 9457 API problems without SQL leakage;
-- aligned OpenAPI, Keycloak and React workflows;
-- populated-V030 upgrade, API, concurrency, migration and frontend regression
-  coverage.
-
-PR #25 merged this state into `main` as
-`5b40904764e138a7019f5d5a2b905f7019df8465`.
-
-## Current ownership and migration boundary
-
-No thread currently owns repository writes. The retained P5-A1 feature branch is
-historical and must not be reused. V001-V031 are immutable. V032 may be reserved
-only after one next increment is selected and one active owner is registered
-with an exact allow-list.
-
-P5-A2 and S4-06A are separate choices. Neither is implicitly authorized by
-P5-A1 closure, and they must not be combined for convenience.
+P5-A1 and its authority reconciliation remain merged through PR #25 and PR #26.
+Thread 6 is closed. The retained historical branches must not be reused.
 
 ## Mandatory GitHub read-only boundary
 
@@ -82,17 +97,18 @@ exit code separately. `$LASTEXITCODE` is not authoritative for controlled
 gates. Every package fails closed on branch, SHA, index, path, hash or remote
 drift.
 
-## Next controlled decision
+## Next controlled action
 
-After this post-merge authority reconciliation is merged, choose exactly one:
+Run the S4-06A activation package. It may safely move the clean local checkout
+to current `main`, create the Thread 7 branch, apply exactly six files and run
+focused/full backend gates.
 
-1. activate P5-A2 through source-linked planning and a new thread/allow-list; or
-2. resume S4-06A as the previously paused statutory API integration closure.
+It must stop before staging, commit, push, PR creation or merge.
 
-Do not reserve V032 or start implementation until that choice is recorded.
+After green evidence, perform independent critical review before authorizing a
+publication package.
 
 ## Prohibited assumptions
 
-Do not infer that P5-A2, S4-06A, S4-06B, country-specific legal rules, branch
-deletion or V032 reservation is authorized. Do not treat the historical
-P5-A1 branch or Thread 6 allow-list as reusable ownership.
+Do not infer authorization for P5-A2, S4-06B, V032, production fixes,
+jurisdiction-specific legal rules, publication, branch deletion or merge.
