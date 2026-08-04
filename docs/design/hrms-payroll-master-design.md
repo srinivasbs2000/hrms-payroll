@@ -2,12 +2,13 @@
 
 **Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Repository baseline:** `main` at PR #28 merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`
+**Repository baseline:** `main` at PR #29 merge `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8`
+**Latest repository publication:** PR #29 authority closure
 **Latest merged quality increment:** S4-06A through PR #28 merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`
 **Latest merged product increment:** P5-A1 through PR #25 merge `5b40904764e138a7019f5d5a2b905f7019df8465`
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 **Last verified:** 4 August 2026
-**Maintainers:** Project owner and the currently authorised project thread
+**Maintainers:** Project owner and the currently authorised capability workstream
 **Full product scope authority:** `docs/product/payroll-product-scope-and-epic-catalog.md`
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
 
@@ -136,13 +137,18 @@ remain mandatory.
 
 - `database/flyway/sql` is the ordered migration authority.
 - V001-V031 are committed and immutable.
-- V032 is unreserved; merged S4-06A did not reserve or use it.
+- V032 is reserved exclusively for P5-A2; creation of the SQL file and product implementation remain separately gated.
 - future migrations are forward-only and separately authorised;
 - tenant-owned FKs include tenant ownership;
 - stable identity plus immutable effective-dated versions preserve lineage;
 - consumed evidence is never rewritten;
 - the original 112-table DDL is a logical design source, not a migration to
   apply directly.
+
+The product remains greenfield with no evidenced production deployment or live
+customer payroll data. Schema-version and upgrade tests preserve deterministic
+developer/CI state and establish a safe future deployment path; they do not
+represent a current production migration.
 
 ## 9. Security, reliability and API rules
 
@@ -190,18 +196,19 @@ risk are committed.
 | Sprint 3 | Regular execution and deterministic evidence | V023-V026 | PR #18 merged |
 | Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; S4-06A quality closure merged through PR #28 |
 | P5-A1 | Organisation hierarchy lifecycle closure | V031 | PR #25 merged |
+| P5-A2 | General compensation catalogue and named payroll-base foundation | V032 reserved | Active preparation; implementation not yet authorised |
 | Governance | Living design and reconciliation controls | None | PR #20, PR #21 and PR #26 merged |
 | Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | PR #28 merged; Thread 7 closed and ownership released |
 
 ## 13. Current controlled debt and planning
 
-- S4-06A is merged through PR #28; Thread 7 is closed and its write ownership is released.
+- S4-06A is merged through PR #28 and remains closed.
 - S4-06B is planned but not authorised.
-- P5-A2 is not activated and must remain separate from the closed S4-06A increment.
-- `PLN-01` remains the product-planning authority; S4-06A does not expand
-  product scope.
+- P5-A2 is activated as a capability workstream, separate from chat-thread numbering.
+- The reviewed P5-A2 boundary is general component catalogue, named bases and exact memberships.
+- `PLN-01` remains the product-planning authority and produced the P5-A2 source-linked scope.
 - E09 still requires current legal/domain revalidation.
-- V032 remains unreserved.
+- V032 is reserved exclusively for P5-A2; product implementation remains separately gated.
 - Production, migration, contract, security, dependency, frontend and CI
   changes require stop-and-split approval.
 
@@ -230,3 +237,5 @@ risk are committed.
 | 4 Aug 2026 | Merged post-P5-A1 authority reconciliation | PR #26; `961465cb551f3757a6f51f1322e6b46c32317b16` |
 | 4 Aug 2026 | Activated and completed the S4-06A test-only integration closure under Thread 7 | Planning checkpoint; exact six-file allow-list; PR #28 |
 | 4 Aug 2026 | Merged S4-06A statutory API integration quality closure and released Thread 7 ownership | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 |
+| 4 Aug 2026 | Merged final S4-06A authority closure | PR #29; merge `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8` |
+| 4 Aug 2026 | Activated P5-A2 capability preparation and reserved V032 | P5-A2 scope definition and critical review; exact 46-path maximum boundary |

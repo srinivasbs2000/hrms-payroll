@@ -7,8 +7,9 @@ module.
 
 V001-V031 are committed and immutable. V031 is
 `V031__organisation_hierarchy_closure.sql`, merged through PR #25. V032 is
-unreserved and must not be used until one active implementation owner reserves
-it explicitly in the thread registry and decision register.
+reserved exclusively for the active P5-A2 compensation-catalogue and named-base
+capability workstream. The reservation does not itself authorise creation of the
+V032 SQL file or product implementation.
 
 Apply `bootstrap/001_admin_bootstrap.sql` once as a database administrator, then
 run Flyway as `payroll_migrator`. Application traffic uses `payroll_app`, which
@@ -55,6 +56,12 @@ Migration order:
 29. approved statutory assessment-base classifications, immutable statutory snapshots and deterministic FIXED/PERCENTAGE/SLAB evaluation evidence
 30. append-only statutory ledger postings, approved balance years, PTD/YTD snapshots, corrections, reconciliation and remittance-ready evidence
 31. organisation identity lifecycle, maker-checker approval, responsibility/establishment classifications, safe version allocation and controlled retirement
+32. reserved for P5-A2 compensation catalogue, named payroll bases, exact component/base memberships, maker-checker and controlled retirement
+
+This remains a greenfield product with no evidenced production deployment.
+Forward-only migrations and populated-upgrade tests protect reproducible local,
+CI and future deployment paths; they do not indicate a current production
+migration.
 
 All effective ranges are half-open: `[effective_from, effective_to)`. The
 application sets `app.tenant_id` with `SET LOCAL` at every transaction boundary.
