@@ -2,9 +2,10 @@
 
 **Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Publication source baseline:** `main` at PR #21 merge `18d5ca3554ff217140b7e3c443d086d63bd02070`
-**Current product implementation baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
-**Last verified:** 1 August 2026
+**Repository baseline:** `main` at PR #26 merge `961465cb551f3757a6f51f1322e6b46c32317b16`
+**Latest merged product increment:** P5-A1 through PR #25 merge `5b40904764e138a7019f5d5a2b905f7019df8465`
+**Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
+**Last verified:** 4 August 2026
 **Maintainers:** Project owner and the currently authorised project thread
 **Full product scope authority:** `docs/product/payroll-product-scope-and-epic-catalog.md`
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
@@ -133,8 +134,8 @@ remain mandatory.
 ## 8. Data and migration rules
 
 - `database/flyway/sql` is the ordered migration authority.
-- V001-V030 are immutable.
-- V031 is unreserved.
+- V001-V031 are committed and immutable.
+- V032 is unreserved and is not required by active S4-06A.
 - future migrations are forward-only and separately authorised;
 - tenant-owned FKs include tenant ownership;
 - stable identity plus immutable effective-dated versions preserve lineage;
@@ -186,18 +187,22 @@ risk are committed.
 | Sprint 1 | Organisation, reliability, audit and architecture | V014-V016 | PR #2 merged |
 | Sprint 2 | Configuration and employee-payroll foundation | V017-V022 | PR #3 merged |
 | Sprint 3 | Regular execution and deterministic evidence | V023-V026 | PR #18 merged |
-| Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; quality debt remains |
-| Governance | Living design and reconciliation controls | None | PR #20 and PR #21 merged |
+| Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; S4-06A quality closure active |
+| P5-A1 | Organisation hierarchy lifecycle closure | V031 | PR #25 merged |
+| Governance | Living design and reconciliation controls | None | PR #20, PR #21 and PR #26 merged |
+| Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | S4-06A active under Thread 7; uncommitted |
 
 ## 13. Current controlled debt and planning
 
-- S4-06A is selected but not started.
+- S4-06A is active under Thread 7 as a six-file test-only quality closure.
 - S4-06B is planned but not authorised.
-- `PLN-01` epic-to-detailed-story decomposition is required after this
-  publication and before the next new product-feature sprint.
-- E09 requires current legal/domain revalidation.
-- V031 remains unreserved.
-- Thread 6 remains inactive.
+- P5-A2 is not activated and must remain separate from S4-06A.
+- `PLN-01` remains the product-planning authority; S4-06A does not expand
+  product scope.
+- E09 still requires current legal/domain revalidation.
+- V032 remains unreserved.
+- Production, migration, contract, security, dependency, frontend and CI
+  changes require stop-and-split approval.
 
 ## 14. Documentation model
 
@@ -220,3 +225,6 @@ risk are committed.
 | 1 Aug 2026 | Initial living master design | PR #20 |
 | 1 Aug 2026 | Cross-thread completion controls | PR #21 `18d5ca3554ff217140b7e3c443d086d63bd02070` |
 | 1 Aug 2026 | Recovered 18-epic/72-row product baseline and recorded PLN-01 | Full-product reconciliation; MDR-028-MDR-033 |
+| 3 Aug 2026 | Merged P5-A1 organisation hierarchy closure | PR #25; V031 |
+| 4 Aug 2026 | Merged post-P5-A1 authority reconciliation | PR #26; `961465cb551f3757a6f51f1322e6b46c32317b16` |
+| 4 Aug 2026 | Activated S4-06A test-only integration closure under Thread 7 | Planning checkpoint; exact six-file allow-list |
