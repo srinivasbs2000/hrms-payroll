@@ -77,3 +77,16 @@ evidence.
 A material decision must include a stable ID, exact decision, type/status,
 evidence, implementation state, conflict/supersession relationship and handoff
 action. Do not record brainstorms as approved decisions.
+
+<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
+### P5-A2 implementation decisions
+
+- Preserve `pay_component.component_type` as the calculation-direction
+  contract; add business catalogue categories only to schema-1 versions.
+- Preserve existing versions as schema 0 and require complete schema-1 runtime
+  writes; schema-0 drafts cannot be newly approved.
+- Model exact named-base membership as one append-only table with maker-checker,
+  one-successor lineage, approved range non-overlap, and decimal-string
+  inclusion percentage `numeric(12,8)`.
+- Keep the V025/V026 starter calculator unchanged; named bases are not consumed
+  by the current calculator in P5-A2.

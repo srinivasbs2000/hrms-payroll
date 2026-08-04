@@ -1,15 +1,13 @@
 package com.acme.hrms.payroll.compensation;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
-public record PayComponentView(
+public record PayrollBaseView(
     UUID identityId,
     String code,
     String name,
-    String componentType,
     String lifecycleStatus,
     String ownershipScope,
     String countryCode,
@@ -24,25 +22,9 @@ public record PayComponentView(
     int versionSequence,
     long versionNo,
     int catalogueSchemaVersion,
-    String classificationStatus,
-    String formulaType,
-    String formulaExpression,
-    BigDecimal fixedAmount,
-    int roundingScale,
-    String componentCategory,
-    String componentSubcategory,
-    String cashImpact,
-    String payeeType,
-    String paymentChannel,
-    String settlementTiming,
-    String payslipVisibility,
-    String zeroValueVisibility,
-    String negativeValuePolicy,
-    String frequency,
-    String valueNature,
-    String amountRepresentation,
-    String taxTreatment,
-    String payrollTiming,
+    String baseCategory,
+    String aggregationMethod,
+    String description,
     LocalDate effectiveFrom,
     LocalDate effectiveTo,
     String approvalStatus,

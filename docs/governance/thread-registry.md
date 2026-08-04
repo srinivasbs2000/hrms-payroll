@@ -106,3 +106,8 @@ CI work requires a new registered owner, exact scope and separate authorization.
 Assistant and agent GitHub access is strictly read-only. GitHub mutations are
 performed only by the project owner using a deterministic local package, then
 verified through read-only GitHub inspection and returned evidence.
+
+<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
+- P5-A2 compensation catalogue and named bases: active implementation candidate
+  from `e9e297de5e59762f3701ce39ca2295e1839d7d16`; write ownership remains on
+  `feature/p5-a2-compensation-catalogue-named-bases`; no PR or merge yet.

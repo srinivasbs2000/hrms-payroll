@@ -3,7 +3,9 @@ package com.acme.hrms.payroll.compensation;
 import com.acme.hrms.payroll.compensation.internal.application.PayComponentService;
 import com.acme.hrms.payroll.platform.AuditReader;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
@@ -35,7 +37,7 @@ public class PayComponentController {
   @PreAuthorize("hasAuthority('compensation.component.create')")
   public ResponseEntity<PayComponentView> create(
       @RequestHeader("Idempotency-Key") String idempotencyKey,
-      @Valid @RequestBody PayComponentWriteRequest request) {
+      @Valid @RequestBody PayComponentCreateRequest request) {
     PayComponentView result = service.create(idempotencyKey, request);
     return ResponseEntity
         .created(URI.create("/api/v1/pay-components/" + result.identityId()))
@@ -60,9 +62,7 @@ public class PayComponentController {
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
       LocalDate asOf) {
     PayComponentView result = service.current(identityId, asOf);
-    return ResponseEntity.ok()
-        .eTag(Long.toString(result.versionNo()))
-        .body(result);
+    return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
   }
 
   @GetMapping("/{identityId}/versions")
@@ -72,40 +72,33 @@ public class PayComponentController {
   }
 
   @PostMapping("/{identityId}/versions")
-  @PreAuthorize(
-      "hasAuthority('compensation.component.version.create')")
+  @PreAuthorize("hasAuthority('compensation.component.version.create')")
   public ResponseEntity<PayComponentView> addVersion(
       @PathVariable UUID identityId,
       @RequestHeader("Idempotency-Key") String idempotencyKey,
-      @Valid @RequestBody PayComponentWriteRequest request) {
-    PayComponentView result =
-        service.addVersion(identityId, idempotencyKey, request);
+      @Valid @RequestBody PayComponentVersionWriteRequest request) {
+    PayComponentView result = service.addVersion(identityId, idempotencyKey, request);
     return ResponseEntity
         .created(URI.create(
-            "/api/v1/pay-components/" + identityId
-                + "/versions/" + result.versionId()))
+            "/api/v1/pay-components/" + identityId + "/versions/" + result.versionId()))
         .eTag(Long.toString(result.versionNo()))
         .body(result);
   }
 
   @PostMapping("/{identityId}/versions/{versionId}/corrections")
-  @PreAuthorize(
-      "hasAuthority('compensation.component.version.correct')")
+  @PreAuthorize("hasAuthority('compensation.component.version.correct')")
   public ResponseEntity<PayComponentView> correct(
       @PathVariable UUID identityId,
       @PathVariable UUID versionId,
       @RequestHeader("Idempotency-Key") String idempotencyKey,
-      @Valid @RequestBody PayComponentWriteRequest request) {
-    PayComponentView result = service.correctFuture(
-        identityId, versionId, idempotencyKey, request);
-    return ResponseEntity.ok()
-        .eTag(Long.toString(result.versionNo()))
-        .body(result);
+      @Valid @RequestBody PayComponentVersionWriteRequest request) {
+    PayComponentView result =
+        service.correctFuture(identityId, versionId, idempotencyKey, request);
+    return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
   }
 
   @PostMapping("/{identityId}/versions/{versionId}/end-date")
-  @PreAuthorize(
-      "hasAuthority('compensation.component.version.end-date')")
+  @PreAuthorize("hasAuthority('compensation.component.version.end-date')")
   public ResponseEntity<PayComponentView> endDate(
       @PathVariable UUID identityId,
       @PathVariable UUID versionId,
@@ -118,9 +111,7 @@ public class PayComponentController {
         idempotencyKey,
         request.effectiveTo(),
         expectedVersion(ifMatch));
-    return ResponseEntity.ok()
-        .eTag(Long.toString(result.versionNo()))
-        .body(result);
+    return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
   }
 
   @PostMapping("/{identityId}/versions/{versionId}/approval")
@@ -129,24 +120,35 @@ public class PayComponentController {
       @PathVariable UUID identityId,
       @PathVariable UUID versionId,
       @RequestHeader("Idempotency-Key") String idempotencyKey) {
-    PayComponentView result =
-        service.approve(identityId, versionId, idempotencyKey);
-    return ResponseEntity.ok()
-        .eTag(Long.toString(result.versionNo()))
-        .body(result);
+    PayComponentView result = service.approve(identityId, versionId, idempotencyKey);
+    return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
+  }
+
+  @PostMapping("/{identityId}/retirement")
+  @PreAuthorize("hasAuthority('compensation.component.retire')")
+  public ResponseEntity<PayComponentView> retire(
+      @PathVariable UUID identityId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @RequestHeader("If-Match") String ifMatch,
+      @Valid @RequestBody RetirementRequest request) {
+    PayComponentView result = service.retire(
+        identityId,
+        idempotencyKey,
+        request.effectiveDate(),
+        expectedVersion(ifMatch),
+        request.reason());
+    return ResponseEntity.ok().eTag(Long.toString(result.identityVersionNo())).body(result);
   }
 
   @GetMapping("/{identityId}/audit")
   @PreAuthorize("hasAuthority('audit.read')")
-  public List<AuditReader.AuditEventView> audit(
-      @PathVariable UUID identityId) {
+  public List<AuditReader.AuditEventView> audit(@PathVariable UUID identityId) {
     return service.audit(identityId);
   }
 
   private long expectedVersion(String ifMatch) {
     try {
-      return Long.parseLong(
-          ifMatch.replace("W/", "").replace("\"", ""));
+      return Long.parseLong(ifMatch.replace("W/", "").replace("\"", ""));
     } catch (NumberFormatException exception) {
       throw new IllegalArgumentException(
           "If-Match must contain a numeric version", exception);
@@ -154,4 +156,8 @@ public class PayComponentController {
   }
 
   public record EndDateRequest(@NotNull LocalDate effectiveTo) {}
+
+  public record RetirementRequest(
+      @NotNull LocalDate effectiveDate,
+      @NotBlank @Size(max = 500) String reason) {}
 }

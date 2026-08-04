@@ -239,3 +239,13 @@ risk are committed.
 | 4 Aug 2026 | Merged S4-06A statutory API integration quality closure and released Thread 7 ownership | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 |
 | 4 Aug 2026 | Merged final S4-06A authority closure | PR #29; merge `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8` |
 | 4 Aug 2026 | Activated P5-A2 capability preparation and reserved V032 | P5-A2 scope definition and critical review; exact 46-path maximum boundary |
+
+<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
+## P5-A2 compensation catalogue and named bases
+
+P5-A2 extends the compensation foundation with complete behavioural component
+classification, stable named payroll-base identities, effective-dated base
+versions, and exact component-version/base-version memberships. All new
+runtime configuration is tenant scoped, append only, maker-checker controlled,
+audited, and published through the outbox. Legal classifications and rates
+remain rule-pack data outside this capability.

@@ -131,3 +131,13 @@ explicit authorisation.
 Do not infer product-implementation authority from P5-A2 activation or V032
 reservation. Do not infer authority for S4-06B, jurisdiction-specific legal
 rules, PR creation, merge or branch deletion.
+
+<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
+## Current continuation point: P5-A2
+
+Apply and verify the P5-A2 product implementation candidate only on branch
+`feature/p5-a2-compensation-catalogue-named-bases` at activation commit
+`e9e297de5e59762f3701ce39ca2295e1839d7d16`. V001-V031 are immutable. V032 is
+`V032__compensation_catalogue_named_bases.sql`. Do not open a PR, merge, or
+close authority until migration, backend, frontend, OpenAPI, architecture, and
+full-regression evidence is green.

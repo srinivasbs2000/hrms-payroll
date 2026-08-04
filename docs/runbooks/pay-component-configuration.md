@@ -1,38 +1,32 @@
-# Pay-component configuration
+# Pay-component catalogue configuration
 
 ## Purpose
 
-Pay components define tenant-scoped earning, deduction and informational
-identities. Calculation changes are represented by immutable, effective-dated
-versions so salary structures and payroll results can retain exact lineage.
-
-## Supported component types
-
-- `EARNING`
-- `DEDUCTION`
-- `INFORMATION`
-
-## Supported formula types
-
-- `FIXED`: requires a non-negative `fixedAmount` and no expression.
-- `PERCENTAGE_OF_COMPONENT`: requires `formulaExpression` and no fixed amount.
-- `RESIDUAL`: requires `formulaExpression` and no fixed amount.
-
-`roundingScale` defaults to 2 and must be between 0 and 4.
+Configure the stable identity and complete behavioural meaning of a payroll
+component without changing the existing calculation-direction contract.
 
 ## Lifecycle
 
-1. Create a stable identity and first draft version.
-2. Approve a non-superseded draft before it becomes effective.
-3. Append future versions for prospective calculation changes.
-4. Correct only a future, non-superseded draft by creating a replacement.
-5. End-date through the controlled command with the current ETag.
-6. Read immutable audit evidence through the identity audit endpoint.
+1. Create the identity with immutable code, display name, `componentType`,
+   ownership scope, optional country ownership, protection, and confidentiality.
+2. Create a complete schema-1 draft version containing formula metadata and all
+   behavioural classifications.
+3. Have a different authenticated principal approve the draft.
+4. Add future versions rather than rewriting approved history.
+5. Correct only a non-superseded future draft; the replacement points to the
+   superseded version.
+6. End-date through `If-Match` optimistic concurrency.
+7. Retire only when no active/future approved version, salary-structure line, or
+   approved named-base membership blocks retirement.
 
-Approved effective ranges for the same component cannot overlap. Direct update
-or delete access to component versions is denied to the application role.
+## Legacy rows
 
-## Permissions
+Existing component versions remain schema 0 and retain their approval history.
+They are readable with `classificationStatus=LEGACY_INCOMPLETE`. A schema-0
+legacy draft cannot be newly approved. Correct it by creating a complete
+schema-1 draft.
+
+## API permissions
 
 - `compensation.component.read`
 - `compensation.component.create`
@@ -40,16 +34,8 @@ or delete access to component versions is denied to the application role.
 - `compensation.component.version.correct`
 - `compensation.component.version.end-date`
 - `compensation.component.approve`
+- `compensation.component.retire`
 - `audit.read`
 
-## Idempotency and concurrency
-
-Every write requires `Idempotency-Key`. Reusing the same key with a different
-request is rejected. End-dating also requires `If-Match` containing the current
-numeric version.
-
-## Tenant boundary
-
-The application transaction sets `app.tenant_id`. Forced row-level security
-applies to component identities and versions, and cross-tenant reads return no
-records.
+Every mutation requires `Idempotency-Key`; end-date and retirement also require
+`If-Match`.

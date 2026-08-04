@@ -1,15 +1,16 @@
 # Payroll vertical-slice Flyway package
 
-`sql/` is the canonical source for the ordered V001-V031 migrations. The Maven
+`sql/` is the canonical source for the ordered V001-V032 migrations. The Maven
 `backend/database-migrations` module packages these files at `db/migration` and
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
 
 V001-V031 are committed and immutable. V031 is
 `V031__organisation_hierarchy_closure.sql`, merged through PR #25. V032 is
-reserved exclusively for the active P5-A2 compensation-catalogue and named-base
-capability workstream. The reservation does not itself authorise creation of the
-V032 SQL file or product implementation.
+`V032__compensation_catalogue_named_bases.sql`, authored exclusively for the
+active P5-A2 compensation-catalogue and named-base capability workstream. It
+preserves existing component UUIDs and approval history as schema 0, requires
+complete schema-1 runtime writes, and does not change the current calculator.
 
 Apply `bootstrap/001_admin_bootstrap.sql` once as a database administrator, then
 run Flyway as `payroll_migrator`. Application traffic uses `payroll_app`, which
@@ -56,7 +57,7 @@ Migration order:
 29. approved statutory assessment-base classifications, immutable statutory snapshots and deterministic FIXED/PERCENTAGE/SLAB evaluation evidence
 30. append-only statutory ledger postings, approved balance years, PTD/YTD snapshots, corrections, reconciliation and remittance-ready evidence
 31. organisation identity lifecycle, maker-checker approval, responsibility/establishment classifications, safe version allocation and controlled retirement
-32. reserved for P5-A2 compensation catalogue, named payroll bases, exact component/base memberships, maker-checker and controlled retirement
+32. P5-A2 compensation catalogue, named payroll bases, exact component/base memberships, maker-checker and controlled retirement
 
 This remains a greenfield product with no evidenced production deployment.
 Forward-only migrations and populated-upgrade tests protect reproducible local,

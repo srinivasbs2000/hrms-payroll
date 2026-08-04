@@ -185,6 +185,38 @@ class RowLevelSecurityIT {
     }
   }
 
+
+  @Test
+  void p5a2CatalogueTablesAreForcedAndTenantIsolated() throws Exception {
+    try (Connection connection = admin(); Statement statement = connection.createStatement()) {
+      statement.execute("INSERT INTO compensation.payroll_base(" +
+          "id,tenant_id,code,name,created_by,updated_by) VALUES " +
+          "('41000000-0000-0000-0000-00000000000a','" + TENANT_A +
+          "','A_GROSS','A Gross','test','test')," +
+          "('41000000-0000-0000-0000-00000000000b','" + TENANT_B +
+          "','B_GROSS','B Gross','test','test')");
+    }
+
+    try (Connection tenantA = app()) {
+      setTenant(tenantA, TENANT_A);
+      assertThat(count(tenantA,
+          "SELECT count(*) FROM compensation.payroll_base")).isOne();
+      assertThat(count(tenantA,
+          "SELECT count(*) FROM compensation.payroll_base WHERE tenant_id='" +
+              TENANT_B + "'")).isZero();
+      assertSqlState("42501", () -> execute(tenantA,
+          "INSERT INTO compensation.payroll_base(" +
+              "tenant_id,code,name,created_by,updated_by) VALUES ('" +
+              TENANT_B + "','CROSS_BASE','Cross Base','test','test')"));
+    }
+
+    try (Connection tenantB = app()) {
+      setTenant(tenantB, TENANT_B);
+      assertThat(count(tenantB,
+          "SELECT count(*) FROM compensation.payroll_base")).isOne();
+    }
+  }
+
   private String inboxInsert(String tenantId, String messageId, String consumerName) {
     return "INSERT INTO integration.inbox_message(tenant_id,message_id,consumer_name,payload_hash) VALUES ('"
         + tenantId + "','" + messageId + "','" + consumerName + "',repeat('a',64))";

@@ -250,6 +250,32 @@ paths:
     $ref: '#/components/pathItems/PayComponentApproval'
   /pay-components/{identityId}/audit:
     $ref: '#/components/pathItems/PayComponentAudit'
+  /pay-components/{identityId}/retirement:
+    $ref: '#/components/pathItems/PayComponentRetirement'
+  /payroll-bases:
+    $ref: '#/components/pathItems/PayrollBaseCollection'
+  /payroll-bases/{identityId}:
+    $ref: '#/components/pathItems/PayrollBaseIdentity'
+  /payroll-bases/{identityId}/retirement:
+    $ref: '#/components/pathItems/PayrollBaseRetirement'
+  /payroll-bases/{identityId}/versions:
+    $ref: '#/components/pathItems/PayrollBaseVersions'
+  /payroll-bases/{identityId}/versions/{versionId}/corrections:
+    $ref: '#/components/pathItems/PayrollBaseCorrection'
+  /payroll-bases/{identityId}/versions/{versionId}/end-date:
+    $ref: '#/components/pathItems/PayrollBaseEndDate'
+  /payroll-bases/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/PayrollBaseApproval'
+  /payroll-bases/{identityId}/memberships:
+    $ref: '#/components/pathItems/PayrollBaseMemberships'
+  /payroll-bases/{identityId}/memberships/{membershipId}/corrections:
+    $ref: '#/components/pathItems/PayrollBaseMembershipCorrection'
+  /payroll-bases/{identityId}/memberships/{membershipId}/end-date:
+    $ref: '#/components/pathItems/PayrollBaseMembershipEndDate'
+  /payroll-bases/{identityId}/memberships/{membershipId}/approval:
+    $ref: '#/components/pathItems/PayrollBaseMembershipApproval'
+  /payroll-bases/{identityId}/audit:
+    $ref: '#/components/pathItems/PayrollBaseAudit'
   /salary-structures:
     $ref: '#/components/pathItems/SalaryStructureCollection'
   /salary-structures/{identityId}:
@@ -852,27 +878,20 @@ components:
         - $ref: '#/components/parameters/AsOf'
         responses:
           '200':
-            description: Effective pay components
-            headers:
-              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            description: Effective pay components with complete or preserved legacy classification
             content:
               application/json:
-                schema:
-                  type: array
-                  items: {$ref: '#/components/schemas/PayComponentVersion'}
+                schema: {type: array, items: {$ref: '#/components/schemas/PayComponentVersion'}}
           '401': {$ref: '#/components/responses/Unauthorized'}
           '403': {$ref: '#/components/responses/Forbidden'}
-          '429': {$ref: '#/components/responses/TooManyRequests'}
-          '500': {$ref: '#/components/responses/InternalServerError'}
-          '503': {$ref: '#/components/responses/ServiceUnavailable'}
       post:
         operationId: createPayComponent
         tags: [Compensation]
-        summary: Create a stable pay-component identity and first draft version
+        summary: Create a stable identity and first complete schema-1 draft
         x-permission: compensation.component.create
         parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
-        requestBody: {$ref: '#/components/requestBodies/PayComponentWriteRequest'}
+        requestBody: {$ref: '#/components/requestBodies/PayComponentCreateRequest'}
         responses:
           '201': {$ref: '#/components/responses/PayComponentVersion'}
           '401': {$ref: '#/components/responses/Unauthorized'}
@@ -902,28 +921,24 @@ components:
       get:
         operationId: listPayComponentVersions
         tags: [Compensation]
-        summary: Read complete pay-component version history
+        summary: Read complete append-only pay-component history
         x-permission: compensation.component.read
         responses:
           '200':
-            description: Ordered pay-component version history
-            headers:
-              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+            description: Ordered version history
             content:
               application/json:
-                schema:
-                  type: array
-                  items: {$ref: '#/components/schemas/PayComponentVersion'}
+                schema: {type: array, items: {$ref: '#/components/schemas/PayComponentVersion'}}
           '401': {$ref: '#/components/responses/Unauthorized'}
           '403': {$ref: '#/components/responses/Forbidden'}
       post:
         operationId: createPayComponentVersion
         tags: [Compensation]
-        summary: Append a future effective-dated pay-component version
+        summary: Append a complete schema-1 version without identity fields
         x-permission: compensation.component.version.create
         parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
-        requestBody: {$ref: '#/components/requestBodies/PayComponentWriteRequest'}
+        requestBody: {$ref: '#/components/requestBodies/PayComponentVersionWriteRequest'}
         responses:
           '201': {$ref: '#/components/responses/PayComponentVersion'}
           '401': {$ref: '#/components/responses/Unauthorized'}
@@ -939,11 +954,11 @@ components:
       post:
         operationId: correctPayComponentVersion
         tags: [Compensation]
-        summary: Supersede an eligible future draft without rewriting it
+        summary: Supersede an eligible future schema-1 draft
         x-permission: compensation.component.version.correct
         parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
-        requestBody: {$ref: '#/components/requestBodies/PayComponentWriteRequest'}
+        requestBody: {$ref: '#/components/requestBodies/PayComponentVersionWriteRequest'}
         responses:
           '200': {$ref: '#/components/responses/PayComponentVersion'}
           '401': {$ref: '#/components/responses/Unauthorized'}
@@ -966,9 +981,7 @@ components:
         - $ref: '#/components/parameters/IfMatch'
         requestBody:
           required: true
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/PayComponentEndDate'}
+          content: {application/json: {schema: {$ref: '#/components/schemas/EffectiveEndDate'}}}
         responses:
           '200': {$ref: '#/components/responses/PayComponentVersion'}
           '401': {$ref: '#/components/responses/Unauthorized'}
@@ -984,7 +997,7 @@ components:
       post:
         operationId: approvePayComponentVersion
         tags: [Compensation]
-        summary: Approve a non-superseded pay-component draft version
+        summary: Approve a complete schema-1 draft through maker-checker
         x-permission: compensation.component.approve
         parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
@@ -994,6 +1007,26 @@ components:
           '403': {$ref: '#/components/responses/Forbidden'}
           '404': {$ref: '#/components/responses/NotFound'}
           '409': {$ref: '#/components/responses/Conflict'}
+    PayComponentRetirement:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: retirePayComponent
+        tags: [Compensation]
+        summary: Retire a component only after active and future dependencies end
+        x-permission: compensation.component.retire
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogueRetirement'}}}}
+        responses:
+          '200': {$ref: '#/components/responses/PayComponentVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
     PayComponentAudit:
       parameters:
       - $ref: '#/components/parameters/IdentityId'
@@ -1004,15 +1037,256 @@ components:
         summary: Read immutable audit evidence for a pay-component identity
         x-permission: audit.read
         responses:
-          '200':
-            description: Audit event history
-            headers:
-              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items: {$ref: '#/components/schemas/AuditEvent'}
+          '200': {description: Audit history, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/AuditEvent'}}}}}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+    PayrollBaseCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayrollBases
+        tags: [Compensation]
+        summary: List approved named payroll bases effective on a date
+        x-permission: compensation.base.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200': {description: Effective payroll bases, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/PayrollBaseVersion'}}}}}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+      post:
+        operationId: createPayrollBase
+        tags: [Compensation]
+        summary: Create a named payroll-base identity and first draft
+        x-permission: compensation.base.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayrollBaseCreateRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/PayrollBaseVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayrollBaseIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: getPayrollBase
+        tags: [Compensation]
+        summary: Get the current or as-of approved payroll-base version
+        x-permission: compensation.base.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200': {$ref: '#/components/responses/PayrollBaseVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+    PayrollBaseVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayrollBaseVersions
+        tags: [Compensation]
+        summary: Read complete append-only payroll-base history
+        x-permission: compensation.base.read
+        responses:
+          '200': {description: Ordered history, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/PayrollBaseVersion'}}}}}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+      post:
+        operationId: createPayrollBaseVersion
+        tags: [Compensation]
+        summary: Append a future payroll-base version
+        x-permission: compensation.base.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayrollBaseVersionWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/PayrollBaseVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayrollBaseCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: correctPayrollBaseVersion
+        tags: [Compensation]
+        summary: Supersede an eligible future payroll-base draft
+        x-permission: compensation.base.version.correct
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/PayrollBaseVersionWriteRequest'}
+        responses:
+          '200': {$ref: '#/components/responses/PayrollBaseVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayrollBaseEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: endDatePayrollBaseVersion
+        tags: [Compensation]
+        summary: End-date a payroll-base version through optimistic concurrency
+        x-permission: compensation.base.version.end-date
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/EffectiveEndDate'}}}}
+        responses:
+          '200': {$ref: '#/components/responses/PayrollBaseVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    PayrollBaseApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: approvePayrollBaseVersion
+        tags: [Compensation]
+        summary: Approve a payroll-base draft through maker-checker
+        x-permission: compensation.base.approve
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        responses:
+          '200': {$ref: '#/components/responses/PayrollBaseVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    PayrollBaseRetirement:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: retirePayrollBase
+        tags: [Compensation]
+        summary: Retire a base after all active and future versions and memberships end
+        x-permission: compensation.base.retire
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CatalogueRetirement'}}}}
+        responses:
+          '200': {$ref: '#/components/responses/PayrollBaseVersion'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    PayrollBaseMemberships:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listComponentBaseMemberships
+        tags: [Compensation]
+        summary: Read effective or complete append-only component membership
+        x-permission: compensation.base.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        - {name: includeHistory, in: query, required: false, schema: {type: boolean, default: false}}
+        responses:
+          '200': {description: Component membership, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/ComponentBaseMembership'}}}}}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+      post:
+        operationId: createComponentBaseMembership
+        tags: [Compensation]
+        summary: Add an exact component-version to base-version membership draft
+        x-permission: compensation.base.membership.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/ComponentBaseMembershipWriteRequest'}
+        responses:
+          '201': {$ref: '#/components/responses/ComponentBaseMembership'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '409': {$ref: '#/components/responses/Conflict'}
+          '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    PayrollBaseMembershipCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - {name: membershipId, in: path, required: true, schema: {type: string, format: uuid}}
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: correctComponentBaseMembership
+        tags: [Compensation]
+        summary: Supersede an eligible future membership draft
+        x-permission: compensation.base.membership.correct
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody: {$ref: '#/components/requestBodies/ComponentBaseMembershipWriteRequest'}
+        responses:
+          '200': {$ref: '#/components/responses/ComponentBaseMembership'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    PayrollBaseMembershipEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - {name: membershipId, in: path, required: true, schema: {type: string, format: uuid}}
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: endDateComponentBaseMembership
+        tags: [Compensation]
+        summary: End-date a membership through optimistic concurrency
+        x-permission: compensation.base.membership.end-date
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/EffectiveEndDate'}}}}
+        responses:
+          '200': {$ref: '#/components/responses/ComponentBaseMembership'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    PayrollBaseMembershipApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - {name: membershipId, in: path, required: true, schema: {type: string, format: uuid}}
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        operationId: approveComponentBaseMembership
+        tags: [Compensation]
+        summary: Approve exact membership through maker-checker
+        x-permission: compensation.base.membership.approve
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        responses:
+          '200': {$ref: '#/components/responses/ComponentBaseMembership'}
+          '401': {$ref: '#/components/responses/Unauthorized'}
+          '403': {$ref: '#/components/responses/Forbidden'}
+          '404': {$ref: '#/components/responses/NotFound'}
+          '409': {$ref: '#/components/responses/Conflict'}
+    PayrollBaseAudit:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        operationId: listPayrollBaseAuditEvents
+        tags: [Compensation]
+        summary: Read immutable audit evidence for a payroll-base identity
+        x-permission: audit.read
+        responses:
+          '200': {description: Audit history, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/AuditEvent'}}}}}
           '401': {$ref: '#/components/responses/Unauthorized'}
           '403': {$ref: '#/components/responses/Forbidden'}
     SalaryStructureCollection:
@@ -1203,12 +1477,21 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/PayGroupWrite'
-    PayComponentWriteRequest:
+    PayComponentCreateRequest:
       required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/PayComponentWrite'
+      content: {application/json: {schema: {$ref: '#/components/schemas/PayComponentCreate'}}}
+    PayComponentVersionWriteRequest:
+      required: true
+      content: {application/json: {schema: {$ref: '#/components/schemas/PayComponentVersionWrite'}}}
+    PayrollBaseCreateRequest:
+      required: true
+      content: {application/json: {schema: {$ref: '#/components/schemas/PayrollBaseCreate'}}}
+    PayrollBaseVersionWriteRequest:
+      required: true
+      content: {application/json: {schema: {$ref: '#/components/schemas/PayrollBaseVersionWrite'}}}
+    ComponentBaseMembershipWriteRequest:
+      required: true
+      content: {application/json: {schema: {$ref: '#/components/schemas/ComponentBaseMembershipWrite'}}}
     SalaryStructureWriteRequest:
       required: true
       content:
@@ -1278,6 +1561,18 @@ components:
       content:
         application/json:
           schema: {$ref: '#/components/schemas/PayComponentVersion'}
+    PayrollBaseVersion:
+      description: Named payroll-base identity and exact effective-dated version
+      headers:
+        X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+        ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+      content: {application/json: {schema: {$ref: '#/components/schemas/PayrollBaseVersion'}}}
+    ComponentBaseMembership:
+      description: Exact append-only component-version to base-version membership
+      headers:
+        X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
+        ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+      content: {application/json: {schema: {$ref: '#/components/schemas/ComponentBaseMembership'}}}
     SalaryStructureVersion:
       description: Salary-structure identity, exact version and immutable component lines
       headers:
@@ -1583,89 +1878,193 @@ components:
         approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
         supersedesVersionId: {type: [string, 'null'], format: uuid}
         superseded: {type: boolean}
-    PayComponentWrite:
+    PayComponentVersionWrite:
       type: object
       additionalProperties: false
-      required: [formulaType, effectiveFrom]
+      required: [formulaType, componentCategory, cashImpact, payeeType, paymentChannel, settlementTiming, payslipVisibility, zeroValueVisibility, negativeValuePolicy, frequency, valueNature, amountRepresentation, taxTreatment, payrollTiming, effectiveFrom]
       properties:
-        code:
-          type: [string, 'null']
-          pattern: ^[A-Z][A-Z0-9_]{1,39}$
-          description: Required only when creating a stable pay-component identity.
-        name:
-          type: [string, 'null']
-          minLength: 1
-          maxLength: 160
-          description: Required only when creating a stable pay-component identity.
-        componentType:
-          type: [string, 'null']
-          enum: [EARNING, DEDUCTION, INFORMATION, null]
-          description: Required only when creating a stable pay-component identity.
-        formulaType:
-          type: string
-          enum: [FIXED, PERCENTAGE_OF_COMPONENT, RESIDUAL]
-        formulaExpression:
-          type: [string, 'null']
-          maxLength: 1000
-        fixedAmount:
-          type: [number, 'null']
-          minimum: 0
-          multipleOf: 0.0001
-        roundingScale:
-          type: [integer, 'null']
-          minimum: 0
-          maximum: 4
-          default: 2
+        formulaType: {type: string, enum: [FIXED, PERCENTAGE_OF_COMPONENT, RESIDUAL]}
+        formulaExpression: {type: [string, 'null'], maxLength: 1000}
+        fixedAmount: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+        roundingScale: {type: [integer, 'null'], minimum: 0, maximum: 4, default: 2}
+        componentCategory: {type: string, enum: [CASH_EARNING, EMPLOYEE_DEDUCTION, EMPLOYER_CONTRIBUTION, EMPLOYER_PROVISION, REIMBURSEMENT, BENEFIT, TAXABLE_PERQUISITE, NOTIONAL, ACCRUAL]}
+        componentSubcategory: {type: [string, 'null'], pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+        cashImpact: {type: string, enum: [INCREASE, DECREASE, NONE]}
+        payeeType: {type: string, enum: [EMPLOYEE, AUTHORITY, LENDER, BENEFIT_PROVIDER, INTERNAL, NONE]}
+        paymentChannel: {type: string, enum: [PAYROLL_BANK, SEPARATE_BANK, VENDOR, STATUTORY_REMITTANCE, NONE]}
+        settlementTiming: {type: string, enum: [CURRENT_PERIOD, DEFERRED, ACCRUAL, EXIT, ANNUAL, NONE]}
+        payslipVisibility: {type: string, enum: [SHOW, SUMMARISE, HIDE, CONDITIONAL]}
+        zeroValueVisibility: {type: string, enum: [SHOW, SUPPRESS]}
+        negativeValuePolicy: {type: string, enum: [ALLOW, PROHIBIT, REVERSAL_ONLY]}
+        frequency: {type: string, enum: [PER_PAYROLL_PERIOD, MONTHLY, WEEKLY, DAILY, ANNUAL, ONE_TIME, EVENT_DRIVEN, AD_HOC, ON_EXIT, ON_JOINING, ON_CONFIRMATION, ON_ANNIVERSARY]}
+        valueNature: {type: string, enum: [FIXED, VARIABLE, DERIVED, EXTERNAL_INPUT, EMPLOYEE_ELECTION, EMPLOYER_DISCRETION, STATUTORY, BALANCE_RECOVERY, PROVISION, NOTIONAL]}
+        amountRepresentation: {type: string, enum: [ANNUAL_AMOUNT, MONTHLY_AMOUNT, DAILY_RATE, HOURLY_RATE, PER_UNIT_RATE, PERCENTAGE, SLAB, QUANTITY_RATE, FORMULA_RESULT, EXTERNAL_VALUE]}
+        taxTreatment: {type: string, enum: [DELEGATED, TAXABLE, EXEMPT, PARTIALLY_EXEMPT, PROOF_DEPENDENT, REGIME_DEPENDENT, PERQUISITE, REIMBURSEMENT, TAX_ONLY_NOTIONAL]}
+        payrollTiming: {type: string, enum: [REGULAR, OFF_CYCLE_ONLY, REGULAR_AND_OFF_CYCLE, FINAL_SETTLEMENT_ONLY, ANNUAL, CORRECTION, NON_PAYROLL_REPORTING]}
         effectiveFrom: {type: string, format: date}
         effectiveTo: {type: [string, 'null'], format: date}
-    PayComponentEndDate:
+    PayComponentCreate:
+      type: object
+      additionalProperties: false
+      required: [code, name, componentType, version]
+      properties:
+        code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,39}$'}
+        name: {type: string, minLength: 1, maxLength: 160}
+        componentType: {type: string, enum: [EARNING, DEDUCTION, INFORMATION], description: Preserved calculation-direction contract.}
+        ownershipScope: {type: [string, 'null'], enum: [SYSTEM, COUNTRY_PACK, TENANT, null], default: TENANT}
+        countryCode: {type: [string, 'null'], pattern: '^[A-Z]{2}$'}
+        protectedFlag: {type: [boolean, 'null'], default: false}
+        confidentialityLevel: {type: [string, 'null'], enum: [STANDARD, RESTRICTED, EXECUTIVE, null], default: STANDARD}
+        version: {$ref: '#/components/schemas/PayComponentVersionWrite'}
+    EffectiveEndDate:
       type: object
       additionalProperties: false
       required: [effectiveTo]
+      properties: {effectiveTo: {type: string, format: date}}
+    CatalogueRetirement:
+      type: object
+      additionalProperties: false
+      required: [effectiveDate, reason]
       properties:
-        effectiveTo: {type: string, format: date}
+        effectiveDate: {type: string, format: date}
+        reason: {type: string, minLength: 1, maxLength: 500}
     PayComponentVersion:
       type: object
       additionalProperties: false
-      required:
-      - identityId
-      - code
-      - name
-      - componentType
-      - versionId
-      - versionSequence
-      - versionNo
-      - formulaType
-      - roundingScale
-      - effectiveFrom
-      - approvalStatus
-      - superseded
+      required: [identityId, code, name, componentType, lifecycleStatus, ownershipScope, protectedFlag, confidentialityLevel, identityVersionNo, versionId, versionSequence, versionNo, catalogueSchemaVersion, classificationStatus, formulaType, roundingScale, effectiveFrom, approvalStatus, superseded]
       properties:
         identityId: {type: string, format: uuid}
         code: {type: string}
         name: {type: string}
-        componentType:
-          type: string
-          enum: [EARNING, DEDUCTION, INFORMATION]
+        componentType: {type: string, enum: [EARNING, DEDUCTION, INFORMATION]}
+        lifecycleStatus: {type: string, enum: [PENDING_APPROVAL, ACTIVE, RETIRED]}
+        ownershipScope: {type: string, enum: [SYSTEM, COUNTRY_PACK, TENANT]}
+        countryCode: {type: [string, 'null']}
+        protectedFlag: {type: boolean}
+        confidentialityLevel: {type: string, enum: [STANDARD, RESTRICTED, EXECUTIVE]}
+        identityVersionNo: {type: integer, format: int64, minimum: 0}
+        retirementEffectiveDate: {type: [string, 'null'], format: date}
+        retirementReason: {type: [string, 'null']}
+        retiredAt: {type: [string, 'null'], format: date-time}
+        retiredBy: {type: [string, 'null']}
         versionId: {type: string, format: uuid}
         versionSequence: {type: integer, minimum: 1}
         versionNo: {type: integer, format: int64, minimum: 0}
-        formulaType:
-          type: string
-          enum: [FIXED, PERCENTAGE_OF_COMPONENT, RESIDUAL]
+        catalogueSchemaVersion: {type: integer, enum: [0, 1]}
+        classificationStatus: {type: string, enum: [LEGACY_INCOMPLETE, COMPLETE]}
+        formulaType: {type: string, enum: [FIXED, PERCENTAGE_OF_COMPONENT, RESIDUAL]}
         formulaExpression: {type: [string, 'null']}
-        fixedAmount:
-          type: [number, 'null']
-          minimum: 0
-          multipleOf: 0.0001
-        roundingScale:
-          type: integer
-          minimum: 0
-          maximum: 4
+        fixedAmount: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+        roundingScale: {type: integer, minimum: 0, maximum: 4}
+        componentCategory: {type: [string, 'null']}
+        componentSubcategory: {type: [string, 'null']}
+        cashImpact: {type: [string, 'null']}
+        payeeType: {type: [string, 'null']}
+        paymentChannel: {type: [string, 'null']}
+        settlementTiming: {type: [string, 'null']}
+        payslipVisibility: {type: [string, 'null']}
+        zeroValueVisibility: {type: [string, 'null']}
+        negativeValuePolicy: {type: [string, 'null']}
+        frequency: {type: [string, 'null']}
+        valueNature: {type: [string, 'null']}
+        amountRepresentation: {type: [string, 'null']}
+        taxTreatment: {type: [string, 'null']}
+        payrollTiming: {type: [string, 'null']}
         effectiveFrom: {type: string, format: date}
         effectiveTo: {type: [string, 'null'], format: date}
         approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
         supersedesVersionId: {type: [string, 'null'], format: uuid}
+        superseded: {type: boolean}
+    PayrollBaseVersionWrite:
+      type: object
+      additionalProperties: false
+      required: [baseCategory, aggregationMethod, effectiveFrom]
+      properties:
+        baseCategory: {type: string, enum: [CALCULATION, STATUTORY, TAX, CTC, REPORTING]}
+        aggregationMethod: {type: string, enum: [SUM, AVERAGE, MAXIMUM, MINIMUM, CUSTOM]}
+        description: {type: [string, 'null'], maxLength: 1000}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    PayrollBaseCreate:
+      type: object
+      additionalProperties: false
+      required: [code, name, version]
+      properties:
+        code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+        name: {type: string, minLength: 1, maxLength: 160}
+        ownershipScope: {type: [string, 'null'], enum: [SYSTEM, COUNTRY_PACK, TENANT, null], default: TENANT}
+        countryCode: {type: [string, 'null'], pattern: '^[A-Z]{2}$'}
+        protectedFlag: {type: [boolean, 'null'], default: false}
+        confidentialityLevel: {type: [string, 'null'], enum: [STANDARD, RESTRICTED, EXECUTIVE, null], default: STANDARD}
+        version: {$ref: '#/components/schemas/PayrollBaseVersionWrite'}
+    PayrollBaseVersion:
+      type: object
+      additionalProperties: false
+      required: [identityId, code, name, lifecycleStatus, ownershipScope, protectedFlag, confidentialityLevel, identityVersionNo, versionId, versionSequence, versionNo, catalogueSchemaVersion, baseCategory, aggregationMethod, effectiveFrom, approvalStatus, superseded]
+      properties:
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        name: {type: string}
+        lifecycleStatus: {type: string, enum: [PENDING_APPROVAL, ACTIVE, RETIRED]}
+        ownershipScope: {type: string, enum: [SYSTEM, COUNTRY_PACK, TENANT]}
+        countryCode: {type: [string, 'null']}
+        protectedFlag: {type: boolean}
+        confidentialityLevel: {type: string, enum: [STANDARD, RESTRICTED, EXECUTIVE]}
+        identityVersionNo: {type: integer, format: int64, minimum: 0}
+        retirementEffectiveDate: {type: [string, 'null'], format: date}
+        retirementReason: {type: [string, 'null']}
+        retiredAt: {type: [string, 'null'], format: date-time}
+        retiredBy: {type: [string, 'null']}
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        catalogueSchemaVersion: {type: integer, const: 1}
+        baseCategory: {type: string, enum: [CALCULATION, STATUTORY, TAX, CTC, REPORTING]}
+        aggregationMethod: {type: string, enum: [SUM, AVERAGE, MAXIMUM, MINIMUM, CUSTOM]}
+        description: {type: [string, 'null']}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        supersedesVersionId: {type: [string, 'null'], format: uuid}
+        superseded: {type: boolean}
+    ComponentBaseMembershipWrite:
+      type: object
+      additionalProperties: false
+      required: [payrollBaseVersionId, componentId, componentVersionId, membershipType, inclusionPercent, effectiveFrom]
+      properties:
+        payrollBaseVersionId: {type: string, format: uuid}
+        componentId: {type: string, format: uuid}
+        componentVersionId: {type: string, format: uuid}
+        membershipType: {type: string, enum: [INCLUDE, EXCLUDE, ADD_BACK, ELIGIBILITY_ONLY, CONTRIBUTION_ONLY, NOTIONAL]}
+        inclusionPercent:
+          type: string
+          pattern: '^(100([.]0{1,8})?|[1-9][0-9]?([.][0-9]{1,8})?|0[.](?=[0-9]{0,7}[1-9])[0-9]{1,8})$'
+          description: Decimal string matching numeric(12,8); value must be greater than zero.
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    ComponentBaseMembership:
+      type: object
+      additionalProperties: false
+      required: [membershipId, payrollBaseId, payrollBaseVersionId, payrollBaseCode, payrollBaseVersionSequence, componentId, componentVersionId, componentCode, componentName, componentVersionSequence, membershipSequence, versionNo, membershipType, inclusionPercent, effectiveFrom, approvalStatus, superseded]
+      properties:
+        membershipId: {type: string, format: uuid}
+        payrollBaseId: {type: string, format: uuid}
+        payrollBaseVersionId: {type: string, format: uuid}
+        payrollBaseCode: {type: string}
+        payrollBaseVersionSequence: {type: integer, minimum: 1}
+        componentId: {type: string, format: uuid}
+        componentVersionId: {type: string, format: uuid}
+        componentCode: {type: string}
+        componentName: {type: string}
+        componentVersionSequence: {type: integer, minimum: 1}
+        membershipSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        membershipType: {type: string, enum: [INCLUDE, EXCLUDE, ADD_BACK, ELIGIBILITY_ONLY, CONTRIBUTION_ONLY, NOTIONAL]}
+        inclusionPercent: {type: string, pattern: '^[0-9]{1,3}\.[0-9]{8}$'}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        supersedesMembershipId: {type: [string, 'null'], format: uuid}
         superseded: {type: boolean}
     SalaryStructureWrite:
       type: object

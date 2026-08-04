@@ -123,3 +123,13 @@ Stop and obtain separate approval for:
 
 After the activation commit and remote branch are verified, product
 implementation requires separate explicit authorisation.
+
+<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
+## Product implementation candidate
+
+A product implementation candidate has been prepared from activation commit
+`e9e297de5e59762f3701ce39ca2295e1839d7d16` within the approved 46-path
+boundary. It authors V032, split component DTOs, named-base and membership APIs,
+React workspaces, OpenAPI/security wiring, migration/API/compatibility tests,
+and operating runbooks. It remains uncommitted and unpushed until local
+verification succeeds.

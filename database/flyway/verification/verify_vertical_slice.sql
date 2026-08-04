@@ -1372,3 +1372,63 @@ BEGIN
     RAISE EXCEPTION 'PUBLIC can execute organisation.retire_identity';
   END IF;
 END $$;
+
+-- P5-A2 named payroll-base verification
+DO $$
+DECLARE
+  missing_table text;
+  not_forced text;
+BEGIN
+  SELECT expected.table_name
+    INTO missing_table
+    FROM (VALUES
+      ('compensation.payroll_base'),
+      ('compensation.payroll_base_version'),
+      ('compensation.component_base_membership')
+    ) AS expected(table_name)
+   WHERE to_regclass(expected.table_name) IS NULL
+   LIMIT 1;
+
+  IF missing_table IS NOT NULL THEN
+    RAISE EXCEPTION 'P5-A2 table is missing: %', missing_table;
+  END IF;
+
+  SELECT format('%I.%I', namespace.nspname, relation.relname)
+    INTO not_forced
+    FROM pg_class relation
+    JOIN pg_namespace namespace ON namespace.oid = relation.relnamespace
+   WHERE format('%I.%I', namespace.nspname, relation.relname) IN (
+     'compensation.pay_component',
+     'compensation.pay_component_version',
+     'compensation.payroll_base',
+     'compensation.payroll_base_version',
+     'compensation.component_base_membership'
+   )
+     AND (NOT relation.relrowsecurity OR NOT relation.relforcerowsecurity)
+   LIMIT 1;
+
+  IF not_forced IS NOT NULL THEN
+    RAISE EXCEPTION 'P5-A2 relation lacks ENABLE/FORCE RLS: %', not_forced;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+     WHERE conname = 'component_base_membership_approved_no_overlap'
+  ) THEN
+    RAISE EXCEPTION 'P5-A2 approved membership overlap control is missing';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes
+     WHERE schemaname = 'compensation'
+       AND indexname = 'component_base_membership_one_successor_uk'
+  ) THEN
+    RAISE EXCEPTION 'P5-A2 one-successor membership index is missing';
+  END IF;
+
+  IF pg_get_functiondef(
+       'payroll_calc.calculate_sealed_payroll(uuid,uuid,bigint,character varying,character varying,character varying,timestamp with time zone)'::regprocedure
+     ) ~ 'payroll_base|component_base_membership' THEN
+    RAISE EXCEPTION 'P5-A2 must not change current calculator consumption';
+  END IF;
+END $$;
