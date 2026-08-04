@@ -32,13 +32,13 @@ evidence.
 | MDR-012 | Frontend lint, tests and build are separate gates | Process | IMPLEMENTED | CI | Verify separately |
 | MDR-013 | High-risk Payroll changes require independent critical review | Process | IMPLEMENTED | `AGENTS.md` | Attach findings |
 | MDR-014 | One write-capable thread owns overlapping files | Process | APPROVED | Registry/protocol | Track explicitly |
-| MDR-015 | V001-V031 are committed and immutable; V032 is unreserved | Database | IMPLEMENTED | PR #25; merge `5b40904764e138a7019f5d5a2b905f7019df8465` | Reserve V032 only through a separately activated owner |
+| MDR-015 | V001-V031 are committed and immutable; V032 is reserved exclusively for P5-A2 but its SQL file is not yet authorised | Database | APPROVED | P5-A2 implementation-preparation authorisation from `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8` | Preserve the reservation until P5-A2 closes or is explicitly released |
 | MDR-016 | Generic statutory infrastructure is implemented; country-specific legal rules remain excluded | Product | CONTROLLED | Sprint 4 | Require legal design |
 | MDR-017 | Retro, off-cycle, settlement, payments, accounting and legal payslip remain outside implemented baseline | Product | APPROVED | Master design/gap assessment | Remove only through approved stories |
 | MDR-018 | Historical Thread 1 decisions are evidence, not automatic current state | Process | APPROVED | Thread 1 extract | Reconcile first |
 | MDR-019 | Feed-dependent OWASP data requires cached/scheduled handling | Security | TEMPORARY/DEBT | CI/handoff | Close with cache design |
 | MDR-020 | Each chat thread starts from repository authorities | Process | APPROVED | Thread protocol | Use start prompt |
-| MDR-021 | Repository HEAD and latest product merge are distinct baselines | Process | APPROVED | PR #28 merge `12f3210c91ca95f3f331911d4cdc1755f2afd701` is the current repository authority; PR #25 is the latest product increment; Sprint 4 remains the prior sprint baseline | Preserve all labels explicitly |
+| MDR-021 | Repository HEAD and latest product merge are distinct baselines | Process | APPROVED | PR #29 merge `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8` is the current repository authority; PR #25 is the latest product increment; Sprint 4 remains the prior sprint baseline | Preserve all labels explicitly |
 | MDR-022 | Sprint 4 is functionally merged; S4-06A secured HTTP/PostgreSQL integration closure is merged and S4-06B remains separate and unauthorized | Quality | IMPLEMENTED | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 | Preserve S4-06A closure without absorbing S4-06B |
 | MDR-023 | Text artifacts use UTF-8 and must not contain mojibake | Process | APPROVED | Repository cleanup | Reject corruption |
 | MDR-024 | Identify historical work by capability, migration, commit and PR when labels diverge | Process | APPROVED | Reconciliation | Use durable identifiers |
@@ -66,12 +66,27 @@ evidence.
 
 | MDR-042 | Assistant and agent GitHub access is strictly read-only; all GitHub mutations are executed locally by the project owner from deterministic packages and then verified read-only | Process/Security | APPROVED | P5-A1 G08-G10 operating constraint and evidence | Never attempt connector mutations; carry into every handoff and package |
 
-| MDR-043 | P5-A1 is merged through PR #25; its authority reconciliation is merged through PR #26; Thread 6 is closed and V032 remains unreserved | Governance | IMPLEMENTED | `main` `961465cb551f3757a6f51f1322e6b46c32317b16` | Preserve closure while Thread 7 owns only S4-06A |
+| MDR-043 | P5-A1 is merged through PR #25; its authority reconciliation is merged through PR #26; V032 was unreserved when that increment closed | Governance | IMPLEMENTED | `main` `961465cb551f3757a6f51f1322e6b46c32317b16` | Preserve the historical closure; current V032 state is governed by MDR-015 and MDR-045 |
 
-| MDR-044 | S4-06A completed as an exact six-file test-only quality closure; no production, migration, contract, security, dependency, frontend or CI change was introduced and V032 remains unreserved | Quality/Governance | IMPLEMENTED | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 | Thread 7 is closed; preserve the merged evidence and stop-and-split rule |
+| MDR-044 | S4-06A completed as an exact six-file test-only quality closure; no production, migration, contract, security, dependency, frontend or CI change was introduced and V032 remained unreserved at its closure | Quality/Governance | IMPLEMENTED | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 | Preserve the merged evidence and historical stop-and-split rule |
+| MDR-045 | P5-A2 is the active capability workstream on `feature/p5-a2-compensation-catalogue-named-bases`; it exclusively reserves V032 and owns only the reviewed 46-path maximum boundary | Product/Governance | APPROVED | P5-A2 scope definition and architecture/V032 critical review; owner authorisation on 4 August 2026 | Stop before product implementation until separately authorised |
+| MDR-046 | HRMS Payroll is greenfield with no evidenced production deployment; migration/version controls protect deterministic local/CI state and future upgrades rather than a current production migration | Architecture/Delivery | APPROVED | Repository state, synthetic development seed and P5-A2 activation clarification | Keep compatibility tests proportionate but do not weaken committed lineage controls |
 
 ## Adding a decision
 
 A material decision must include a stable ID, exact decision, type/status,
 evidence, implementation state, conflict/supersession relationship and handoff
 action. Do not record brainstorms as approved decisions.
+
+<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
+### P5-A2 implementation decisions
+
+- Preserve `pay_component.component_type` as the calculation-direction
+  contract; add business catalogue categories only to schema-1 versions.
+- Preserve existing versions as schema 0 and require complete schema-1 runtime
+  writes; schema-0 drafts cannot be newly approved.
+- Model exact named-base membership as one append-only table with maker-checker,
+  one-successor lineage, approved range non-overlap, and decimal-string
+  inclusion percentage `numeric(12,8)`.
+- Keep the V025/V026 starter calculator unchanged; named bases are not consumed
+  by the current calculator in P5-A2.

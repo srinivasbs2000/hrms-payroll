@@ -97,3 +97,6 @@ Every future detailed story must retain:
 
 A story may be marked complete only when its approved acceptance criteria and
 required verification evidence are committed.
+
+<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
+| P5-A2 | General pay-component catalogue and named payroll bases | Activation `e9e297de5e59762f3701ce39ca2295e1839d7d16` | Implementation candidate prepared; local verification pending | V032 |
