@@ -585,7 +585,7 @@ class StatutoryApiIT {
             post("/api/v1/payroll-cycles/{cycleId}/statutory/evaluations",
                     cycle.cycleId())
                 .with(token(TENANT_A, "statutory-evaluation.read"))
-                .header("Idempotency-Key", "s4-06a-forbidden-evaluate")
+                .header("Idempotency-Key", "forbidden".repeat(2))
                 .header("If-Match", Long.toString(cycle.version()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
