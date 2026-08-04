@@ -38,8 +38,8 @@ evidence.
 | MDR-018 | Historical Thread 1 decisions are evidence, not automatic current state | Process | APPROVED | Thread 1 extract | Reconcile first |
 | MDR-019 | Feed-dependent OWASP data requires cached/scheduled handling | Security | TEMPORARY/DEBT | CI/handoff | Close with cache design |
 | MDR-020 | Each chat thread starts from repository authorities | Process | APPROVED | Thread protocol | Use start prompt |
-| MDR-021 | Repository HEAD and latest product merge are distinct baselines | Process | APPROVED | PR #26 is the current repository authority; PR #25 is the latest product increment; Sprint 4 remains the prior sprint baseline | Preserve all labels explicitly |
-| MDR-022 | Sprint 4 is functionally merged; S4-06A is the active secured HTTP/PostgreSQL integration closure and S4-06B remains separate and unauthorized | Quality | APPROVED | S4-06A planning checkpoint; Thread 7 registry | Complete S4-06A without absorbing S4-06B |
+| MDR-021 | Repository HEAD and latest product merge are distinct baselines | Process | APPROVED | PR #28 merge `12f3210c91ca95f3f331911d4cdc1755f2afd701` is the current repository authority; PR #25 is the latest product increment; Sprint 4 remains the prior sprint baseline | Preserve all labels explicitly |
+| MDR-022 | Sprint 4 is functionally merged; S4-06A secured HTTP/PostgreSQL integration closure is merged and S4-06B remains separate and unauthorized | Quality | IMPLEMENTED | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 | Preserve S4-06A closure without absorbing S4-06B |
 | MDR-023 | Text artifacts use UTF-8 and must not contain mojibake | Process | APPROVED | Repository cleanup | Reject corruption |
 | MDR-024 | Identify historical work by capability, migration, commit and PR when labels diverge | Process | APPROVED | Reconciliation | Use durable identifiers |
 | MDR-025 | PowerShell variable-cardinality output is array-captured, checked and cast | Engineering | APPROVED | Phase A failure | Apply always |
@@ -68,7 +68,7 @@ evidence.
 
 | MDR-043 | P5-A1 is merged through PR #25; its authority reconciliation is merged through PR #26; Thread 6 is closed and V032 remains unreserved | Governance | IMPLEMENTED | `main` `961465cb551f3757a6f51f1322e6b46c32317b16` | Preserve closure while Thread 7 owns only S4-06A |
 
-| MDR-044 | S4-06A is activated under Thread 7 as an exact six-file test-only quality closure; no production, migration, contract, security, dependency, frontend or CI change is authorized and V032 remains unreserved | Quality/Governance | APPROVED | S4-06A planning checkpoint and activation package | Stop and split on every out-of-scope defect; finish focused/full evidence before publication |
+| MDR-044 | S4-06A completed as an exact six-file test-only quality closure; no production, migration, contract, security, dependency, frontend or CI change was introduced and V032 remains unreserved | Quality/Governance | IMPLEMENTED | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 | Thread 7 is closed; preserve the merged evidence and stop-and-split rule |
 
 ## Adding a decision
 

@@ -2,7 +2,8 @@
 
 **Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Repository baseline:** `main` at PR #26 merge `961465cb551f3757a6f51f1322e6b46c32317b16`
+**Repository baseline:** `main` at PR #28 merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`
+**Latest merged quality increment:** S4-06A through PR #28 merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`
 **Latest merged product increment:** P5-A1 through PR #25 merge `5b40904764e138a7019f5d5a2b905f7019df8465`
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 **Last verified:** 4 August 2026
@@ -135,7 +136,7 @@ remain mandatory.
 
 - `database/flyway/sql` is the ordered migration authority.
 - V001-V031 are committed and immutable.
-- V032 is unreserved and is not required by active S4-06A.
+- V032 is unreserved; merged S4-06A did not reserve or use it.
 - future migrations are forward-only and separately authorised;
 - tenant-owned FKs include tenant ownership;
 - stable identity plus immutable effective-dated versions preserve lineage;
@@ -187,16 +188,16 @@ risk are committed.
 | Sprint 1 | Organisation, reliability, audit and architecture | V014-V016 | PR #2 merged |
 | Sprint 2 | Configuration and employee-payroll foundation | V017-V022 | PR #3 merged |
 | Sprint 3 | Regular execution and deterministic evidence | V023-V026 | PR #18 merged |
-| Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; S4-06A quality closure active |
+| Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; S4-06A quality closure merged through PR #28 |
 | P5-A1 | Organisation hierarchy lifecycle closure | V031 | PR #25 merged |
 | Governance | Living design and reconciliation controls | None | PR #20, PR #21 and PR #26 merged |
-| Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | S4-06A active under Thread 7; uncommitted |
+| Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | PR #28 merged; Thread 7 closed and ownership released |
 
 ## 13. Current controlled debt and planning
 
-- S4-06A is active under Thread 7 as a six-file test-only quality closure.
+- S4-06A is merged through PR #28; Thread 7 is closed and its write ownership is released.
 - S4-06B is planned but not authorised.
-- P5-A2 is not activated and must remain separate from S4-06A.
+- P5-A2 is not activated and must remain separate from the closed S4-06A increment.
 - `PLN-01` remains the product-planning authority; S4-06A does not expand
   product scope.
 - E09 still requires current legal/domain revalidation.
@@ -227,4 +228,5 @@ risk are committed.
 | 1 Aug 2026 | Recovered 18-epic/72-row product baseline and recorded PLN-01 | Full-product reconciliation; MDR-028-MDR-033 |
 | 3 Aug 2026 | Merged P5-A1 organisation hierarchy closure | PR #25; V031 |
 | 4 Aug 2026 | Merged post-P5-A1 authority reconciliation | PR #26; `961465cb551f3757a6f51f1322e6b46c32317b16` |
-| 4 Aug 2026 | Activated S4-06A test-only integration closure under Thread 7 | Planning checkpoint; exact six-file allow-list |
+| 4 Aug 2026 | Activated and completed the S4-06A test-only integration closure under Thread 7 | Planning checkpoint; exact six-file allow-list; PR #28 |
+| 4 Aug 2026 | Merged S4-06A statutory API integration quality closure and released Thread 7 ownership | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 |

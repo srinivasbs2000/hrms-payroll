@@ -3,8 +3,8 @@
 **Updated:** 4 August 2026
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\dev\hrms-payroll`
-**Repository baseline:** `main` at `961465cb551f3757a6f51f1322e6b46c32317b16`
-**Latest repository publication:** PR #26 — merged
+**Repository baseline:** `main` at `12f3210c91ca95f3f331911d4cdc1755f2afd701`
+**Latest repository publication:** PR #28 — merged
 **Latest merged product increment:** P5-A1 through PR #25
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 **Mandatory status:** Validate this file against local Git and live read-only
@@ -14,26 +14,26 @@ GitHub evidence before writing.
 
 | Item | Current fact |
 |---|---|
-| Remote `main` | `961465cb551f3757a6f51f1322e6b46c32317b16` |
-| Latest repository publication | PR #26 — merged |
+| Remote `main` | `12f3210c91ca95f3f331911d4cdc1755f2afd701` |
+| Latest repository publication | PR #28 — merged |
 | Latest product increment | P5-A1 through PR #25 |
-| Latest CI evidence | PR #26 run 96; 9/9 jobs successful |
-| Active implementation package | S4-06A statutory API integration closure |
-| Active write owner | Thread 7 |
-| Local implementation branch | `quality/s4-06a-statutory-api-integration` |
+| Latest CI evidence | PR #28 run 100; 9/9 jobs successful |
+| Active implementation package | None; S4-06A is merged and closed |
+| Active write owner | None |
+| Local implementation branch | No active implementation branch; synchronize from `main` before the next gate |
 | Thread 6 | Closed; ownership released |
 | Migrations | V001-V031 committed and immutable |
 | Next migration | V032 unreserved; not required by S4-06A |
 | P5-A2 | Not activated |
-| S4-06A | Active, bounded and uncommitted |
+| S4-06A | Merged through PR #28; Thread 7 closed and ownership released |
 | S4-06B | Planned, not authorized |
 | GitHub access for assistant/agents | Strictly read-only |
 
-## S4-06A active boundary
+## S4-06A delivered state
 
-S4-06A closes the existing statutory API integration gap through one real
-secured HTTP/PostgreSQL integration suite. It does not add statutory product
-behavior.
+S4-06A closed the statutory API integration gap through one real secured
+HTTP/PostgreSQL integration suite. It added quality evidence without adding
+statutory product behavior.
 
 The implementation must prove:
 
@@ -46,9 +46,14 @@ The implementation must prove:
 - optimistic concurrency and a real two-request race;
 - tenant isolation;
 - exactly-once audit and outbox evidence;
-- balances, zero-variance reconciliation and remittance preparation.
+- corrected balances, zero-variance reconciliation and remittance preparation evidence.
 
-## Exact Thread 7 allow-list
+The final one-commit replacement PR #28 passed 9/9 CI jobs and merged as
+`12f3210c91ca95f3f331911d4cdc1755f2afd701`. Original PR #27 was closed
+unmerged after its earlier commit history retained a synthetic Gitleaks false
+positive. Both quality branches remain historical and undeleted.
+
+## Historical Thread 7 allow-list
 
 1. `backend/payroll-boot/src/test/java/com/acme/hrms/payroll/StatutoryApiIT.java`
 2. `docs/quality/s4-06a-statutory-api-integration.md`
@@ -57,17 +62,17 @@ The implementation must prove:
 5. `docs/governance/thread-registry.md`
 6. `docs/runbooks/project-continuation-handoff.md`
 
-Any other path is outside the active package.
+This completed allow-list is historical evidence only and grants no active write ownership.
 
 ## Migration and product boundary
 
-V001-V031 are immutable. V032 remains unreserved. S4-06A must not introduce a
+V001-V031 are immutable. V032 remains unreserved. S4-06A introduced no
 migration, production Java change, OpenAPI/Keycloak change, dependency/POM
 change, frontend/Playwright change, deployment/workflow change or
 jurisdiction-specific legal rule.
 
-A discovered need for one of those changes is a stop-and-split defect/design
-boundary, not implicit authorization.
+Any later need for one of those changes remains a stop-and-split defect/design
+boundary requiring a new owner and separate authorization.
 
 ## P5-A1 delivered state
 
@@ -99,14 +104,12 @@ drift.
 
 ## Next controlled action
 
-Run the S4-06A activation package. It may safely move the clean local checkout
-to current `main`, create the Thread 7 branch, apply exactly six files and run
-focused/full backend gates.
+No product implementation is currently authorized. Start the next gate from
+`main` at `12f3210c91ca95f3f331911d4cdc1755f2afd701` and select one
+separately planned package with an exact owner and file boundary.
 
-It must stop before staging, commit, push, PR creation or merge.
-
-After green evidence, perform independent critical review before authorizing a
-publication package.
+S4-06B and P5-A2 remain inactive. V032 remains unreserved. Do not reuse either
+S4-06A branch. Branch deletion requires separate explicit authorization.
 
 ## Prohibited assumptions
 
