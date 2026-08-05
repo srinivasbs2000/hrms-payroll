@@ -32,13 +32,13 @@ evidence.
 | MDR-012 | Frontend lint, tests and build are separate gates | Process | IMPLEMENTED | CI | Verify separately |
 | MDR-013 | High-risk Payroll changes require independent critical review | Process | IMPLEMENTED | `AGENTS.md` | Attach findings |
 | MDR-014 | One write-capable thread owns overlapping files | Process | APPROVED | Registry/protocol | Track explicitly |
-| MDR-015 | V001-V032 are committed and immutable; V033 is unreserved | Database | IMPLEMENTED | PR #30; merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` | Reserve V033 only through a separately activated owner |
+| MDR-015 | V001-V032 are committed and immutable; V033 is reserved exclusively for P5-A3 but its SQL file and product implementation are not yet authorised | Database | APPROVED | P5-A3 activation from `887347fb23b35ca72c479f377c0f6e3a1bf89722` | Preserve the reservation until P5-A3 closes or is explicitly released |
 | MDR-016 | Generic statutory infrastructure is implemented; country-specific legal rules remain excluded | Product | CONTROLLED | Sprint 4 | Require legal design |
 | MDR-017 | Retro, off-cycle, settlement, payments, accounting and legal payslip remain outside implemented baseline | Product | APPROVED | Master design/gap assessment | Remove only through approved stories |
 | MDR-018 | Historical Thread 1 decisions are evidence, not automatic current state | Process | APPROVED | Thread 1 extract | Reconcile first |
 | MDR-019 | Feed-dependent OWASP data requires cached/scheduled handling | Security | TEMPORARY/DEBT | CI/handoff | Close with cache design |
 | MDR-020 | Each chat thread starts from repository authorities | Process | APPROVED | Thread protocol | Use start prompt |
-| MDR-021 | Repository HEAD and latest product merge are the same P5-A2 baseline until this documentation-only closure is merged | Process | APPROVED | PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` is the current repository and latest product authority; Sprint 4 remains the prior sprint baseline | Preserve all labels explicitly |
+| MDR-021 | Repository HEAD and latest product merge are distinct baselines | Process | APPROVED | PR #31 merge `887347fb23b35ca72c479f377c0f6e3a1bf89722` is the current repository authority; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` is the latest product increment; Sprint 4 remains the prior sprint baseline | Preserve all labels explicitly |
 | MDR-022 | Sprint 4 is functionally merged; S4-06A secured HTTP/PostgreSQL integration closure is merged and S4-06B remains separate and unauthorized | Quality | IMPLEMENTED | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 | Preserve S4-06A closure without absorbing S4-06B |
 | MDR-023 | Text artifacts use UTF-8 and must not contain mojibake | Process | APPROVED | Repository cleanup | Reject corruption |
 | MDR-024 | Identify historical work by capability, migration, commit and PR when labels diverge | Process | APPROVED | Reconciliation | Use durable identifiers |
@@ -71,6 +71,7 @@ evidence.
 | MDR-044 | S4-06A completed as an exact six-file test-only quality closure; no production, migration, contract, security, dependency, frontend or CI change was introduced and V032 remained unreserved at its closure | Quality/Governance | IMPLEMENTED | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 | Preserve the merged evidence and historical stop-and-split rule |
 | MDR-045 | P5-A2 completed the general pay-component catalogue and named payroll-base foundation within the reviewed 46-path boundary; V032 is committed and authority is released | Product/Governance | IMPLEMENTED | Activation `e9e297de5e59762f3701ce39ca2295e1839d7d16`; implementation `c30cb1f2f0c16cd78387bb9551b93825bc7ef688`; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; workflow run `30957450623` | Preserve closed evidence; V033, P5-A3 and S4-06B require separate authorization |
 | MDR-046 | HRMS Payroll is greenfield with no evidenced production deployment; migration/version controls protect deterministic local/CI state and future upgrades rather than a current production migration | Architecture/Delivery | APPROVED | Repository state, synthetic development seed and P5-A2 activation clarification | Keep compatibility tests proportionate but do not weaken committed lineage controls |
+| MDR-047 | P5-A3 is the active preparation workstream on `feature/p5-a3-salary-structure-ctc-eligibility-simulation`; it exclusively reserves V033 and owns only the reviewed 69-path maximum boundary | Product/Governance | APPROVED | P5-A3 planning package `d704409e9fb4792f15ce05d5ade5cb4f04c80be04e0dc1d31d357402f12e5f77`; independent critical review; owner authorisation on 5 August 2026 | Stop before V033 SQL creation or product implementation until separately authorised |
 
 ## Adding a decision
 
@@ -90,4 +91,22 @@ action. Do not record brainstorms as approved decisions.
 - The V025/V026 starter calculator remains unchanged; named bases are not yet
   consumed by the calculation engine.
 - PR #30 merged as `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; post-merge workflow run `30957450623`
-  succeeded; P5-A2 write ownership is released and V033 remains unreserved.
+  succeeded; P5-A2 write ownership is released. V033 was unreserved at P5-A2
+  closure; its current state is governed by MDR-015 and MDR-047.
+
+## P5-A3 activated preparation decisions
+
+- P5-A3 is configuration-design scope only: richer salary structures, versioned
+  CTC policies, typed eligibility rules and deterministic design-time
+  simulation/validation.
+- P5-A3 does not introduce a general formula engine, official payroll
+  calculation, legal rule truth, employee compensation changes or live
+  eligibility persistence.
+- Existing V020/V021 UUID lineage, V025/V026 calculation behaviour and V032
+  component/base behaviour must remain unchanged.
+- Structure approval requires the newest passing validation fingerprint to
+  match the exact current configuration.
+- V033 is exclusively reserved, but `V033__salary_structure_ctc_eligibility_simulation.sql` must not be created until
+  product implementation is separately authorised.
+- The exact 69-path maximum boundary is recorded in
+  `docs/planning/pln-01/p5-a3-salary-structure-ctc-eligibility-simulation-scope.md`.
