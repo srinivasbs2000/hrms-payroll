@@ -2,12 +2,12 @@
 
 **Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Repository baseline:** `main` at PR #29 merge `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8`
-**Latest repository publication:** PR #29 authority closure
+**Repository baseline:** `main` at PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
+**Latest repository publication:** PR #30 product merge
 **Latest merged quality increment:** S4-06A through PR #28 merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`
-**Latest merged product increment:** P5-A1 through PR #25 merge `5b40904764e138a7019f5d5a2b905f7019df8465`
+**Latest merged product increment:** P5-A2 through PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
-**Last verified:** 4 August 2026
+**Last verified:** 5 August 2026
 **Maintainers:** Project owner and the currently authorised capability workstream
 **Full product scope authority:** `docs/product/payroll-product-scope-and-epic-catalog.md`
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
@@ -107,7 +107,7 @@ product epics.
 ## 6. Material remaining capabilities
 
 - complete jurisdiction and registration foundation;
-- general components, named bases, CTC and salary structures;
+- CTC, eligibility, simulation and broader salary-structure completion;
 - complete bank/statutory/tax readiness;
 - general formula and balance engines;
 - complete input, cut-off, trial, approval, lock and release operations;
@@ -136,8 +136,8 @@ remain mandatory.
 ## 8. Data and migration rules
 
 - `database/flyway/sql` is the ordered migration authority.
-- V001-V031 are committed and immutable.
-- V032 is reserved exclusively for P5-A2; creation of the SQL file and product implementation remain separately gated.
+- V001-V032 are committed and immutable.
+- V033 is unreserved and has no owner.
 - future migrations are forward-only and separately authorised;
 - tenant-owned FKs include tenant ownership;
 - stable identity plus immutable effective-dated versions preserve lineage;
@@ -196,19 +196,19 @@ risk are committed.
 | Sprint 3 | Regular execution and deterministic evidence | V023-V026 | PR #18 merged |
 | Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; S4-06A quality closure merged through PR #28 |
 | P5-A1 | Organisation hierarchy lifecycle closure | V031 | PR #25 merged |
-| P5-A2 | General compensation catalogue and named payroll-base foundation | V032 reserved | Active preparation; implementation not yet authorised |
-| Governance | Living design and reconciliation controls | None | PR #20, PR #21 and PR #26 merged |
+| P5-A2 | General pay-component catalogue and named payroll bases | V032 | PR #30 merged; authority released |
+| Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26 and PR #29 merged |
 | Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | PR #28 merged; Thread 7 closed and ownership released |
 
 ## 13. Current controlled debt and planning
 
 - S4-06A is merged through PR #28 and remains closed.
-- S4-06B is planned but not authorised.
-- P5-A2 is activated as a capability workstream, separate from chat-thread numbering.
-- The reviewed P5-A2 boundary is general component catalogue, named bases and exact memberships.
-- `PLN-01` remains the product-planning authority and produced the P5-A2 source-linked scope.
+- P5-A2 is merged through PR #30; its 46-path write ownership is released.
+- P5-A3 is a planning candidate only and is not activated.
+- S4-06B remains planned and not authorised.
+- `PLN-01` remains the product-planning authority.
 - E09 still requires current legal/domain revalidation.
-- V032 is reserved exclusively for P5-A2; product implementation remains separately gated.
+- V033 is unreserved and has no owner.
 - Production, migration, contract, security, dependency, frontend and CI
   changes require stop-and-split approval.
 
@@ -240,12 +240,15 @@ risk are committed.
 | 4 Aug 2026 | Merged final S4-06A authority closure | PR #29; merge `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8` |
 | 4 Aug 2026 | Activated P5-A2 capability preparation and reserved V032 | P5-A2 scope definition and critical review; exact 46-path maximum boundary |
 
-<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
-## P5-A2 compensation catalogue and named bases
+## 16. P5-A2 delivered architecture and authority closure
 
-P5-A2 extends the compensation foundation with complete behavioural component
-classification, stable named payroll-base identities, effective-dated base
-versions, and exact component-version/base-version memberships. All new
-runtime configuration is tenant scoped, append only, maker-checker controlled,
-audited, and published through the outbox. Legal classifications and rates
-remain rule-pack data outside this capability.
+P5-A2 completed the general compensation catalogue foundation with behavioural
+component classification, stable named payroll-base identities, effective-dated
+base versions and append-only exact memberships. Runtime configuration remains
+tenant scoped, maker-checker controlled, audited and outbox-published. Legal
+classifications and rates remain rule-pack data outside this capability.
+
+PR #30 merged implementation commit `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` as
+`aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; post-merge workflow run `30957450623` succeeded. The
+feature branch is retained as historical evidence. No active P5-A2 write owner
+remains. V032 is committed and immutable; V033 is unreserved.

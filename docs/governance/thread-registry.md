@@ -1,9 +1,9 @@
 # HRMS Payroll Thread Registry
 
-**Last verified:** 4 August 2026
-**Repository baseline:** `main` at `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8`
-**Latest repository publication:** PR #29 merged
-**Latest merged product increment:** P5-A1 through PR #25
+**Last verified:** 5 August 2026
+**Repository baseline:** `main` at `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
+**Latest repository publication:** PR #30 merged
+**Latest merged product increment:** P5-A2 through PR #30
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 
 Only one registered capability workstream or write-capable process may own
@@ -23,36 +23,32 @@ write ownership.
 | Thread 6 | CLOSED | P5-A1 organisation hierarchy closure | PR #25 merged | None; released | V031 implemented | Reference and incident history only |
 | Thread 7 | CLOSED | S4-06A statutory API integration quality closure | PR #28 merged; PR #27 closed unmerged | None; released | None; V032 was unreserved at closure | Reference and incident history only |
 
-## Active capability workstream
+## Capability workstream history
 
-| Capability owner | Status | Scope | Branch | Write ownership | Migration | Next action |
+| Capability owner | Status | Scope | Branch/PR | Write ownership | Migration | Next action |
 |---|---|---|---|---|---|---|
-| P5-A2 | ACTIVE — PREPARATION | General component catalogue, named payroll bases and exact component/base memberships | `feature/p5-a2-compensation-catalogue-named-bases` | Exact 46-path maximum boundary in `docs/planning/pln-01/p5-a2-compensation-configuration-scope.md` | V032 exclusively reserved; SQL creation not yet authorised | Obtain separate product-implementation authorisation |
+| P5-A2 | CLOSED | General component catalogue, named payroll bases and exact component/base memberships | `feature/p5-a2-compensation-catalogue-named-bases`; PR #30 merged | None; released | V032 implemented and immutable | Reference and incident history only |
 
 ## Current ownership state
 
-- P5-A2 is the only active capability workstream.
-- Its ownership is independent of ChatGPT thread numbering; this conversation remains Payroll System Design – Thread 6.
-- Thread 7 is historical repository terminology only and has no current ownership.
+- No implementation thread or capability workstream currently has write ownership.
+- P5-A2 is merged through PR #30 and its 46-path ownership is released.
 - S4-06A is merged through PR #28 and remains inactive.
-- V001-V031 are committed and immutable.
-- V032 is reserved exclusively for P5-A2; its SQL file is not yet authorised.
-- P5-A2 implementation is not yet authorised.
-- S4-06B remains planned and unauthorized.
-- Both S4-06A branches are historical and have no active ownership.
-- Historical P5-A1 and authority-closure branches have no active ownership.
+- V001-V032 are committed and immutable.
+- V033 is unreserved and has no owner.
+- P5-A3 and S4-06B remain planned and unauthorized.
+- Historical P5-A2, S4-06A, P5-A1 and authority-closure branches have no active ownership.
 - Unrelated Dependabot pull requests are informational and do not grant
   implementation ownership.
 
-## P5-A2 exact ownership authority
+## Historical P5-A2 exact authority
 
-The exact maximum 46-path boundary, mandatory architecture corrections and
-stop-and-split conditions are recorded in:
+The exact 46-path boundary and architecture controls remain recorded in:
 
 `docs/planning/pln-01/p5-a2-compensation-configuration-scope.md`
 
-No path outside that document is owned. Activation and V032 reservation do not
-authorise product implementation, PR creation, merge or branch deletion.
+That boundary is completion evidence only. It grants no current write ownership
+and does not authorise P5-A3, V033, S4-06B, branch deletion or any product change.
 
 ## Historical Thread 7 exact allow-list
 
@@ -107,7 +103,12 @@ Assistant and agent GitHub access is strictly read-only. GitHub mutations are
 performed only by the project owner using a deterministic local package, then
 verified through read-only GitHub inspection and returned evidence.
 
-<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
-- P5-A2 compensation catalogue and named bases: active implementation candidate
-  from `e9e297de5e59762f3701ce39ca2295e1839d7d16`; write ownership remains on
-  `feature/p5-a2-compensation-catalogue-named-bases`; no PR or merge yet.
+## P5-A2 completion evidence
+
+- activation commit: `e9e297de5e59762f3701ce39ca2295e1839d7d16`;
+- implementation commit: `c30cb1f2f0c16cd78387bb9551b93825bc7ef688`;
+- PR #30 merge/current main: `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`;
+- post-merge workflow run: `30957450623` — successful;
+- exact delivery boundary: 46 paths;
+- feature branch retained; no branch deletion authorised;
+- V032 committed and immutable; V033 unreserved.

@@ -1,7 +1,7 @@
 # Payroll Feature Delivery Lineage
 
-**Repository baseline:** `18d5ca3554ff217140b7e3c443d086d63bd02070`
-**Product implementation baseline:** `def3dd2e212f85c440eee5497e292be2f1f2bf64`
+**Repository baseline:** `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
+**Product implementation baseline:** `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
 **Purpose:** Trace original epic -> original backlog row -> current story -> migration -> commit -> PR/merge -> evidence -> remaining scope.
 
 ## 1. Epic-level lineage
@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|
 | E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06 | V014-V016 (plus foundational V001-V013) | b9f6bcf888c4d22c04a237f0a13c37d4d4d24c36; 47654eb11c69838924da172479a4c4d72a5c2729; da5dad33d7d228e1e7ee1467fb198ec21d0934ca | PR #2; merge 27947e1202ff018c3494a32584487ff3879876ab | PARTIALLY IMPLEMENTED |
 | E02 | S2-01, S2-02; population execution contributes through S3-01 | V017-V018 | Inherited Sprint 2 range through 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
-| E03 | S2-03 | V019 | Inherited Sprint 2 range through 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
+| E03 | S2-03; P5-A2 general catalogue and named bases | V019; V032 | Sprint 2 foundation plus `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` | PR #3; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` | PARTIALLY IMPLEMENTED |
 | E04 | S2-04 | V020 | Inherited Sprint 2 entry head 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
 | E05 | S2-05, S2-06; generic statutory profile contribution from S4-02 | V021-V022; V028 for generic statutory profiles | adf3769b945d56828aa984e634e6e1bbb62582d7; 1575cbc373bf4dc22ff116b1ea4bbfb7e5a19288; 63c9b1a719765fce3868eb7fc69fac37bc196dc9; 12536c3f629cf567022f3fd50998397d1d0b5911; e98f70b0346a13e463f8e768ab4014be0e30ca0f | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
 | E06 | S3-03, S3-04, S3-05 | V025-V026 | c9ada6bad94071d70a6d10fbcfec085d476a6279; f7eb7fa1fc152b8da4088b881f03bff18558d140; db644298ab3197a6931cd9c6b8d9875ef30d28c5 | PR #18; merge 73c356662b1888194a72c7006a66bd91443550ca | PARTIALLY IMPLEMENTED |
@@ -98,5 +98,14 @@ Every future detailed story must retain:
 A story may be marked complete only when its approved acceptance criteria and
 required verification evidence are committed.
 
-<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
-| P5-A2 | General pay-component catalogue and named payroll bases | Activation `e9e297de5e59762f3701ce39ca2295e1839d7d16` | Implementation candidate prepared; local verification pending | V032 |
+## P5 product-increment closure
+
+| Increment | Capability | Activation evidence | Implementation and publication evidence | Migration |
+|---|---|---|---|---|
+| P5-A2 | General pay-component catalogue and named payroll bases | `e9e297de5e59762f3701ce39ca2295e1839d7d16` | Implementation `c30cb1f2f0c16cd78387bb9551b93825bc7ef688`; PR #30 merged as `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; post-merge workflow run `30957450623` successful; authority closed | V032 committed and immutable |
+
+P5-A2's exact 46-path boundary is preserved in
+`docs/planning/pln-01/p5-a2-compensation-configuration-scope.md`. E03 remains
+partially implemented because formula execution through named bases and the
+broader compensation-design scope remain outside P5-A2. V033 and P5-A3 remain
+separately controlled.
