@@ -1,11 +1,12 @@
-# P5-A2 Compensation Configuration Scope and Activation
+# P5-A2 Compensation Configuration Scope and Closure
 
-**Status:** Active capability workstream; implementation not yet authorised  
-**Repository baseline:** `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8`  
-**Capability branch:** `feature/p5-a2-compensation-catalogue-named-bases`  
-**Migration reservation:** `V032` exclusively reserved for P5-A2  
-**Activated:** 4 August 2026  
-**Conversation context:** Payroll System Design – Thread 6  
+**Status:** CLOSED — PR #30 merged; product and migration write authority released
+**Repository baseline:** `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
+**Capability branch:** `feature/p5-a2-compensation-catalogue-named-bases`
+**Migration state:** V001-V032 committed and immutable; V033 unreserved
+**Activated:** 4 August 2026
+**Closed:** 5 August 2026
+**Conversation context:** Payroll System Design – Thread 6
 **Repository owner label:** P5-A2 capability workstream, not a new numbered chat thread
 
 ## Greenfield product position
@@ -23,19 +24,15 @@ schema-version markers and populated-upgrade tests are retained because they:
 
 They do not imply that a production upgrade is currently being performed.
 
-## Authorised preparation boundary
+## Historical activation boundary
 
-This activation authorises:
+P5-A2 activation authorised the capability branch, exclusive V032 reservation,
+the exact maximum 46-path allow-list and implementation preparation. Product
+implementation was separately authorised and completed within that boundary.
 
-- creation and publication of branch `feature/p5-a2-compensation-catalogue-named-bases`;
-- registration of P5-A2 as the active capability workstream;
-- exclusive reservation of V032;
-- ownership of the exact maximum allow-list below;
-- preparation for implementation from the corrected critical-review architecture.
-
-This activation does not authorise product implementation, creation of the V032
-SQL migration, contract or application edits, staging of product code, PR
-creation, merge or branch deletion.
+The activation never authorised legal or statutory truth, calculator semantic
+changes, salary-structure/CTC expansion, dependency or deployment changes, or
+branch deletion. Those exclusions remain historical delivery controls.
 
 ## Corrected architecture controls
 
@@ -119,17 +116,14 @@ Stop and obtain separate approval for:
 - any dependency, CI/workflow or deployment change;
 - any inability to preserve exact UUID and tenant-safe FK lineage.
 
-## Next gate
+## Post-merge authority closure
 
-After the activation commit and remote branch are verified, product
-implementation requires separate explicit authorisation.
+P5-A2 was activated at `e9e297de5e59762f3701ce39ca2295e1839d7d16`, implemented at
+`c30cb1f2f0c16cd78387bb9551b93825bc7ef688`, and merged through PR #30 as
+`aeb4b1560e7c7d6147bb288ef989b15ad1be4946`. The post-merge `payroll-baseline` workflow run
+`30957450623` completed successfully.
 
-<!-- P5-A2 PRODUCT IMPLEMENTATION CANDIDATE -->
-## Product implementation candidate
-
-A product implementation candidate has been prepared from activation commit
-`e9e297de5e59762f3701ce39ca2295e1839d7d16` within the approved 46-path
-boundary. It authors V032, split component DTOs, named-base and membership APIs,
-React workspaces, OpenAPI/security wiring, migration/API/compatibility tests,
-and operating runbooks. It remains uncommitted and unpushed until local
-verification succeeds.
+The exact 46-path boundary above is historical delivery evidence and grants no
+continuing write ownership. V032 is committed and immutable. V033 is not
+reserved. The historical feature branch remains retained. P5-A3 and S4-06B are
+not activated or authorised by this closure.
