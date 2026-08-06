@@ -151,7 +151,8 @@ The following remain binding:
 - idempotency, optimistic concurrency, audit and outbox exactly-once evidence;
 - OpenAPI, Keycloak and frontend permission alignment;
 - focused tests, full migration/RLS suite, Maven verify, frontend tests/build,
-  OpenAPI, secret/dependency/SBOM and exact-path checks.
+  API-contract linting; identity-provider permission checks; secret scanning;
+  dependency and SBOM validation; and exact-path verification.
 
 ## 7. Exact maximum path boundary
 
