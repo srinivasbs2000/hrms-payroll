@@ -110,3 +110,18 @@ action. Do not record brainstorms as approved decisions.
   product implementation is separately authorised.
 - The exact 69-path maximum boundary is recorded in
   `docs/planning/pln-01/p5-a3-salary-structure-ctc-eligibility-simulation-scope.md`.
+
+## P5-A3 implemented decisions
+
+- MDR-048 — P5-A3 is implemented as configuration-design capability through
+  V033; official payroll calculation and employee assignment remain unchanged.
+- MDR-049 — Salary-structure approval is bound to the newest exact passing
+  validation fingerprint.
+- MDR-050 — Eligibility criteria remain allow-listed, typed and conjunctive;
+  arbitrary executable expressions are prohibited.
+- MDR-051 — Design-time simulation is deterministic, immutable when retained as
+  approval evidence, and always identified as non-payroll.
+- MDR-052 — Initially planned separate simulation classes were superseded by the
+  consolidated salary-structure controller/service/validation model.
+- MDR-053 — G07 closes local quality and governance only; Git publication is a
+  separate owner-controlled action.

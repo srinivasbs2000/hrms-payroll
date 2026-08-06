@@ -109,3 +109,13 @@ P5-A2's exact 46-path boundary is preserved in
 partially implemented because formula execution through named bases and the
 broader compensation-design scope remain outside P5-A2. V033 and P5-A3 remain
 separately controlled.
+
+## P5-A3 local delivery lineage
+
+| Increment | Capability | Migration | Local evidence | Publication |
+|---|---|---|---|---|
+| P5-A3 | Salary-structure design, versioned CTC policies, typed eligibility rules and deterministic design-time simulation/validation | V033 | G02-B–G07; OpenAPI valid; 25 focused and 85 complete frontend tests; frontend build; Maven build success; 220 backend tests; PostgreSQL 17.10 | Not yet committed or published |
+
+P5-A3 remains configuration-design scope. Formula-engine expansion, official
+payroll, legal rules/rates, employee assignment and live eligibility persistence
+remain outside this increment.

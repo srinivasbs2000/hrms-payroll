@@ -277,3 +277,25 @@ P5-A3 must preserve existing structure/assignment UUID lineage, the V025/V026
 golden calculation behaviour and all P5-A2 component/base semantics. It must not
 encode current legal rates or conclusions, persist live employee eligibility,
 or mutate official payroll results.
+
+## 18. P5-A3 implemented architecture
+
+V033 extends the compensation configuration model with schema-1 salary
+structures, versioned CTC policies, typed eligibility rules and immutable
+validation evidence. Existing schema-0 structure/line UUIDs and V021 assignment
+lineage remain intact.
+
+The design-time simulator resolves exact approved component, policy, rule and
+base-membership versions. It produces deterministic annual/monthly values,
+cost-view reconciliation, hashes, warnings and blockers. It is not part of the
+official payroll execution path and does not mutate payroll results, traces,
+cycles or employee assignments.
+
+The implementation is consolidated in the existing salary-structure
+controller/service/view model rather than the larger initially anticipated
+class split. This is an approved implementation consolidation, not missing
+scope.
+
+Local G07 verification covers OpenAPI, frontend, Maven, PostgreSQL 17,
+migrations through V033 and 220 backend tests. Repository publication remains
+separately controlled.

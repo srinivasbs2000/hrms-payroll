@@ -99,3 +99,21 @@ V033 and work inside the 69-path boundary, subject to the recorded critical
 review and stop conditions.
 
 No implementation begins implicitly from activation.
+
+## P5-A3 G07 verified local checkpoint
+
+| Item | Verified fact |
+|---|---|
+| Active branch | `feature/p5-a3-salary-structure-ctc-eligibility-simulation` |
+| Activation HEAD | `0e5471f31b7c9d65cd735e2055148d802fb1b960` |
+| Local changed paths after G07 | 57 authorised paths |
+| Migration state | V001–V032 immutable; V033 implemented |
+| OpenAPI | Redocly valid |
+| Frontend | 25 focused tests, 85 complete tests, production build passed |
+| Backend | Maven build success; 220 tests; zero failures/errors/skips |
+| Database | PostgreSQL 17.10 Testcontainers; 33 migrations |
+| Git publication | Not performed and not authorised by G07 |
+
+The next controlled action is owner authorisation for local commit/publication.
+Do not infer authorisation for push, PR, merge, branch deletion, G08 or a new
+migration.

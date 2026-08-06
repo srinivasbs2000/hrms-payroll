@@ -1,18 +1,18 @@
 # Payroll vertical-slice Flyway package
 
-`sql/` is the canonical source for the ordered V001-V032 migrations. The Maven
+`sql/` is the canonical source for the ordered V001-V033 migrations. The Maven
 `backend/database-migrations` module packages these files at `db/migration` and
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
 
-V001-V032 are committed and immutable. V032 is
-`V032__compensation_catalogue_named_bases.sql`, merged through PR #30. It
-preserves existing component UUIDs and approval history as schema 0, requires
-complete schema-1 runtime writes, and does not change the current calculator.
+V001-V032 remain committed and byte-for-byte immutable. V032 is
+`V032__compensation_catalogue_named_bases.sql`, merged through PR #30.
 
-V033 is reserved exclusively for the active P5-A3 salary-structure, CTC,
-eligibility and design-time-simulation capability workstream. The reservation
-does not authorise creation of the V033 SQL file or product implementation.
+V033 is `V033__salary_structure_ctc_eligibility_simulation.sql`. It implements
+the P5-A3 configuration-design foundation: schema-1 salary structures,
+versioned CTC policies, typed eligibility rules and deterministic design-time
+simulation/validation evidence. It preserves V020/V021 UUID lineage and does
+not change the V025/V026 official starter calculator.
 
 Apply `bootstrap/001_admin_bootstrap.sql` once as a database administrator, then
 run Flyway as `payroll_migrator`. Application traffic uses `payroll_app`, which
@@ -60,7 +60,7 @@ Migration order:
 30. append-only statutory ledger postings, approved balance years, PTD/YTD snapshots, corrections, reconciliation and remittance-ready evidence
 31. organisation identity lifecycle, maker-checker approval, responsibility/establishment classifications, safe version allocation and controlled retirement
 32. P5-A2 compensation catalogue, named payroll bases, exact component/base memberships, maker-checker and controlled retirement
-33. reserved for P5-A3 salary-structure design, CTC policy, typed eligibility rules, deterministic design-time simulation and validation evidence
+33. P5-A3 salary-structure design, versioned CTC policy, typed eligibility rules, deterministic design-time simulation and immutable validation evidence
 
 This remains a greenfield product with no evidenced production deployment.
 Forward-only migrations and populated-upgrade tests protect reproducible local,

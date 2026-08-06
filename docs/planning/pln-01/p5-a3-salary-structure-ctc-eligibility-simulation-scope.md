@@ -1,10 +1,10 @@
 # P5-A3 Salary Structure, CTC, Eligibility and Simulation Scope
 
-**Status:** ACTIVE — PREPARATION ONLY
+**Status:** IMPLEMENTED LOCALLY — G07 VERIFIED
 **Capability owner:** P5-A3
 **Repository baseline:** `main` at `887347fb23b35ca72c479f377c0f6e3a1bf89722`
 **Branch:** `feature/p5-a3-salary-structure-ctc-eligibility-simulation`
-**Migration reservation:** V033 exclusively reserved; SQL creation is not authorised
+**Migration:** V033 implemented locally; V001–V032 preserved
 **Maximum write boundary:** exactly 69 paths
 **Planning package:** `HRMS-Payroll-P5-A3-Planning-and-Critical-Review-v1.0.zip`
 **Planning package SHA-256:** `d704409e9fb4792f15ce05d5ade5cb4f04c80be04e0dc1d31d357402f12e5f77`
@@ -241,8 +241,20 @@ Stop immediately for:
 - dependency, CI/workflow or deployment change;
 - real employee compensation data in tests or previews.
 
-## 9. Next gate
+## 9. Local implementation and G07 closure
 
-After the activation commit is returned and independently verified, obtain a
-separate explicit authorisation for P5-A3 product implementation. No implicit
-continuation is permitted.
+P5-A3 was implemented within the approved boundary and verified locally through
+G02-B to G07. The consolidated worktree contains 57 changed paths: 49 product
+and interface paths plus 8 G07 quality/governance/handoff paths.
+
+G07 does not authorise Git publication. Commit, push, pull request, merge,
+branch deletion and the next capability remain separately controlled.
+
+## 10. Consolidation note
+
+Several initially planned classes were not created because the final design
+consolidated simulation, validation and lifecycle behaviour into
+`SalaryStructureController`, `SalaryStructureService`,
+`SalaryStructureValidationView` and the existing contract/API test suites.
+Absence of superseded candidate paths is intentional and is recorded in the
+P5-A3 quality record.

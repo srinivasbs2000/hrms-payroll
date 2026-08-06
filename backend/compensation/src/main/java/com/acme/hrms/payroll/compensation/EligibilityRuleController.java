@@ -1,9 +1,13 @@
 package com.acme.hrms.payroll.compensation;
 
-import com.acme.hrms.payroll.compensation.internal.application.SalaryStructureService;
+import com.acme.hrms.payroll.compensation.EligibilityRuleView.EvaluationRequest;
+import com.acme.hrms.payroll.compensation.EligibilityRuleView.EvaluationView;
+import com.acme.hrms.payroll.compensation.internal.application.EligibilityRuleService;
 import com.acme.hrms.payroll.platform.AuditReader;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
@@ -23,32 +27,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Validated
-@RequestMapping("/api/v1/salary-structures")
-public class SalaryStructureController {
-  private final SalaryStructureService service;
+@RequestMapping("/api/v1/eligibility-rules")
+public class EligibilityRuleController {
+  private final EligibilityRuleService service;
 
-  public SalaryStructureController(SalaryStructureService service) {
+  public EligibilityRuleController(EligibilityRuleService service) {
     this.service = service;
   }
 
   @PostMapping
-  @PreAuthorize("hasAuthority('compensation.structure.create')")
-  public ResponseEntity<SalaryStructureView> create(
+  @PreAuthorize("hasAuthority('compensation.eligibility-rule.create')")
+  public ResponseEntity<EligibilityRuleView> create(
       @RequestHeader("Idempotency-Key") String idempotencyKey,
-      @Valid @RequestBody SalaryStructureWriteRequest request) {
-    SalaryStructureView result =
+      @Valid @RequestBody EligibilityRuleCreateRequest request) {
+    EligibilityRuleView result =
         service.create(idempotencyKey, request);
-
     return ResponseEntity
         .created(URI.create(
-            "/api/v1/salary-structures/" + result.identityId()))
+            "/api/v1/eligibility-rules/" + result.identityId()))
         .eTag(Long.toString(result.versionNo()))
         .body(result);
   }
 
   @GetMapping
-  @PreAuthorize("hasAuthority('compensation.structure.read')")
-  public List<SalaryStructureView> list(
+  @PreAuthorize("hasAuthority('compensation.eligibility-rule.read')")
+  public List<EligibilityRuleView> list(
       @RequestParam(required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
       LocalDate asOf) {
@@ -56,40 +59,38 @@ public class SalaryStructureController {
   }
 
   @GetMapping("/{identityId}")
-  @PreAuthorize("hasAuthority('compensation.structure.read')")
-  public ResponseEntity<SalaryStructureView> current(
+  @PreAuthorize("hasAuthority('compensation.eligibility-rule.read')")
+  public ResponseEntity<EligibilityRuleView> current(
       @PathVariable UUID identityId,
       @RequestParam(required = false)
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
       LocalDate asOf) {
-    SalaryStructureView result =
+    EligibilityRuleView result =
         service.current(identityId, asOf);
-
     return ResponseEntity.ok()
         .eTag(Long.toString(result.versionNo()))
         .body(result);
   }
 
   @GetMapping("/{identityId}/versions")
-  @PreAuthorize("hasAuthority('compensation.structure.read')")
-  public List<SalaryStructureView> history(
+  @PreAuthorize("hasAuthority('compensation.eligibility-rule.read')")
+  public List<EligibilityRuleView> history(
       @PathVariable UUID identityId) {
     return service.history(identityId);
   }
 
   @PostMapping("/{identityId}/versions")
   @PreAuthorize(
-      "hasAuthority('compensation.structure.version.create')")
-  public ResponseEntity<SalaryStructureView> addVersion(
+      "hasAuthority('compensation.eligibility-rule.version.create')")
+  public ResponseEntity<EligibilityRuleView> addVersion(
       @PathVariable UUID identityId,
       @RequestHeader("Idempotency-Key") String idempotencyKey,
-      @Valid @RequestBody SalaryStructureWriteRequest request) {
-    SalaryStructureView result =
+      @Valid @RequestBody EligibilityRuleVersionWriteRequest request) {
+    EligibilityRuleView result =
         service.addVersion(identityId, idempotencyKey, request);
-
     return ResponseEntity
         .created(URI.create(
-            "/api/v1/salary-structures/" + identityId
+            "/api/v1/eligibility-rules/" + identityId
                 + "/versions/" + result.versionId()))
         .eTag(Long.toString(result.versionNo()))
         .body(result);
@@ -97,70 +98,17 @@ public class SalaryStructureController {
 
   @PostMapping("/{identityId}/versions/{versionId}/corrections")
   @PreAuthorize(
-      "hasAuthority('compensation.structure.version.correct')")
-  public ResponseEntity<SalaryStructureView> correct(
+      "hasAuthority('compensation.eligibility-rule.version.correct')")
+  public ResponseEntity<EligibilityRuleView> correct(
       @PathVariable UUID identityId,
       @PathVariable UUID versionId,
       @RequestHeader("Idempotency-Key") String idempotencyKey,
-      @Valid @RequestBody SalaryStructureWriteRequest request) {
-    SalaryStructureView result = service.correctFuture(
+      @Valid @RequestBody EligibilityRuleVersionWriteRequest request) {
+    EligibilityRuleView result = service.correctFuture(
         identityId,
         versionId,
         idempotencyKey,
         request);
-
-    return ResponseEntity.ok()
-        .eTag(Long.toString(result.versionNo()))
-        .body(result);
-  }
-
-  @PostMapping("/{identityId}/versions/{versionId}/simulations")
-  @PreAuthorize("hasAuthority('compensation.structure.simulate')")
-  public ResponseEntity<SalaryStructureValidationView> simulate(
-      @PathVariable UUID identityId,
-      @PathVariable UUID versionId,
-      @RequestHeader("Idempotency-Key") String idempotencyKey,
-      @Valid @RequestBody SalaryStructureSimulationRequest request) {
-    SalaryStructureValidationView result = service.simulate(
-        identityId,
-        versionId,
-        idempotencyKey,
-        request);
-
-    return ResponseEntity
-        .created(URI.create(
-            "/api/v1/salary-structures/" + identityId
-                + "/versions/" + versionId
-                + "/validations/" + result.validationId()))
-        .body(result);
-  }
-
-  @GetMapping("/{identityId}/versions/{versionId}/validations")
-  @PreAuthorize("hasAuthority('compensation.structure.read')")
-  public List<SalaryStructureValidationView> validations(
-      @PathVariable UUID identityId,
-      @PathVariable UUID versionId) {
-    return service.validations(identityId, versionId);
-  }
-
-  @PostMapping(
-      "/{identityId}/versions/{versionId}/validations/"
-          + "{validationId}/binding")
-  @PreAuthorize(
-      "hasAuthority('compensation.structure.validation.bind')")
-  public ResponseEntity<SalaryStructureView> bindValidation(
-      @PathVariable UUID identityId,
-      @PathVariable UUID versionId,
-      @PathVariable UUID validationId,
-      @RequestHeader("Idempotency-Key") String idempotencyKey,
-      @RequestHeader("If-Match") String ifMatch) {
-    SalaryStructureView result = service.bindValidation(
-        identityId,
-        versionId,
-        validationId,
-        idempotencyKey,
-        expectedVersion(ifMatch));
-
     return ResponseEntity.ok()
         .eTag(Long.toString(result.versionNo()))
         .body(result);
@@ -168,36 +116,65 @@ public class SalaryStructureController {
 
   @PostMapping("/{identityId}/versions/{versionId}/end-date")
   @PreAuthorize(
-      "hasAuthority('compensation.structure.version.end-date')")
-  public ResponseEntity<SalaryStructureView> endDate(
+      "hasAuthority('compensation.eligibility-rule.version.end-date')")
+  public ResponseEntity<EligibilityRuleView> endDate(
       @PathVariable UUID identityId,
       @PathVariable UUID versionId,
       @RequestHeader("Idempotency-Key") String idempotencyKey,
       @RequestHeader("If-Match") String ifMatch,
       @Valid @RequestBody EndDateRequest request) {
-    SalaryStructureView result = service.endDate(
+    EligibilityRuleView result = service.endDate(
         identityId,
         versionId,
         idempotencyKey,
         request.effectiveTo(),
         expectedVersion(ifMatch));
-
     return ResponseEntity.ok()
         .eTag(Long.toString(result.versionNo()))
         .body(result);
   }
 
   @PostMapping("/{identityId}/versions/{versionId}/approval")
-  @PreAuthorize("hasAuthority('compensation.structure.approve')")
-  public ResponseEntity<SalaryStructureView> approve(
+  @PreAuthorize(
+      "hasAuthority('compensation.eligibility-rule.approve')")
+  public ResponseEntity<EligibilityRuleView> approve(
       @PathVariable UUID identityId,
       @PathVariable UUID versionId,
       @RequestHeader("Idempotency-Key") String idempotencyKey) {
-    SalaryStructureView result =
+    EligibilityRuleView result =
         service.approve(identityId, versionId, idempotencyKey);
-
     return ResponseEntity.ok()
         .eTag(Long.toString(result.versionNo()))
+        .body(result);
+  }
+
+  @PostMapping("/{identityId}/versions/{versionId}/evaluation")
+  @PreAuthorize(
+      "hasAuthority('compensation.eligibility-rule.evaluate')")
+  public EvaluationView evaluate(
+      @PathVariable UUID identityId,
+      @PathVariable UUID versionId,
+      @Valid @RequestBody EvaluationRequest request) {
+    request.validate();
+    return service.evaluate(identityId, versionId, request.facts());
+  }
+
+  @PostMapping("/{identityId}/retirement")
+  @PreAuthorize(
+      "hasAuthority('compensation.eligibility-rule.retire')")
+  public ResponseEntity<EligibilityRuleView> retire(
+      @PathVariable UUID identityId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @RequestHeader("If-Match") String ifMatch,
+      @Valid @RequestBody RetirementRequest request) {
+    EligibilityRuleView result = service.retire(
+        identityId,
+        idempotencyKey,
+        request.effectiveDate(),
+        expectedVersion(ifMatch),
+        request.reason());
+    return ResponseEntity.ok()
+        .eTag(Long.toString(result.identityVersionNo()))
         .body(result);
   }
 
@@ -220,4 +197,9 @@ public class SalaryStructureController {
   }
 
   public record EndDateRequest(@NotNull LocalDate effectiveTo) {}
+
+  public record RetirementRequest(
+      @NotNull LocalDate effectiveDate,
+      @NotBlank @Size(max = 500) String reason) {}
+
 }

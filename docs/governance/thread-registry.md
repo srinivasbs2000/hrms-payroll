@@ -93,3 +93,12 @@ verified through read-only GitHub inspection and returned evidence.
 - V032 committed and immutable;
 - V033 was unreserved at P5-A2 closure and is now governed exclusively by
   P5-A3 activation authority.
+
+## P5-A3 G07 local closure
+
+| Capability owner | Status | Scope | Branch/PR | Write ownership | Migration | Next action |
+|---|---|---|---|---|---|---|
+| P5-A3 | LOCALLY VERIFIED — publication pending | Salary-structure design, CTC policies, eligibility rules and design-time simulation | `feature/p5-a3-salary-structure-ctc-eligibility-simulation`; no PR | Owner retains local branch; assistant GitHub read-only | V033 implemented locally | Obtain separate owner authorisation for Git publication |
+
+G07 verification does not release the branch, reserve the next migration or
+authorise another capability.
