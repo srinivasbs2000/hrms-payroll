@@ -1,34 +1,34 @@
 package com.acme.hrms.payroll.compensation;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public record SalaryStructureView(
+public record CtcPolicyView(
     UUID identityId,
     String code,
-    String identityStatus,
+    String lifecycleStatus,
+    long identityVersionNo,
+    LocalDate retirementEffectiveDate,
+    String retirementReason,
+    Instant retiredAt,
+    String retiredBy,
     UUID versionId,
     int versionSequence,
     long versionNo,
     String name,
     String currency,
-    short structureSchemaVersion,
-    String structureType,
-    String payFrequency,
-    String confidentialityLevel,
-    UUID ctcPolicyVersionId,
-    UUID eligibilityRuleVersionId,
-    String targetType,
-    BigDecimal targetAnnualAmount,
+    String annualisationMethod,
     BigDecimal toleranceAmount,
+    UUID residualComponentId,
     UUID residualComponentVersionId,
-    String configurationHash,
-    String validationFingerprint,
+    String residualComponentCode,
+    String residualComponentName,
     LocalDate effectiveFrom,
     LocalDate effectiveTo,
     String approvalStatus,
     UUID supersedesVersionId,
     boolean superseded,
-    List<SalaryStructureLineView> lines) {}
+    List<CtcPolicyTreatmentView> treatments) {}

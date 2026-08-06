@@ -277,19 +277,60 @@ paths:
   /payroll-bases/{identityId}/audit:
     $ref: '#/components/pathItems/PayrollBaseAudit'
   /salary-structures:
-    $ref: '#/components/pathItems/SalaryStructureCollection'
+    $ref: '#/components/pathItems/P5A3SalaryStructureCollection'
   /salary-structures/{identityId}:
-    $ref: '#/components/pathItems/SalaryStructureIdentity'
+    $ref: '#/components/pathItems/P5A3SalaryStructureIdentity'
   /salary-structures/{identityId}/versions:
-    $ref: '#/components/pathItems/SalaryStructureVersions'
+    $ref: '#/components/pathItems/P5A3SalaryStructureVersions'
   /salary-structures/{identityId}/versions/{versionId}/corrections:
-    $ref: '#/components/pathItems/SalaryStructureCorrection'
+    $ref: '#/components/pathItems/P5A3SalaryStructureCorrection'
   /salary-structures/{identityId}/versions/{versionId}/end-date:
-    $ref: '#/components/pathItems/SalaryStructureEndDate'
+    $ref: '#/components/pathItems/P5A3SalaryStructureEndDate'
   /salary-structures/{identityId}/versions/{versionId}/approval:
-    $ref: '#/components/pathItems/SalaryStructureApproval'
+    $ref: '#/components/pathItems/P5A3SalaryStructureApproval'
   /salary-structures/{identityId}/audit:
-    $ref: '#/components/pathItems/SalaryStructureAudit'
+    $ref: '#/components/pathItems/P5A3SalaryStructureAudit'
+  # P5-A3 G06 aggregate integration v1.1
+  /ctc-policies:
+    $ref: '#/components/pathItems/P5A3CtcPolicyCollection'
+  /ctc-policies/{identityId}:
+    $ref: '#/components/pathItems/P5A3CtcPolicyIdentity'
+  /ctc-policies/{identityId}/versions:
+    $ref: '#/components/pathItems/P5A3CtcPolicyVersions'
+  /ctc-policies/{identityId}/versions/{versionId}/corrections:
+    $ref: '#/components/pathItems/P5A3CtcPolicyCorrection'
+  /ctc-policies/{identityId}/versions/{versionId}/end-date:
+    $ref: '#/components/pathItems/P5A3CtcPolicyEndDate'
+  /ctc-policies/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/P5A3CtcPolicyApproval'
+  /ctc-policies/{identityId}/retirement:
+    $ref: '#/components/pathItems/P5A3CtcPolicyRetirement'
+  /ctc-policies/{identityId}/audit:
+    $ref: '#/components/pathItems/P5A3CtcPolicyAudit'
+  /eligibility-rules:
+    $ref: '#/components/pathItems/P5A3EligibilityRuleCollection'
+  /eligibility-rules/{identityId}:
+    $ref: '#/components/pathItems/P5A3EligibilityRuleIdentity'
+  /eligibility-rules/{identityId}/versions:
+    $ref: '#/components/pathItems/P5A3EligibilityRuleVersions'
+  /eligibility-rules/{identityId}/versions/{versionId}/corrections:
+    $ref: '#/components/pathItems/P5A3EligibilityRuleCorrection'
+  /eligibility-rules/{identityId}/versions/{versionId}/end-date:
+    $ref: '#/components/pathItems/P5A3EligibilityRuleEndDate'
+  /eligibility-rules/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/P5A3EligibilityRuleApproval'
+  /eligibility-rules/{identityId}/versions/{versionId}/evaluation:
+    $ref: '#/components/pathItems/P5A3EligibilityRuleEvaluation'
+  /eligibility-rules/{identityId}/retirement:
+    $ref: '#/components/pathItems/P5A3EligibilityRuleRetirement'
+  /eligibility-rules/{identityId}/audit:
+    $ref: '#/components/pathItems/P5A3EligibilityRuleAudit'
+  /salary-structures/{identityId}/versions/{versionId}/simulations:
+    $ref: '#/components/pathItems/P5A3SalaryStructureSimulation'
+  /salary-structures/{identityId}/versions/{versionId}/validations:
+    $ref: '#/components/pathItems/P5A3SalaryStructureValidations'
+  /salary-structures/{identityId}/versions/{versionId}/validations/{validationId}/binding:
+    $ref: '#/components/pathItems/P5A3SalaryStructureValidationBinding'
   /payroll-relationships:
     $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayrollRelationshipCollection'
   /payroll-relationships/{identityId}:
@@ -438,6 +479,13 @@ components:
       type: openIdConnect
       openIdConnectUrl: http://localhost:8081/realms/payroll/.well-known/openid-configuration
   parameters:
+    P5A3ValidationId:
+      name: validationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     CorrelationId:
       name: X-Correlation-ID
       in: header
@@ -491,6 +539,824 @@ components:
       description: Numeric version ETag used for optimistic concurrency.
       schema: {type: string, pattern: '^(W/)?"?[0-9]+"?$'}
   pathItems:
+    P5A3CtcPolicyCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: List effective CTC policies
+        operationId: p5a3ListCtcPolicies
+        x-permission: compensation.ctc-policy.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3CtcPolicyList'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+      post:
+        tags:
+        - Compensation
+        summary: Create a CTC-policy identity and draft version
+        operationId: p5a3CreateCtcPolicy
+        x-permission: compensation.ctc-policy.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3CtcPolicyCreate'
+        responses:
+          '201':
+            $ref: '#/components/responses/P5A3CtcPolicy'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+          '422':
+            $ref: '#/components/responses/Problem'
+    P5A3CtcPolicyIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: Read an effective CTC-policy version
+        operationId: p5a3GetCtcPolicy
+        x-permission: compensation.ctc-policy.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3CtcPolicy'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '404':
+            $ref: '#/components/responses/Problem'
+    P5A3CtcPolicyVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: List CTC-policy version history
+        operationId: p5a3ListCtcPolicyVersions
+        x-permission: compensation.ctc-policy.read
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3CtcPolicyList'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+      post:
+        tags:
+        - Compensation
+        summary: Add a CTC-policy draft version
+        operationId: p5a3AddCtcPolicyVersion
+        x-permission: compensation.ctc-policy.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3CtcPolicyVersionWrite'
+        responses:
+          '201':
+            $ref: '#/components/responses/P5A3CtcPolicy'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+          '422':
+            $ref: '#/components/responses/Problem'
+    P5A3CtcPolicyCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      post:
+        tags:
+        - Compensation
+        summary: Correct a future CTC-policy draft
+        operationId: p5a3CorrectCtcPolicyVersion
+        x-permission: compensation.ctc-policy.version.correct
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3CtcPolicyVersionWrite'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3CtcPolicy'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+          '422':
+            $ref: '#/components/responses/Problem'
+    P5A3CtcPolicyEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      post:
+        tags:
+        - Compensation
+        summary: End-date a CTC-policy version
+        operationId: p5a3EndDateCtcPolicyVersion
+        x-permission: compensation.ctc-policy.version.end-date
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3EndDate'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3CtcPolicy'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3CtcPolicyApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      post:
+        tags:
+        - Compensation
+        summary: Approve a CTC-policy version
+        operationId: p5a3ApproveCtcPolicyVersion
+        x-permission: compensation.ctc-policy.approve
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3CtcPolicy'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3CtcPolicyRetirement:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      post:
+        tags:
+        - Compensation
+        summary: Retire a CTC-policy identity
+        operationId: p5a3RetireCtcPolicy
+        x-permission: compensation.ctc-policy.retire
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3Retirement'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3CtcPolicy'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3CtcPolicyAudit:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: Read CTC-policy audit history
+        operationId: p5a3GetCtcPolicyAudit
+        x-permission: audit.read
+        responses:
+          '200':
+            description: Audit events
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+    P5A3EligibilityRuleCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: List effective eligibility rules
+        operationId: p5a3ListEligibilityRules
+        x-permission: compensation.eligibility-rule.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3EligibilityRuleList'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+      post:
+        tags:
+        - Compensation
+        summary: Create an eligibility-rule identity and draft version
+        operationId: p5a3CreateEligibilityRule
+        x-permission: compensation.eligibility-rule.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3EligibilityRuleCreate'
+        responses:
+          '201':
+            $ref: '#/components/responses/P5A3EligibilityRule'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+          '422':
+            $ref: '#/components/responses/Problem'
+    P5A3EligibilityRuleIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: Read an effective eligibility-rule version
+        operationId: p5a3GetEligibilityRule
+        x-permission: compensation.eligibility-rule.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3EligibilityRule'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '404':
+            $ref: '#/components/responses/Problem'
+    P5A3EligibilityRuleVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: List eligibility-rule version history
+        operationId: p5a3ListEligibilityRuleVersions
+        x-permission: compensation.eligibility-rule.read
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3EligibilityRuleList'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+      post:
+        tags:
+        - Compensation
+        summary: Add an eligibility-rule draft version
+        operationId: p5a3AddEligibilityRuleVersion
+        x-permission: compensation.eligibility-rule.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3EligibilityRuleVersionWrite'
+        responses:
+          '201':
+            $ref: '#/components/responses/P5A3EligibilityRule'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+          '422':
+            $ref: '#/components/responses/Problem'
+    P5A3EligibilityRuleCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      post:
+        tags:
+        - Compensation
+        summary: Correct a future eligibility-rule draft
+        operationId: p5a3CorrectEligibilityRuleVersion
+        x-permission: compensation.eligibility-rule.version.correct
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3EligibilityRuleVersionWrite'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3EligibilityRule'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3EligibilityRuleEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      post:
+        tags:
+        - Compensation
+        summary: End-date an eligibility-rule version
+        operationId: p5a3EndDateEligibilityRuleVersion
+        x-permission: compensation.eligibility-rule.version.end-date
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3EndDate'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3EligibilityRule'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3EligibilityRuleApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      post:
+        tags:
+        - Compensation
+        summary: Approve an eligibility-rule version
+        operationId: p5a3ApproveEligibilityRuleVersion
+        x-permission: compensation.eligibility-rule.approve
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3EligibilityRule'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3EligibilityRuleEvaluation:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        tags:
+        - Compensation
+        summary: Evaluate synthetic design-time eligibility facts
+        operationId: p5a3EvaluateEligibilityRule
+        x-permission: compensation.eligibility-rule.evaluate
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3EligibilityEvaluationRequest'
+        responses:
+          '200':
+            description: Deterministic design-time evaluation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/P5A3EligibilityEvaluation'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '422':
+            $ref: '#/components/responses/Problem'
+    P5A3EligibilityRuleRetirement:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      post:
+        tags:
+        - Compensation
+        summary: Retire an eligibility-rule identity
+        operationId: p5a3RetireEligibilityRule
+        x-permission: compensation.eligibility-rule.retire
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3Retirement'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3EligibilityRule'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3EligibilityRuleAudit:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: Read eligibility-rule audit history
+        operationId: p5a3GetEligibilityRuleAudit
+        x-permission: audit.read
+        responses:
+          '200':
+            description: Audit events
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: List effective salary structures
+        operationId: p5a3ListSalaryStructuresP5A3
+        x-permission: compensation.structure.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3SalaryStructureList'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+      post:
+        tags:
+        - Compensation
+        summary: Create a schema-1 salary-structure identity and draft
+        operationId: p5a3CreateSalaryStructureP5A3
+        x-permission: compensation.structure.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3SalaryStructureWrite'
+        responses:
+          '201':
+            $ref: '#/components/responses/P5A3SalaryStructure'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+          '422':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: Read an effective salary-structure version
+        operationId: p5a3GetSalaryStructureP5A3
+        x-permission: compensation.structure.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3SalaryStructure'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '404':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: List salary-structure version history
+        operationId: p5a3ListSalaryStructureVersionsP5A3
+        x-permission: compensation.structure.read
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3SalaryStructureList'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+      post:
+        tags:
+        - Compensation
+        summary: Add a salary-structure draft version
+        operationId: p5a3AddSalaryStructureVersionP5A3
+        x-permission: compensation.structure.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3SalaryStructureWrite'
+        responses:
+          '201':
+            $ref: '#/components/responses/P5A3SalaryStructure'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+          '422':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureCorrection:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      post:
+        tags:
+        - Compensation
+        summary: Correct a future salary-structure draft
+        operationId: p5a3CorrectSalaryStructureVersionP5A3
+        x-permission: compensation.structure.version.correct
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3SalaryStructureWrite'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3SalaryStructure'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureEndDate:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      post:
+        tags:
+        - Compensation
+        summary: End-date a salary-structure version
+        operationId: p5a3EndDateSalaryStructureVersionP5A3
+        x-permission: compensation.structure.version.end-date
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3EndDate'
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3SalaryStructure'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      post:
+        tags:
+        - Compensation
+        summary: Approve a bound and validated salary-structure version
+        operationId: p5a3ApproveSalaryStructureVersionP5A3
+        x-permission: compensation.structure.approve
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3SalaryStructure'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureSimulation:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      post:
+        tags:
+        - Compensation
+        summary: Run a deterministic design-time salary-structure simulation
+        operationId: p5a3SimulateSalaryStructure
+        x-permission: compensation.structure.simulate
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/P5A3SalaryStructureSimulationRequest'
+        responses:
+          '201':
+            description: Immutable validation evidence
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/P5A3SalaryStructureValidation'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+          '422':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureValidations:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: List immutable salary-structure validation evidence
+        operationId: p5a3ListSalaryStructureValidations
+        x-permission: compensation.structure.read
+        responses:
+          '200':
+            description: Validation evidence
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/P5A3SalaryStructureValidation'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureValidationBinding:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/P5A3ValidationId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      post:
+        tags:
+        - Compensation
+        summary: Bind passing validation evidence to a salary-structure draft
+        operationId: p5a3BindSalaryStructureValidation
+        x-permission: compensation.structure.validation.bind
+        responses:
+          '200':
+            $ref: '#/components/responses/P5A3SalaryStructure'
+          '400':
+            $ref: '#/components/responses/Problem'
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
+          '409':
+            $ref: '#/components/responses/Problem'
+    P5A3SalaryStructureAudit:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags:
+        - Compensation
+        summary: Read salary-structure audit history
+        operationId: p5a3GetSalaryStructureAuditP5A3
+        x-permission: audit.read
+        responses:
+          '200':
+            description: Audit events
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: true
+          '401':
+            $ref: '#/components/responses/Problem'
+          '403':
+            $ref: '#/components/responses/Problem'
     OrganisationCollection:
       parameters:
       - $ref: '#/components/parameters/CorrelationId'
@@ -1289,181 +2155,6 @@ components:
           '200': {description: Audit history, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/AuditEvent'}}}}}
           '401': {$ref: '#/components/responses/Unauthorized'}
           '403': {$ref: '#/components/responses/Forbidden'}
-    SalaryStructureCollection:
-      parameters:
-      - $ref: '#/components/parameters/CorrelationId'
-      get:
-        operationId: listSalaryStructures
-        tags: [Compensation]
-        summary: List approved salary structures effective on a date
-        x-permission: compensation.structure.read
-        parameters:
-        - $ref: '#/components/parameters/AsOf'
-        responses:
-          '200':
-            description: Effective salary structures with exact component-version lines
-            headers:
-              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items: {$ref: '#/components/schemas/SalaryStructureVersion'}
-          '401': {$ref: '#/components/responses/Unauthorized'}
-          '403': {$ref: '#/components/responses/Forbidden'}
-          '429': {$ref: '#/components/responses/TooManyRequests'}
-          '500': {$ref: '#/components/responses/InternalServerError'}
-          '503': {$ref: '#/components/responses/ServiceUnavailable'}
-      post:
-        operationId: createSalaryStructure
-        tags: [Compensation]
-        summary: Create a stable salary-structure identity and first complete draft version
-        x-permission: compensation.structure.create
-        parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        requestBody: {$ref: '#/components/requestBodies/SalaryStructureWriteRequest'}
-        responses:
-          '201': {$ref: '#/components/responses/SalaryStructureVersion'}
-          '401': {$ref: '#/components/responses/Unauthorized'}
-          '403': {$ref: '#/components/responses/Forbidden'}
-          '409': {$ref: '#/components/responses/Conflict'}
-          '422': {$ref: '#/components/responses/UnprocessableEntity'}
-    SalaryStructureIdentity:
-      parameters:
-      - $ref: '#/components/parameters/IdentityId'
-      - $ref: '#/components/parameters/CorrelationId'
-      get:
-        operationId: getSalaryStructure
-        tags: [Compensation]
-        summary: Get the current or as-of approved salary-structure version
-        x-permission: compensation.structure.read
-        parameters:
-        - $ref: '#/components/parameters/AsOf'
-        responses:
-          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
-          '401': {$ref: '#/components/responses/Unauthorized'}
-          '403': {$ref: '#/components/responses/Forbidden'}
-          '404': {$ref: '#/components/responses/NotFound'}
-    SalaryStructureVersions:
-      parameters:
-      - $ref: '#/components/parameters/IdentityId'
-      - $ref: '#/components/parameters/CorrelationId'
-      get:
-        operationId: listSalaryStructureVersions
-        tags: [Compensation]
-        summary: Read complete salary-structure version history
-        x-permission: compensation.structure.read
-        responses:
-          '200':
-            description: Ordered salary-structure version history
-            headers:
-              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items: {$ref: '#/components/schemas/SalaryStructureVersion'}
-          '401': {$ref: '#/components/responses/Unauthorized'}
-          '403': {$ref: '#/components/responses/Forbidden'}
-      post:
-        operationId: createSalaryStructureVersion
-        tags: [Compensation]
-        summary: Append a complete future effective-dated salary-structure version
-        x-permission: compensation.structure.version.create
-        parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        requestBody: {$ref: '#/components/requestBodies/SalaryStructureWriteRequest'}
-        responses:
-          '201': {$ref: '#/components/responses/SalaryStructureVersion'}
-          '401': {$ref: '#/components/responses/Unauthorized'}
-          '403': {$ref: '#/components/responses/Forbidden'}
-          '404': {$ref: '#/components/responses/NotFound'}
-          '409': {$ref: '#/components/responses/Conflict'}
-          '422': {$ref: '#/components/responses/UnprocessableEntity'}
-    SalaryStructureCorrection:
-      parameters:
-      - $ref: '#/components/parameters/IdentityId'
-      - $ref: '#/components/parameters/VersionId'
-      - $ref: '#/components/parameters/CorrelationId'
-      post:
-        operationId: correctSalaryStructureVersion
-        tags: [Compensation]
-        summary: Supersede an eligible future complete draft without rewriting it
-        x-permission: compensation.structure.version.correct
-        parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        requestBody: {$ref: '#/components/requestBodies/SalaryStructureWriteRequest'}
-        responses:
-          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
-          '401': {$ref: '#/components/responses/Unauthorized'}
-          '403': {$ref: '#/components/responses/Forbidden'}
-          '404': {$ref: '#/components/responses/NotFound'}
-          '409': {$ref: '#/components/responses/Conflict'}
-          '422': {$ref: '#/components/responses/UnprocessableEntity'}
-    SalaryStructureEndDate:
-      parameters:
-      - $ref: '#/components/parameters/IdentityId'
-      - $ref: '#/components/parameters/VersionId'
-      - $ref: '#/components/parameters/CorrelationId'
-      post:
-        operationId: endDateSalaryStructureVersion
-        tags: [Compensation]
-        summary: End-date an unused salary-structure version through optimistic concurrency
-        x-permission: compensation.structure.version.end-date
-        parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        - $ref: '#/components/parameters/IfMatch'
-        requestBody:
-          required: true
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/SalaryStructureEndDate'}
-        responses:
-          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
-          '401': {$ref: '#/components/responses/Unauthorized'}
-          '403': {$ref: '#/components/responses/Forbidden'}
-          '404': {$ref: '#/components/responses/NotFound'}
-          '409': {$ref: '#/components/responses/Conflict'}
-          '422': {$ref: '#/components/responses/UnprocessableEntity'}
-    SalaryStructureApproval:
-      parameters:
-      - $ref: '#/components/parameters/IdentityId'
-      - $ref: '#/components/parameters/VersionId'
-      - $ref: '#/components/parameters/CorrelationId'
-      post:
-        operationId: approveSalaryStructureVersion
-        tags: [Compensation]
-        summary: Approve a complete non-superseded salary-structure draft
-        x-permission: compensation.structure.approve
-        parameters:
-        - $ref: '#/components/parameters/IdempotencyKey'
-        responses:
-          '200': {$ref: '#/components/responses/SalaryStructureVersion'}
-          '401': {$ref: '#/components/responses/Unauthorized'}
-          '403': {$ref: '#/components/responses/Forbidden'}
-          '404': {$ref: '#/components/responses/NotFound'}
-          '409': {$ref: '#/components/responses/Conflict'}
-    SalaryStructureAudit:
-      parameters:
-      - $ref: '#/components/parameters/IdentityId'
-      - $ref: '#/components/parameters/CorrelationId'
-      get:
-        operationId: listSalaryStructureAuditEvents
-        tags: [Compensation]
-        summary: Read immutable audit evidence for a salary-structure identity
-        x-permission: audit.read
-        responses:
-          '200':
-            description: Audit event history
-            headers:
-              X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items: {$ref: '#/components/schemas/AuditEvent'}
-          '401': {$ref: '#/components/responses/Unauthorized'}
-          '403': {$ref: '#/components/responses/Forbidden'}
   requestBodies:
     OrganisationWriteRequest:
       required: true
@@ -1492,13 +2183,49 @@ components:
     ComponentBaseMembershipWriteRequest:
       required: true
       content: {application/json: {schema: {$ref: '#/components/schemas/ComponentBaseMembershipWrite'}}}
-    SalaryStructureWriteRequest:
-      required: true
+  responses:
+    P5A3CtcPolicy:
+      description: CTC-policy version
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/SalaryStructureWrite'
-  responses:
+            $ref: '#/components/schemas/P5A3CtcPolicy'
+    P5A3CtcPolicyList:
+      description: CTC-policy versions
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/P5A3CtcPolicy'
+    P5A3EligibilityRule:
+      description: Eligibility-rule version
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/P5A3EligibilityRule'
+    P5A3EligibilityRuleList:
+      description: Eligibility-rule versions
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/P5A3EligibilityRule'
+    P5A3SalaryStructure:
+      description: Salary-structure version
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/P5A3SalaryStructure'
+    P5A3SalaryStructureList:
+      description: Salary-structure versions
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/P5A3SalaryStructure'
     Unauthorized:
       description: Authentication is missing or invalid
       headers: {X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}}
@@ -1573,16 +2300,6 @@ components:
         X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
         ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
       content: {application/json: {schema: {$ref: '#/components/schemas/ComponentBaseMembership'}}}
-    SalaryStructureVersion:
-      description: Salary-structure identity, exact version and immutable component lines
-      headers:
-        X-Correlation-ID: {$ref: '#/components/headers/CorrelationId'}
-        ETag:
-          description: Numeric optimistic-concurrency version
-          schema: {type: string}
-      content:
-        application/json:
-          schema: {$ref: '#/components/schemas/SalaryStructureVersion'}
     Problem:
       description: Problem Details
       headers:
@@ -1600,6 +2317,1061 @@ components:
         type: string
         format: uuid
   schemas:
+    P5A3EndDate:
+      type: object
+      additionalProperties: false
+      required:
+      - effectiveTo
+      properties:
+        effectiveTo:
+          type: string
+          format: date
+    P5A3Retirement:
+      type: object
+      additionalProperties: false
+      required:
+      - effectiveDate
+      - reason
+      properties:
+        effectiveDate:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    P5A3CtcPolicyCreate:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - version
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+        version:
+          $ref: '#/components/schemas/P5A3CtcPolicyVersionWrite'
+    P5A3CtcPolicyVersionWrite:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - annualisationMethod
+      - residualComponentId
+      - residualComponentVersionId
+      - effectiveFrom
+      - treatments
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        currency:
+          type: string
+          enum:
+          - INR
+          default: INR
+        annualisationMethod:
+          type: string
+          enum:
+          - MONTHLY_X_12
+          - PAY_PERIOD_FACTOR
+          - EXACT_ANNUAL
+        toleranceAmount:
+          type: number
+          minimum: 0
+          default: 0
+        residualComponentId:
+          type: string
+          format: uuid
+        residualComponentVersionId:
+          type: string
+          format: uuid
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type:
+          - string
+          - 'null'
+          format: date
+        treatments:
+          type: array
+          minItems: 4
+          items:
+            $ref: '#/components/schemas/P5A3CtcTreatmentWrite'
+    P5A3CtcTreatmentWrite:
+      type: object
+      additionalProperties: false
+      required:
+      - componentId
+      - componentVersionId
+      - treatmentSequence
+      - costView
+      - treatmentType
+      properties:
+        componentId:
+          type: string
+          format: uuid
+        componentVersionId:
+          type: string
+          format: uuid
+        treatmentSequence:
+          type: integer
+          minimum: 1
+        costView:
+          type: string
+          enum:
+          - OFFERED
+          - TARGET
+          - ACCRUED
+          - ACTUAL_EMPLOYER_COST
+        treatmentType:
+          type: string
+          enum:
+          - FIXED_VALUE
+          - TARGET_VALUE
+          - ACTUAL_VALUE
+          - PROVISION
+          - EMPLOYER_CONTRIBUTION
+          - BENEFIT_PREMIUM
+          - EXCLUDE
+          - INFORMATIONAL
+        fixedValue:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+        targetPercentage:
+          type:
+          - number
+          - 'null'
+          exclusiveMinimum: 0
+          maximum: 100
+        payrollBaseId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        payrollBaseVersionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        effectiveFrom:
+          type:
+          - string
+          - 'null'
+          format: date
+        effectiveTo:
+          type:
+          - string
+          - 'null'
+          format: date
+    P5A3CtcPolicy:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - lifecycleStatus
+      - identityVersionNo
+      - retirementEffectiveDate
+      - retirementReason
+      - retiredAt
+      - retiredBy
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - currency
+      - annualisationMethod
+      - toleranceAmount
+      - residualComponentId
+      - residualComponentVersionId
+      - residualComponentCode
+      - residualComponentName
+      - effectiveFrom
+      - effectiveTo
+      - approvalStatus
+      - supersedesVersionId
+      - superseded
+      - treatments
+      properties:
+        identityId: &id002
+          type: string
+          format: uuid
+        code:
+          type: string
+        lifecycleStatus: &id004
+          type: string
+          enum:
+          - PENDING_APPROVAL
+          - ACTIVE
+          - RETIRED
+        identityVersionNo:
+          type: integer
+          format: int64
+        retirementEffectiveDate: &id003
+          type:
+          - string
+          - 'null'
+          format: date
+        retirementReason: &id001
+          type:
+          - string
+          - 'null'
+        retiredAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        retiredBy: *id001
+        versionId: *id002
+        versionSequence:
+          type: integer
+          minimum: 1
+        versionNo:
+          type: integer
+          format: int64
+        name:
+          type: string
+        currency:
+          type: string
+          enum:
+          - INR
+        annualisationMethod:
+          type: string
+          enum:
+          - MONTHLY_X_12
+          - PAY_PERIOD_FACTOR
+          - EXACT_ANNUAL
+        toleranceAmount: &id007
+          type: number
+        residualComponentId: *id002
+        residualComponentVersionId: *id002
+        residualComponentCode:
+          type: string
+        residualComponentName:
+          type: string
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo: *id003
+        approvalStatus: &id005
+          type: string
+          enum:
+          - DRAFT
+          - APPROVED
+          - REJECTED
+        supersedesVersionId: &id006
+          type:
+          - string
+          - 'null'
+          format: uuid
+        superseded:
+          type: boolean
+        treatments:
+          type: array
+          items:
+            $ref: '#/components/schemas/P5A3CtcPolicyTreatment'
+    P5A3EligibilityRuleCreate:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - version
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+        version:
+          $ref: '#/components/schemas/P5A3EligibilityRuleVersionWrite'
+    P5A3EligibilityRuleVersionWrite:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - resultWhenMatched
+      - resultWhenNotMatched
+      - effectiveFrom
+      - criteria
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        resultWhenMatched:
+          $ref: '#/components/schemas/P5A3EligibilityResult'
+        resultWhenNotMatched:
+          $ref: '#/components/schemas/P5A3EligibilityResult'
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type:
+          - string
+          - 'null'
+          format: date
+        criteria:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/P5A3EligibilityCriterion'
+    P5A3EligibilityResult:
+      type: string
+      enum:
+      - ELIGIBLE
+      - NOT_ELIGIBLE
+      - REQUIRES_APPROVAL
+    P5A3EligibilityCriterion:
+      type: object
+      additionalProperties: false
+      required:
+      - criterionSequence
+      - factKey
+      - factType
+      - comparisonOperator
+      - value
+      properties:
+        criterionSequence:
+          type: integer
+          minimum: 1
+        factKey: &id009
+          type: string
+          enum:
+          - COUNTRY_CODE
+          - STATE_CODE
+          - LOCATION_CODE
+          - LEGAL_ENTITY_VERSION_ID
+          - PAYROLL_STATUTORY_UNIT_VERSION_ID
+          - ESTABLISHMENT_VERSION_ID
+          - PAY_GROUP_VERSION_ID
+          - EMPLOYMENT_TYPE
+          - EMPLOYEE_CATEGORY
+          - GRADE_CODE
+          - JOB_CODE
+          - SERVICE_MONTHS
+          - ANNUAL_COMPENSATION_AMOUNT
+          - EFFECTIVE_DATE
+        factType: &id010
+          type: string
+          enum:
+          - TEXT
+          - NUMBER
+          - DATE
+          - UUID
+        comparisonOperator: &id011
+          type: string
+          enum:
+          - EQ
+          - NE
+          - IN
+          - NOT_IN
+          - GTE
+          - LTE
+        value: {}
+    P5A3EligibilityRule:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - lifecycleStatus
+      - identityVersionNo
+      - retirementEffectiveDate
+      - retirementReason
+      - retiredAt
+      - retiredBy
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - resultWhenMatched
+      - resultWhenNotMatched
+      - effectiveFrom
+      - effectiveTo
+      - approvalStatus
+      - supersedesVersionId
+      - superseded
+      - criteria
+      properties:
+        identityId: *id002
+        code:
+          type: string
+        lifecycleStatus: *id004
+        identityVersionNo:
+          type: integer
+          format: int64
+        retirementEffectiveDate: *id003
+        retirementReason: *id001
+        retiredAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        retiredBy: *id001
+        versionId: *id002
+        versionSequence:
+          type: integer
+          minimum: 1
+        versionNo:
+          type: integer
+          format: int64
+        name:
+          type: string
+        resultWhenMatched:
+          $ref: '#/components/schemas/P5A3EligibilityResult'
+        resultWhenNotMatched:
+          $ref: '#/components/schemas/P5A3EligibilityResult'
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo: *id003
+        approvalStatus: *id005
+        supersedesVersionId: *id006
+        superseded:
+          type: boolean
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/P5A3EligibilityCriterionView'
+    P5A3EligibilityEvaluationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - facts
+      properties:
+        facts:
+          type: object
+          minProperties: 1
+          additionalProperties:
+            oneOf:
+            - type: string
+            - type: number
+    P5A3EligibilityEvaluation:
+      type: object
+      required:
+      - identityId
+      - versionId
+      - result
+      - matched
+      - configurationHash
+      - factsHash
+      - evaluationHash
+      - disclaimer
+      - criteria
+      properties:
+        identityId:
+          type: string
+          format: uuid
+        versionId:
+          type: string
+          format: uuid
+        result:
+          $ref: '#/components/schemas/P5A3EligibilityResult'
+        matched:
+          type: boolean
+        configurationHash:
+          type: string
+        factsHash:
+          type: string
+        evaluationHash:
+          type: string
+        disclaimer:
+          type: string
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/P5A3EligibilityCriterionEvaluation'
+      additionalProperties: false
+    P5A3SalaryStructureWrite:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - structureType
+      - payFrequency
+      - confidentialityLevel
+      - ctcPolicyVersionId
+      - targetType
+      - targetAnnualAmount
+      - toleranceAmount
+      - residualComponentVersionId
+      - effectiveFrom
+      - lines
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        currency:
+          type: string
+          enum:
+          - INR
+          default: INR
+        structureType:
+          type: string
+          enum:
+          - STANDARD
+          - EXECUTIVE
+          - SALES
+          - HOURLY
+          - CONTRACT
+        payFrequency:
+          type: string
+          enum:
+          - MONTHLY
+          - WEEKLY
+          - BIWEEKLY
+          - SEMIMONTHLY
+        confidentialityLevel:
+          type: string
+          enum:
+          - STANDARD
+          - RESTRICTED
+          - EXECUTIVE
+        ctcPolicyVersionId:
+          type: string
+          format: uuid
+        eligibilityRuleVersionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        targetType:
+          type: string
+          enum:
+          - ANNUAL_CTC
+          - ANNUAL_GROSS
+          - MONTHLY_GROSS
+        targetAnnualAmount:
+          type: number
+          exclusiveMinimum: 0
+        toleranceAmount:
+          type: number
+          minimum: 0
+        residualComponentVersionId:
+          type: string
+          format: uuid
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo:
+          type:
+          - string
+          - 'null'
+          format: date
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/P5A3SalaryStructureLineWrite'
+    P5A3SalaryStructureLineWrite:
+      type: object
+      additionalProperties: false
+      required:
+      - componentVersionId
+      - sequenceNo
+      - lineType
+      - mandatory
+      - overridePolicy
+      - ctcDisplayOrder
+      - payslipDisplayOrder
+      properties:
+        componentVersionId:
+          type: string
+          format: uuid
+        sequenceNo:
+          type: integer
+          minimum: 1
+        lineType:
+          type: string
+          enum:
+          - FIXED
+          - PERCENTAGE
+          - RESIDUAL
+        targetAmount:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+        targetPercentage:
+          type:
+          - number
+          - 'null'
+          exclusiveMinimum: 0
+          maximum: 100
+        percentageBaseCode:
+          type:
+          - string
+          - 'null'
+          pattern: ^[A-Z][A-Z0-9_]{1,39}$
+        minimumAmount:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+        maximumAmount:
+          type:
+          - number
+          - 'null'
+          minimum: 0
+        mandatory:
+          type: boolean
+        overridePolicy:
+          type: string
+          enum:
+          - PROHIBITED
+          - CONTROLLED
+          - ALLOWED
+        ctcDisplayOrder:
+          type: integer
+          minimum: 1
+        payslipDisplayOrder:
+          type: integer
+          minimum: 1
+    P5A3SalaryStructure:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - identityStatus
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - currency
+      - structureSchemaVersion
+      - structureType
+      - payFrequency
+      - confidentialityLevel
+      - ctcPolicyVersionId
+      - eligibilityRuleVersionId
+      - targetType
+      - targetAnnualAmount
+      - toleranceAmount
+      - residualComponentVersionId
+      - configurationHash
+      - validationFingerprint
+      - effectiveFrom
+      - effectiveTo
+      - approvalStatus
+      - supersedesVersionId
+      - superseded
+      - lines
+      properties:
+        identityId: *id002
+        code:
+          type: string
+        identityStatus:
+          type: string
+          enum:
+          - ACTIVE
+          - INACTIVE
+        versionId: *id002
+        versionSequence:
+          type: integer
+          minimum: 1
+        versionNo:
+          type: integer
+          format: int64
+        name:
+          type: string
+        currency:
+          type: string
+          enum:
+          - INR
+        structureSchemaVersion:
+          type: integer
+          enum:
+          - 1
+        structureType:
+          type: string
+          enum:
+          - STANDARD
+          - EXECUTIVE
+          - SALES
+          - HOURLY
+          - CONTRACT
+        payFrequency:
+          type: string
+          enum:
+          - MONTHLY
+          - WEEKLY
+          - BIWEEKLY
+          - SEMIMONTHLY
+        confidentialityLevel:
+          type: string
+          enum:
+          - STANDARD
+          - RESTRICTED
+          - EXECUTIVE
+        ctcPolicyVersionId: *id002
+        eligibilityRuleVersionId: *id006
+        targetType:
+          type: string
+          enum:
+          - ANNUAL_CTC
+          - ANNUAL_GROSS
+          - MONTHLY_GROSS
+        targetAnnualAmount: *id007
+        toleranceAmount: *id007
+        residualComponentVersionId: *id002
+        configurationHash:
+          type: string
+        validationFingerprint: *id001
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo: *id003
+        approvalStatus: *id005
+        supersedesVersionId: *id006
+        superseded:
+          type: boolean
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/P5A3SalaryStructureLine'
+    P5A3SalaryStructureSimulationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - effectiveDate
+      properties:
+        effectiveDate:
+          type: string
+          format: date
+        eligibilityFacts:
+          type: object
+          additionalProperties:
+            oneOf:
+            - type: string
+            - type: number
+    P5A3SalaryStructureValidation:
+      type: object
+      required:
+      - validationId
+      - identityId
+      - versionId
+      - ctcPolicyVersionId
+      - eligibilityRuleVersionId
+      - effectiveDate
+      - targetAmount
+      - validationStatus
+      - requestHash
+      - configurationHash
+      - resultHash
+      - blockingErrorCount
+      - warningCount
+      - summary
+      - createdAt
+      - createdBy
+      - disclaimer
+      - lines
+      properties:
+        validationId:
+          type: string
+          format: uuid
+        identityId:
+          type: string
+          format: uuid
+        versionId:
+          type: string
+          format: uuid
+        ctcPolicyVersionId:
+          type: string
+          format: uuid
+        eligibilityRuleVersionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        effectiveDate:
+          type: string
+          format: date
+        targetAmount:
+          type: number
+        validationStatus:
+          type: string
+          enum:
+          - PASS
+          - FAIL
+        requestHash:
+          type: string
+        configurationHash:
+          type: string
+        resultHash:
+          type: string
+        blockingErrorCount:
+          type: integer
+          minimum: 0
+        warningCount:
+          type: integer
+          minimum: 0
+        summary:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+        disclaimer:
+          type: string
+          const: DESIGN-TIME SALARY-STRUCTURE SIMULATION — NOT AN EMPLOYEE PAYROLL RESULT
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/P5A3SalaryStructureValidationLine'
+      additionalProperties: false
+    P5A3CtcPolicyTreatment:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - componentId
+      - componentVersionId
+      - componentCode
+      - componentName
+      - componentCategory
+      - treatmentSequence
+      - costView
+      - treatmentType
+      - fixedValue
+      - targetPercentage
+      - payrollBaseId
+      - payrollBaseVersionId
+      - payrollBaseCode
+      - payrollBaseName
+      - effectiveFrom
+      - effectiveTo
+      - versionNo
+      properties:
+        id: *id002
+        componentId: *id002
+        componentVersionId: *id002
+        componentCode:
+          type: string
+        componentName:
+          type: string
+        componentCategory:
+          type: string
+        treatmentSequence:
+          type: integer
+          minimum: 1
+        costView:
+          type: string
+          enum:
+          - OFFERED
+          - TARGET
+          - ACCRUED
+          - ACTUAL_EMPLOYER_COST
+        treatmentType:
+          type: string
+          enum:
+          - FIXED_VALUE
+          - TARGET_VALUE
+          - ACTUAL_VALUE
+          - PROVISION
+          - EMPLOYER_CONTRIBUTION
+          - BENEFIT_PREMIUM
+          - EXCLUDE
+          - INFORMATIONAL
+        fixedValue: &id008
+          type:
+          - number
+          - 'null'
+        targetPercentage: *id008
+        payrollBaseId: *id006
+        payrollBaseVersionId: *id006
+        payrollBaseCode: *id001
+        payrollBaseName: *id001
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo: *id003
+        versionNo:
+          type: integer
+          format: int64
+    P5A3EligibilityCriterionView:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - criterionSequence
+      - factKey
+      - factType
+      - comparisonOperator
+      - value
+      - versionNo
+      properties:
+        id: *id002
+        criterionSequence:
+          type: integer
+          minimum: 1
+        factKey: *id009
+        factType: *id010
+        comparisonOperator: *id011
+        value: {}
+        versionNo:
+          type: integer
+          format: int64
+    P5A3EligibilityCriterionEvaluation:
+      type: object
+      additionalProperties: false
+      required:
+      - criterionSequence
+      - factKey
+      - factType
+      - comparisonOperator
+      - expectedValue
+      - actualValue
+      - matched
+      properties:
+        criterionSequence:
+          type: integer
+          minimum: 1
+        factKey:
+          type: string
+        factType:
+          type: string
+          enum:
+          - TEXT
+          - NUMBER
+          - DATE
+          - UUID
+        comparisonOperator:
+          type: string
+          enum:
+          - EQ
+          - NE
+          - IN
+          - NOT_IN
+          - GTE
+          - LTE
+        expectedValue: {}
+        actualValue: {}
+        matched:
+          type: boolean
+    P5A3SalaryStructureLine:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - componentId
+      - componentVersionId
+      - componentCode
+      - componentName
+      - componentType
+      - componentFormulaType
+      - sequenceNo
+      - lineSchemaVersion
+      - lineType
+      - targetAmount
+      - targetPercentage
+      - percentageBaseCode
+      - minimumAmount
+      - maximumAmount
+      - mandatory
+      - overridePolicy
+      - ctcDisplayOrder
+      - payslipDisplayOrder
+      - effectiveFrom
+      - effectiveTo
+      properties:
+        id: *id002
+        componentId: *id002
+        componentVersionId: *id002
+        componentCode:
+          type: string
+        componentName:
+          type: string
+        componentType:
+          type: string
+          enum:
+          - EARNING
+          - DEDUCTION
+          - INFORMATION
+        componentFormulaType:
+          type: string
+          enum:
+          - FIXED
+          - PERCENTAGE_OF_COMPONENT
+          - RESIDUAL
+        sequenceNo:
+          type: integer
+          minimum: 1
+        lineSchemaVersion:
+          type: integer
+          enum:
+          - 1
+        lineType:
+          type: string
+          enum:
+          - FIXED
+          - PERCENTAGE
+          - RESIDUAL
+        targetAmount: *id008
+        targetPercentage: *id008
+        percentageBaseCode: *id001
+        minimumAmount: *id008
+        maximumAmount: *id008
+        mandatory:
+          type: boolean
+        overridePolicy:
+          type: string
+          enum:
+          - PROHIBITED
+          - CONTROLLED
+          - ALLOWED
+        ctcDisplayOrder:
+          type: integer
+          minimum: 1
+        payslipDisplayOrder:
+          type: integer
+          minimum: 1
+        effectiveFrom:
+          type: string
+          format: date
+        effectiveTo: *id003
+    P5A3SalaryStructureValidationLine:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - lineSequence
+      - componentId
+      - componentVersionId
+      - componentCode
+      - componentName
+      - annualAmount
+      - monthlyAmount
+      - classification
+      - evidence
+      properties:
+        id: *id002
+        lineSequence:
+          type: integer
+          minimum: 1
+        componentId: *id002
+        componentVersionId: *id002
+        componentCode:
+          type: string
+        componentName:
+          type: string
+        annualAmount: *id007
+        monthlyAmount: *id007
+        classification:
+          type: string
+        evidence:
+          type: object
+          additionalProperties: true
     OrganisationWrite:
       type: object
       additionalProperties: false
@@ -2066,130 +3838,6 @@ components:
         approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
         supersedesMembershipId: {type: [string, 'null'], format: uuid}
         superseded: {type: boolean}
-    SalaryStructureWrite:
-      type: object
-      additionalProperties: false
-      required: [name, effectiveFrom, lines]
-      properties:
-        code:
-          type: [string, 'null']
-          pattern: ^[A-Z][A-Z0-9_]{1,39}$
-          description: Required only when creating a stable salary-structure identity.
-        name:
-          type: string
-          minLength: 1
-          maxLength: 160
-        currency:
-          type: [string, 'null']
-          const: INR
-          default: INR
-        effectiveFrom: {type: string, format: date}
-        effectiveTo: {type: [string, 'null'], format: date}
-        lines:
-          type: array
-          minItems: 1
-          items: {$ref: '#/components/schemas/SalaryStructureLineWrite'}
-    SalaryStructureLineWrite:
-      type: object
-      additionalProperties: false
-      required: [componentVersionId, sequenceNo]
-      properties:
-        componentVersionId:
-          type: string
-          format: uuid
-          description: Exact approved pay-component version used for calculation lineage.
-        sequenceNo:
-          type: integer
-          minimum: 1
-        targetAmount:
-          type: [number, 'null']
-          minimum: 0
-          multipleOf: 0.0001
-        targetPercentage:
-          type: [number, 'null']
-          exclusiveMinimum: 0
-          maximum: 100
-          multipleOf: 0.000001
-        percentageBaseCode:
-          type: [string, 'null']
-          pattern: ^[A-Z][A-Z0-9_]{1,39}$
-    SalaryStructureEndDate:
-      type: object
-      additionalProperties: false
-      required: [effectiveTo]
-      properties:
-        effectiveTo: {type: string, format: date}
-    SalaryStructureLineView:
-      type: object
-      additionalProperties: false
-      required:
-      - id
-      - componentVersionId
-      - componentCode
-      - componentName
-      - componentType
-      - componentFormulaType
-      - sequenceNo
-      - effectiveFrom
-      properties:
-        id: {type: string, format: uuid}
-        componentVersionId: {type: string, format: uuid}
-        componentCode: {type: string}
-        componentName: {type: string}
-        componentType:
-          type: string
-          enum: [EARNING, DEDUCTION, INFORMATION]
-        componentFormulaType:
-          type: string
-          enum: [FIXED, PERCENTAGE_OF_COMPONENT, RESIDUAL]
-        sequenceNo: {type: integer, minimum: 1}
-        targetAmount:
-          type: [number, 'null']
-          minimum: 0
-          multipleOf: 0.0001
-        targetPercentage:
-          type: [number, 'null']
-          exclusiveMinimum: 0
-          maximum: 100
-          multipleOf: 0.000001
-        percentageBaseCode:
-          type: [string, 'null']
-        effectiveFrom: {type: string, format: date}
-        effectiveTo: {type: [string, 'null'], format: date}
-    SalaryStructureVersion:
-      type: object
-      additionalProperties: false
-      required:
-      - identityId
-      - code
-      - identityStatus
-      - versionId
-      - versionSequence
-      - versionNo
-      - name
-      - currency
-      - effectiveFrom
-      - approvalStatus
-      - superseded
-      - lines
-      properties:
-        identityId: {type: string, format: uuid}
-        code: {type: string}
-        identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
-        versionId: {type: string, format: uuid}
-        versionSequence: {type: integer, minimum: 1}
-        versionNo: {type: integer, format: int64, minimum: 0}
-        name: {type: string}
-        currency: {type: string, const: INR}
-        effectiveFrom: {type: string, format: date}
-        effectiveTo: {type: [string, 'null'], format: date}
-        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
-        supersedesVersionId: {type: [string, 'null'], format: uuid}
-        superseded: {type: boolean}
-        lines:
-          type: array
-          minItems: 1
-          items: {$ref: '#/components/schemas/SalaryStructureLineView'}
     ComponentResult:
       type: object
       required:

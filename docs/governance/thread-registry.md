@@ -1,8 +1,8 @@
 # HRMS Payroll Thread Registry
 
 **Last verified:** 5 August 2026
-**Repository baseline:** `main` at `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
-**Latest repository publication:** PR #30 merged
+**Repository baseline:** `main` at `887347fb23b35ca72c479f377c0f6e3a1bf89722`
+**Latest repository publication:** PR #31 merged
 **Latest merged product increment:** P5-A2 through PR #30
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 
@@ -29,17 +29,43 @@ write ownership.
 |---|---|---|---|---|---|---|
 | P5-A2 | CLOSED | General component catalogue, named payroll bases and exact component/base memberships | `feature/p5-a2-compensation-catalogue-named-bases`; PR #30 merged | None; released | V032 implemented and immutable | Reference and incident history only |
 
+## Active capability workstream
+
+| Capability owner | Status | Scope | Branch | Write ownership | Migration | Next action |
+|---|---|---|---|---|---|---|
+| P5-A3 | ACTIVE — PREPARATION | Salary-structure design, CTC policy, typed eligibility rules and deterministic design-time simulation | `feature/p5-a3-salary-structure-ctc-eligibility-simulation` | Exact 69-path maximum boundary in `docs/planning/pln-01/p5-a3-salary-structure-ctc-eligibility-simulation-scope.md` | V033 exclusively reserved; SQL creation not authorised | Obtain separate product-implementation authorisation |
+
 ## Current ownership state
 
-- No implementation thread or capability workstream currently has write ownership.
-- P5-A2 is merged through PR #30 and its 46-path ownership is released.
-- S4-06A is merged through PR #28 and remains inactive.
+- P5-A3 is the only active capability workstream.
+- P5-A3 owns only the exact 69-path maximum boundary recorded in its scope file.
 - V001-V032 are committed and immutable.
-- V033 is unreserved and has no owner.
-- P5-A3 and S4-06B remain planned and unauthorized.
-- Historical P5-A2, S4-06A, P5-A1 and authority-closure branches have no active ownership.
+- V033 is reserved exclusively for P5-A3.
+- Creation of `V033__salary_structure_ctc_eligibility_simulation.sql` and product implementation are not authorised.
+- P5-A2 and S4-06A remain merged and inactive.
+- S4-06B remains planned and unauthorised.
+- Historical P5-A2, P5-A1, S4-06A and authority-closure branches have no active
+  ownership and must not be reused or deleted implicitly.
 - Unrelated Dependabot pull requests are informational and do not grant
   implementation ownership.
+
+## P5-A3 exact authority
+
+The active scope, architecture controls, stop conditions and exact 69-path
+maximum boundary are recorded in:
+
+`docs/planning/pln-01/p5-a3-salary-structure-ctc-eligibility-simulation-scope.md`
+
+The planning package is:
+
+`HRMS-Payroll-P5-A3-Planning-and-Critical-Review-v1.0.zip`
+
+SHA-256:
+
+`d704409e9fb4792f15ce05d5ade5cb4f04c80be04e0dc1d31d357402f12e5f77`
+
+Activation reserves V033 but does not authorise its SQL file or product
+implementation.
 
 ## Historical P5-A2 exact authority
 
@@ -47,68 +73,32 @@ The exact 46-path boundary and architecture controls remain recorded in:
 
 `docs/planning/pln-01/p5-a2-compensation-configuration-scope.md`
 
-That boundary is completion evidence only. It grants no current write ownership
-and does not authorise P5-A3, V033, S4-06B, branch deletion or any product change.
-
-## Historical Thread 7 exact allow-list
-
-### New files
-
-1. `backend/payroll-boot/src/test/java/com/acme/hrms/payroll/StatutoryApiIT.java`
-2. `docs/quality/s4-06a-statutory-api-integration.md`
-
-### Modified files
-
-3. `docs/design/hrms-payroll-master-design.md`
-4. `docs/design/decision-register.md`
-5. `docs/governance/thread-registry.md`
-6. `docs/runbooks/project-continuation-handoff.md`
-
-No production Java, migration, OpenAPI, Keycloak, POM/dependency, frontend,
-deployment or CI/workflow file was owned by Thread 7.
-
-This allow-list is retained only as completion evidence and grants no current
-write ownership.
-
-## S4-06A activation and completion evidence
-
-- selected by the project owner on 4 August 2026;
-- planning checkpoint:
-  `HRMS-Payroll-S4-06A-Resumption-Planning-Checkpoint.zip`;
-- checkpoint SHA-256:
-  `d6d2c465499fe27f80ee6ebf4a6fb8b39eca1d0aa36afc5a761d7c867e04c6a5`;
-- approved baseline:
-  `961465cb551f3757a6f51f1322e6b46c32317b16`;
-- proposed branch verified absent before activation;
-- 15 unrelated open Dependabot PRs classified as non-blocking;
-- no migration reservation;
-- stop-and-split required for every path outside the exact allow-list;
-- original PR #27 closed unmerged after full-range secret-scan history retained a synthetic false positive;
-- clean-history replacement PR #28 contained one commit and the same six-file final tree;
-- PR #28 CI run 100 completed 9/9 successful jobs;
-- PR #28 merged as `12f3210c91ca95f3f331911d4cdc1755f2afd701`;
-- both historical S4-06A branches were preserved; no branch deletion was authorized.
-
-## Thread 7 completion state
-
-Thread 7 completed its exact six-file quality closure through PR #28 and is
-closed. Its write ownership is released and must not be reused implicitly.
-
-Any later production, contract, security, dependency, migration, frontend or
-CI work requires a new registered owner, exact scope and separate authorization.
+That boundary is completion evidence only and grants no current write ownership.
 
 ## Mandatory GitHub boundary
 
 Assistant and agent GitHub access is strictly read-only. GitHub mutations are
-performed only by the project owner using a deterministic local package, then
+performed only by the project owner using deterministic local packages, then
 verified through read-only GitHub inspection and returned evidence.
 
 ## P5-A2 completion evidence
 
-- activation commit: `e9e297de5e59762f3701ce39ca2295e1839d7d16`;
-- implementation commit: `c30cb1f2f0c16cd78387bb9551b93825bc7ef688`;
-- PR #30 merge/current main: `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`;
-- post-merge workflow run: `30957450623` — successful;
-- exact delivery boundary: 46 paths;
-- feature branch retained; no branch deletion authorised;
-- V032 committed and immutable; V033 unreserved.
+- activation: `e9e297de5e59762f3701ce39ca2295e1839d7d16`;
+- implementation: `c30cb1f2f0c16cd78387bb9551b93825bc7ef688`;
+- product merge: `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`;
+- authority-closure merge/current activation baseline:
+  `887347fb23b35ca72c479f377c0f6e3a1bf89722`;
+- post-product workflow: `30957450623` — successful;
+- post-closure workflow: `30981832364` — successful;
+- V032 committed and immutable;
+- V033 was unreserved at P5-A2 closure and is now governed exclusively by
+  P5-A3 activation authority.
+
+## P5-A3 G07 local closure
+
+| Capability owner | Status | Scope | Branch/PR | Write ownership | Migration | Next action |
+|---|---|---|---|---|---|---|
+| P5-A3 | LOCALLY VERIFIED — publication pending | Salary-structure design, CTC policies, eligibility rules and design-time simulation | `feature/p5-a3-salary-structure-ctc-eligibility-simulation`; no PR | Owner retains local branch; assistant GitHub read-only | V033 implemented locally | Obtain separate owner authorisation for Git publication |
+
+G07 verification does not release the branch, reserve the next migration or
+authorise another capability.

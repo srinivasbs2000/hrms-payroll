@@ -2,8 +2,8 @@
 
 **Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Repository baseline:** `main` at PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
-**Latest repository publication:** PR #30 product merge
+**Repository baseline:** `main` at PR #31 merge `887347fb23b35ca72c479f377c0f6e3a1bf89722`
+**Latest repository publication:** PR #31 authority closure
 **Latest merged quality increment:** S4-06A through PR #28 merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`
 **Latest merged product increment:** P5-A2 through PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
@@ -137,7 +137,8 @@ remain mandatory.
 
 - `database/flyway/sql` is the ordered migration authority.
 - V001-V032 are committed and immutable.
-- V033 is unreserved and has no owner.
+- V033 is reserved exclusively for P5-A3; its SQL file and product
+  implementation remain separately gated.
 - future migrations are forward-only and separately authorised;
 - tenant-owned FKs include tenant ownership;
 - stable identity plus immutable effective-dated versions preserve lineage;
@@ -197,18 +198,22 @@ risk are committed.
 | Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; S4-06A quality closure merged through PR #28 |
 | P5-A1 | Organisation hierarchy lifecycle closure | V031 | PR #25 merged |
 | P5-A2 | General pay-component catalogue and named payroll bases | V032 | PR #30 merged; authority released |
-| Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26 and PR #29 merged |
+| P5-A3 | Salary-structure design, CTC policy, typed eligibility and deterministic design-time simulation | V033 reserved | Active preparation; product implementation not authorised |
+| Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26, PR #29 and PR #31 merged |
 | Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | PR #28 merged; Thread 7 closed and ownership released |
 
 ## 13. Current controlled debt and planning
 
 - S4-06A is merged through PR #28 and remains closed.
 - P5-A2 is merged through PR #30; its 46-path write ownership is released.
-- P5-A3 is a planning candidate only and is not activated.
+- P5-A3 is the active preparation workstream on `feature/p5-a3-salary-structure-ctc-eligibility-simulation`.
+- P5-A3 owns only the exact 69-path maximum boundary in its PLN-01 scope file.
+- P5-A3 product implementation and creation of the V033 SQL file are not
+  authorised.
 - S4-06B remains planned and not authorised.
 - `PLN-01` remains the product-planning authority.
 - E09 still requires current legal/domain revalidation.
-- V033 is unreserved and has no owner.
+- V033 is reserved exclusively for P5-A3.
 - Production, migration, contract, security, dependency, frontend and CI
   changes require stop-and-split approval.
 
@@ -239,6 +244,8 @@ risk are committed.
 | 4 Aug 2026 | Merged S4-06A statutory API integration quality closure and released Thread 7 ownership | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 |
 | 4 Aug 2026 | Merged final S4-06A authority closure | PR #29; merge `d7b7a7c193b964fb5606e0cb74f92ad6fd6db3e8` |
 | 4 Aug 2026 | Activated P5-A2 capability preparation and reserved V032 | P5-A2 scope definition and critical review; exact 46-path maximum boundary |
+| 5 Aug 2026 | Merged P5-A2 product implementation and final authority closure | PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; PR #31 merge `887347fb23b35ca72c479f377c0f6e3a1bf89722` |
+| 5 Aug 2026 | Activated P5-A3 preparation and exclusively reserved V033 | P5-A3 planning package `d704409e9fb4792f15ce05d5ade5cb4f04c80be04e0dc1d31d357402f12e5f77`; independent critical review; exact 69-path maximum boundary |
 
 ## 16. P5-A2 delivered architecture and authority closure
 
@@ -251,4 +258,44 @@ classifications and rates remain rule-pack data outside this capability.
 PR #30 merged implementation commit `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` as
 `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; post-merge workflow run `30957450623` succeeded. The
 feature branch is retained as historical evidence. No active P5-A2 write owner
-remains. V032 is committed and immutable; V033 is unreserved.
+remains. V032 is committed and immutable. V033 was unreserved at P5-A2 closure; its current reservation is governed by the active P5-A3 authority.
+
+## 17. P5-A3 activated preparation architecture
+
+P5-A3 is bounded to salary-structure design, versioned CTC policies, typed
+effective-dated eligibility-rule configuration and deterministic design-time
+simulation, comparison and validation. It remains separate from official
+payroll execution and the future general calculation engine.
+
+The active preparation branch is `feature/p5-a3-salary-structure-ctc-eligibility-simulation`. V033 is exclusively reserved, but
+the SQL file and product implementation require a later separate authorisation.
+The exact 69-path maximum boundary and blocking critical-review controls are
+recorded in
+`docs/planning/pln-01/p5-a3-salary-structure-ctc-eligibility-simulation-scope.md`.
+
+P5-A3 must preserve existing structure/assignment UUID lineage, the V025/V026
+golden calculation behaviour and all P5-A2 component/base semantics. It must not
+encode current legal rates or conclusions, persist live employee eligibility,
+or mutate official payroll results.
+
+## 18. P5-A3 implemented architecture
+
+V033 extends the compensation configuration model with schema-1 salary
+structures, versioned CTC policies, typed eligibility rules and immutable
+validation evidence. Existing schema-0 structure/line UUIDs and V021 assignment
+lineage remain intact.
+
+The design-time simulator resolves exact approved component, policy, rule and
+base-membership versions. It produces deterministic annual/monthly values,
+cost-view reconciliation, hashes, warnings and blockers. It is not part of the
+official payroll execution path and does not mutate payroll results, traces,
+cycles or employee assignments.
+
+The implementation is consolidated in the existing salary-structure
+controller/service/view model rather than the larger initially anticipated
+class split. This is an approved implementation consolidation, not missing
+scope.
+
+Local G07 verification covers OpenAPI, frontend, Maven, PostgreSQL 17,
+migrations through V033 and 220 backend tests. Repository publication remains
+separately controlled.
