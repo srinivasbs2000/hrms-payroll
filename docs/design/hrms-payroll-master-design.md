@@ -2,12 +2,12 @@
 
 **Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Repository baseline:** `main` at PR #31 merge `887347fb23b35ca72c479f377c0f6e3a1bf89722`
-**Latest repository publication:** PR #31 authority closure
-**Latest merged quality increment:** S4-06A through PR #28 merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`
-**Latest merged product increment:** P5-A2 through PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
+**Repository baseline:** `main` at PR #33 merge `23df1f7a11f4090cef8715eba7104f5b1138b760`
+**Latest repository publication:** PR #33 P5-A3 React test-hygiene closure
+**Latest merged quality increment:** P5-A3 React test hygiene through PR #33
+**Latest merged product increment:** P5-A3 through PR #32 merge `b4f3013e1d7404d09eac64a305ad3736e5a28a5c`
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
-**Last verified:** 5 August 2026
+**Last verified:** 6 August 2026
 **Maintainers:** Project owner and the currently authorised capability workstream
 **Full product scope authority:** `docs/product/payroll-product-scope-and-epic-catalog.md`
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
@@ -136,9 +136,8 @@ remain mandatory.
 ## 8. Data and migration rules
 
 - `database/flyway/sql` is the ordered migration authority.
-- V001-V032 are committed and immutable.
-- V033 is reserved exclusively for P5-A3; its SQL file and product
-  implementation remain separately gated.
+- V001-V033 are committed and immutable.
+- V034 is unreserved and requires separate capability activation.
 - future migrations are forward-only and separately authorised;
 - tenant-owned FKs include tenant ownership;
 - stable identity plus immutable effective-dated versions preserve lineage;
@@ -198,25 +197,24 @@ risk are committed.
 | Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; S4-06A quality closure merged through PR #28 |
 | P5-A1 | Organisation hierarchy lifecycle closure | V031 | PR #25 merged |
 | P5-A2 | General pay-component catalogue and named payroll bases | V032 | PR #30 merged; authority released |
-| P5-A3 | Salary-structure design, CTC policy, typed eligibility and deterministic design-time simulation | V033 reserved | Active preparation; product implementation not authorised |
+| P5-A3 | Salary-structure design, CTC policy, typed eligibility and deterministic design-time simulation | V033 | PR #32 merged; PR #33 test-hygiene follow-up merged; authority closure pending |
 | Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26, PR #29 and PR #31 merged |
 | Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | PR #28 merged; Thread 7 closed and ownership released |
 
 ## 13. Current controlled debt and planning
 
-- S4-06A is merged through PR #28 and remains closed.
-- P5-A2 is merged through PR #30; its 46-path write ownership is released.
-- P5-A3 is the active preparation workstream on `feature/p5-a3-salary-structure-ctc-eligibility-simulation`.
-- P5-A3 owns only the exact 69-path maximum boundary in its PLN-01 scope file.
-- P5-A3 product implementation and creation of the V033 SQL file are not
-  authorised.
+- Current P5-A3 is merged through PR #32; PR #33 merged the React test-hygiene follow-up.
+- V001-V033 are committed and immutable; V034 is unreserved.
+- No product capability currently owns files or a migration.
+- The 450 detailed stories reconcile to 11 implemented, 155 partially
+  implemented, 94 not evidenced, 159 not started and 31 requiring
+  legal/domain revalidation.
+- Current execution labels P5-A2 and P5-A3 must not be confused with the
+  original PLN-01 packages with the same identifiers.
+- Original P5-A2 jurisdiction/registration is the recommended next package but
+  is not activated.
 - S4-06B remains planned and not authorised.
-- `PLN-01` remains the product-planning authority.
 - E09 still requires current legal/domain revalidation.
-- V033 is reserved exclusively for P5-A3.
-- Production, migration, contract, security, dependency, frontend and CI
-  changes require stop-and-split approval.
-
 ## 14. Documentation model
 
 | Artifact | Responsibility |
@@ -299,3 +297,18 @@ scope.
 Local G07 verification covers OpenAPI, frontend, Maven, PostgreSQL 17,
 migrations through V033 and 220 backend tests. Repository publication remains
 separately controlled.
+
+<!-- PROGRAM-RECONCILIATION-2026-08-06 -->
+## 19. Program reconciliation after P5-A3
+
+The canonical current checkpoint is
+`docs/governance/payroll-program-status.md`. The detailed story authority is
+`backlog/payroll-detailed-story-status.csv`.
+
+The reconciliation separates current execution labels from original PLN-01
+package identifiers. It recommends original P5-A2 jurisdiction and registration
+foundations as the next package, subject to separate planning, critical review,
+activation and migration reservation.
+
+Every future product increment requires a repository-wide status-closure update
+before the next increment is selected.

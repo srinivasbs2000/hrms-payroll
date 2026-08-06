@@ -1,119 +1,72 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 5 August 2026
+**Updated:** 6 August 2026
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\dev\hrms-payroll`
-**Repository baseline:** `main` at `887347fb23b35ca72c479f377c0f6e3a1bf89722`
-**Latest repository publication:** PR #31 — merged
-**Latest merged product increment:** P5-A2 — General Pay Component Catalogue and Named Payroll Bases
-**Active capability:** P5-A3 — preparation only
-**Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
+**Verified product baseline:** `main` at `23df1f7a11f4090cef8715eba7104f5b1138b760`
+**Latest merged product increment:** Current P5-A3 through PR #32
+**Latest merged quality increment:** PR #33
+**Active capability:** None
+**Migrations:** V001–V033 committed and immutable
+**Next migration:** V034 unreserved
+**Canonical status:** `docs/governance/payroll-program-status.md`
 
-Validate this handoff against local Git and live read-only GitHub evidence before
-starting any write-capable package.
+Read the canonical program status first. Validate all facts against local Git and
+live read-only GitHub evidence before starting write-capable work.
 
 ## Current checkpoint
 
 | Item | Current fact |
 |---|---|
-| Remote `main` activation baseline | `887347fb23b35ca72c479f377c0f6e3a1bf89722` |
-| Latest product PR | PR #30 — merged |
-| Latest authority-closure PR | PR #31 — merged |
-| P5-A2 product merge | `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` |
-| P5-A2 authority-closure merge | `887347fb23b35ca72c479f377c0f6e3a1bf89722` |
-| P5-A2 post-product CI | `30957450623` — successful |
-| P5-A2 post-closure CI | `30981832364` — successful |
-| Active write owner | P5-A3 |
-| Active implementation branch | `feature/p5-a3-salary-structure-ctc-eligibility-simulation` |
-| Active maximum boundary | Exactly 69 paths |
-| Migrations | V001-V032 committed and immutable |
-| Next migration | V033 exclusively reserved for P5-A3 |
-| V033 SQL file | Not authorised and must not exist after activation |
-| P5-A3 product implementation | Not authorised |
-| S4-06B | Planned; not authorised |
-| Product deployment | Greenfield; no evidenced production deployment or live customer payroll migration |
-| GitHub access for assistant/agents | Strictly read-only |
+| Remote `main` | `23df1f7a11f4090cef8715eba7104f5b1138b760` |
+| P5-A3 product merge | PR #32 / `b4f3013e1d7404d09eac64a305ad3736e5a28a5c` |
+| P5-A3 test-hygiene merge | PR #33 / `23df1f7a11f4090cef8715eba7104f5b1138b760` |
+| Active write owner | None |
+| Active implementation branch | None |
+| Active path ownership | None |
+| Migration state | V001–V033 immutable |
+| Next migration | V034 unreserved |
+| Product deployment | Greenfield; no evidenced production deployment |
+| Assistant/agent GitHub access | Strictly read-only |
 
-## P5-A3 activated preparation boundary
+## Reconciliation checkpoint
 
-P5-A3 covers only:
+The 450 detailed stories reconcile to:
 
-- schema-versioned salary-structure design;
-- versioned CTC policies and four distinguishable cost views;
-- typed effective-dated eligibility-rule configuration;
-- deterministic design-time simulation, comparison and validation;
-- exact passing validation fingerprints required before structure approval.
+- 11 implemented;
+- 155 partially implemented;
+- 94 not evidenced;
+- 159 not started;
+- 31 requiring legal/domain revalidation.
 
-The active authority is:
+The complete machine-readable ledger is:
 
-`docs/planning/pln-01/p5-a3-salary-structure-ctc-eligibility-simulation-scope.md`
+`backlog/payroll-detailed-story-status.csv`
 
-The boundary contains exactly 69 paths. Any additional path requires a
-stop-and-split decision and separate authorisation.
+## Naming control
 
-## P5-A3 prohibited assumptions
+Current execution labels P5-A2 and P5-A3 do not equal the original packages with
+the same identifiers.
 
-Activation does not authorise:
+- Current P5-A2 maps primarily to original P5-B1.
+- Current P5-A3 maps primarily to original P5-B4/P5-B5 and selected P5-B6.
+- Original P5-A2 jurisdiction/registration remains not started.
+- Original P5-A3 bank/authority/readiness remains incomplete.
 
-- creation of `V033__salary_structure_ctc_eligibility_simulation.sql`;
-- product implementation, product commit, push or PR;
-- formula DSL, rate tables or arbitrary executable expressions;
-- official payroll, tax, statutory, net-pay, target-net or gross-up calculation;
-- legal minimum-wage or statutory truth;
-- employee salary assignment, revision, override, readiness or live eligibility;
-- flexible-benefit elections or supplemental-plan assignment;
-- multi-currency execution;
-- dependency, CI/workflow or deployment changes;
-- branch deletion.
+## Recommended next package
 
-## Migration state
+Recommended, but not authorized:
 
-- V001-V032 are immutable.
-- V032 is `V032__compensation_catalogue_named_bases.sql`.
-- V033 is exclusively reserved by P5-A3.
-- Reservation prevents competing use; it does not authorise the SQL file.
-- Existing structure, component, base, membership, employee-assignment and
-  payroll-result lineage must be preserved.
+`Original P5-A2 — Jurisdiction and Registration Foundations`
 
-## Mandatory GitHub read-only boundary
-
-Assistant and agent GitHub access is strictly read-only, even when a connector
-advertises write operations. GitHub mutations are executed only by the project
-owner through deterministic local `git`/`gh` packages, followed by returned
-evidence and read-only verification.
-
-## Standing execution norm
-
-Long or multi-line commands are delivered as downloadable scripts. Every
-execution step states what to run, what complete log to upload on success or
-failure, and what follows after success. Native stdout, stderr and process exit
-codes remain separate controlled evidence.
+No branch, path boundary, migration or implementation authority exists for that
+package until separately planned, reviewed and explicitly activated.
 
 ## Exact next controlled action
 
-Return and independently verify the P5-A3 activation commit and remote branch.
+Merge and verify the program-status closure PR. After closure, prepare a
+read-only planning and critical-review package for original P5-A2 using a new,
+unambiguous execution label.
 
-After successful verification, obtain a separate explicit authorisation for
-P5-A3 product implementation. That later authorisation may permit creation of
-V033 and work inside the 69-path boundary, subject to the recorded critical
-review and stop conditions.
-
-No implementation begins implicitly from activation.
-
-## P5-A3 G07 verified local checkpoint
-
-| Item | Verified fact |
-|---|---|
-| Active branch | `feature/p5-a3-salary-structure-ctc-eligibility-simulation` |
-| Activation HEAD | `0e5471f31b7c9d65cd735e2055148d802fb1b960` |
-| Local changed paths after G07 | 57 authorised paths |
-| Migration state | V001–V032 immutable; V033 implemented |
-| OpenAPI | Redocly valid |
-| Frontend | 25 focused tests, 85 complete tests, production build passed |
-| Backend | Maven build success; 220 tests; zero failures/errors/skips |
-| Database | PostgreSQL 17.10 Testcontainers; 33 migrations |
-| Git publication | Not performed and not authorised by G07 |
-
-The next controlled action is owner authorisation for local commit/publication.
-Do not infer authorisation for push, PR, merge, branch deletion, G08 or a new
-migration.
+Do not infer product implementation, V034 reservation, merge, branch deletion or
+the next capability from this handoff.

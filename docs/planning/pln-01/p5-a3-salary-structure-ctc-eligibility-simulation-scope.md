@@ -1,10 +1,10 @@
 # P5-A3 Salary Structure, CTC, Eligibility and Simulation Scope
 
-**Status:** IMPLEMENTED LOCALLY — G07 VERIFIED
-**Capability owner:** P5-A3
-**Repository baseline:** `main` at `887347fb23b35ca72c479f377c0f6e3a1bf89722`
-**Branch:** `feature/p5-a3-salary-structure-ctc-eligibility-simulation`
-**Migration:** V033 implemented locally; V001–V032 preserved
+**Status:** MERGED AND CLOSED
+**Capability owner:** None; historical P5-A3 delivery record
+**Repository baseline:** `main` at `23df1f7a11f4090cef8715eba7104f5b1138b760`
+**Branch:** `feature/p5-a3-salary-structure-ctc-eligibility-simulation` retained as historical evidence
+**Migration:** V033 committed and immutable; V001–V032 preserved
 **Maximum write boundary:** exactly 69 paths
 **Planning package:** `HRMS-Payroll-P5-A3-Planning-and-Critical-Review-v1.0.zip`
 **Planning package SHA-256:** `d704409e9fb4792f15ce05d5ade5cb4f04c80be04e0dc1d31d357402f12e5f77`
@@ -259,3 +259,18 @@ consolidated simulation, validation and lifecycle behaviour into
 `SalaryStructureValidationView` and the existing contract/API test suites.
 Absence of superseded candidate paths is intentional and is recorded in the
 P5-A3 quality record.
+
+<!-- P5-A3-MERGE-CLOSURE -->
+## 11. Merge and authority closure
+
+- activation: `0e5471f31b7c9d65cd735e2055148d802fb1b960`;
+- implementation head: `02d9ba8447ea3ce2b9eb292a5824944e4d2c5dcc`;
+- product PR: #32;
+- product merge: `b4f3013e1d7404d09eac64a305ad3736e5a28a5c`;
+- React test-hygiene PR: #33;
+- current verified main: `23df1f7a11f4090cef8715eba7104f5b1138b760`;
+- V033 is committed and immutable;
+- the 69-path delivery boundary is historical evidence only;
+- no active P5-A3 write owner remains;
+- V034 is unreserved;
+- no next product capability is authorised by this closure.

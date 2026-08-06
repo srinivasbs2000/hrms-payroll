@@ -5,10 +5,12 @@
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
 
-V001-V032 remain committed and byte-for-byte immutable. V032 is
+V001-V033 are committed and byte-for-byte immutable. V032 is
 `V032__compensation_catalogue_named_bases.sql`, merged through PR #30.
 
-V033 is `V033__salary_structure_ctc_eligibility_simulation.sql`. It implements
+V033 is `V033__salary_structure_ctc_eligibility_simulation.sql`, merged through
+PR #32. V034 is unreserved and requires separate capability activation and
+migration reservation. V033 implements
 the P5-A3 configuration-design foundation: schema-1 salary structures,
 versioned CTC policies, typed eligibility rules and deterministic design-time
 simulation/validation evidence. It preserves V020/V021 UUID lineage and does

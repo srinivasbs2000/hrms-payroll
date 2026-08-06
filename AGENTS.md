@@ -2,8 +2,9 @@
 
 ## Project continuation and evidence discipline
 
-Before continuing a prior design or implementation session, read
-`docs/runbooks/project-continuation-handoff.md`, then validate it against the
+Before continuing any design or implementation session, read
+`docs/governance/payroll-program-status.md` first, then
+`docs/runbooks/project-continuation-handoff.md`. Validate both against the
 current local working tree and live GitHub branch, pull request and CI state.
 
 Do not reconstruct repository state from conversation memory. Do not infer
@@ -265,9 +266,9 @@ payroll payloads in browser storage.
 ## Database migrations
 
 `database/flyway/sql` is the single source of ordered versioned migrations.
-V001-V031 are committed and immutable. V031 is
-`V031__organisation_hierarchy_closure.sql`, merged through PR #25. V032 is
-unreserved. Later schema work is forward-only from V032 after explicit
+V001-V033 are committed and immutable. V033 is
+`V033__salary_structure_ctc_eligibility_simulation.sql`, merged through PR #32.
+V034 is unreserved. Later schema work is forward-only from V034 after explicit
 reservation by one active implementation owner. Versioned migrations
 must fail loudly; do not add permissive `IF NOT EXISTS` clauses to them. The
 `backend/database-migrations` Maven module packages the canonical directory as
@@ -350,3 +351,18 @@ Update the master design and decision register only when their documented
 triggers are met. A durable decision that exists only in chat is not project
 authority.
 <!-- LIVING-PROJECT-AUTHORITY:END -->
+
+<!-- PROGRAM-STATUS-CLOSURE-RULE -->
+## Mandatory program-status closure after every product increment
+
+A product increment is not fully closed when its product PR merges. Before the
+next capability is selected:
+
+1. verify the product merge and post-merge evidence;
+2. reconcile the detailed-story ledger;
+3. update `docs/governance/payroll-program-status.md` and supporting authorities;
+4. merge the documentation/governance status-closure PR;
+5. release active file and migration ownership;
+6. only then plan and authorize the next capability.
+
+Every new thread reads `docs/governance/payroll-program-status.md` first.

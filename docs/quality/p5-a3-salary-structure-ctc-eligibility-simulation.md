@@ -1,10 +1,10 @@
 # P5-A3 Salary Structure, CTC, Eligibility and Simulation Quality Record
 
-**Status:** VERIFIED LOCALLY — G07
+**Status:** MERGED, VERIFIED AND CLOSED
 **Verified:** 6 August 2026
-**Branch:** `feature/p5-a3-salary-structure-ctc-eligibility-simulation`
+**Branch:** `feature/p5-a3-salary-structure-ctc-eligibility-simulation` retained
 **Activation HEAD:** `0e5471f31b7c9d65cd735e2055148d802fb1b960`
-**Migration:** V033
+**Migration:** V033 committed and immutable
 
 ## Delivered capability
 
@@ -57,7 +57,12 @@ salary-structure controller/service/view and contract/API suites. The existing
 calculation compatibility suites execute against the complete V033 migration
 set.
 
-## Publication boundary
+## Publication and closure evidence
 
-This record proves local G07 quality closure only. It does not authorise commit,
-push, pull request, merge, branch deletion or the next capability.
+- implementation PR #32 merged as `b4f3013e1d7404d09eac64a305ad3736e5a28a5c`;
+- PR #33 merged React test-hygiene changes as
+  `23df1f7a11f4090cef8715eba7104f5b1138b760`;
+- PR #33 changed two test files and no production code;
+- V033 is immutable;
+- no active P5-A3 owner remains;
+- no next capability, migration or branch deletion is authorised.
