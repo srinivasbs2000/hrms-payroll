@@ -2,14 +2,16 @@
 
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Verified `main` baseline:** `23df1f7a11f4090cef8715eba7104f5b1138b760`
+**Verified repository baseline:** `b922d6d388214ab83cf365a35516468f8045ca4f`
 **Latest merged product increment:** Current P5-A3 through PR #32
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
+**Latest merged status closure:** PR #34 / `b922d6d388214ab83cf365a35516468f8045ca4f`
 **Active product write owner:** None
 **Migration state:** V001–V033 committed and immutable
 **Next migration:** V034 unreserved
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
 **Last reconciled:** 6 August 2026
+**Planned next execution capability:** `P5-JRF-01` — PLANNED / NOT ACTIVATED
 
 ## 1. Mandatory starting point
 
@@ -22,7 +24,10 @@ Validate this checkpoint against:
 2. live read-only GitHub `main`, pull requests and CI evidence;
 3. `backlog/payroll-detailed-story-status.csv`;
 4. `docs/governance/payroll-feature-delivery-lineage.md`;
-5. `docs/runbooks/project-continuation-handoff.md`.
+5. `docs/runbooks/project-continuation-handoff.md`;
+6. the exact capability-scope authority named in this file;
+7. `docs/governance/payroll-automation-lessons-and-package-checklist.md`;
+8. `docs/governance/hrms-payroll-model-routing-policy.md`.
 
 Conversation history and thread names are locators only. They are not the
 project-status authority.
@@ -42,6 +47,7 @@ Evidence:
 
 - PR #32 merged as `b4f3013e1d7404d09eac64a305ad3736e5a28a5c`;
 - PR #33 merged as `23df1f7a11f4090cef8715eba7104f5b1138b760`;
+- PR #34 merged as `b922d6d388214ab83cf365a35516468f8045ca4f`;
 - V033 is committed;
 - 220 backend tests passed before publication;
 - PostgreSQL 17.10 Testcontainers and Flyway V001–V033 passed;
@@ -106,13 +112,25 @@ execution increments reused those labels.
   material remaining scope is recorded in the story ledger.
 - P5-C1 through P5-C5: incomplete.
 
-## 6. Recommended next package
+## 6. Planned execution identity for Original P5-A2
 
 The Payroll Program Reconciliation Gate recommends:
 
 **Original P5-A2 — Jurisdiction and Registration Foundations**
 
-Reasons:
+The unambiguous execution identity is:
+
+- **Execution capability:** `P5-JRF-01`
+- **Title:** Jurisdiction and Registration Foundations
+- **Scope authority:** `docs/planning/pln-01/p5-jrf-01-jurisdiction-registration-foundations-scope.md`
+- **State:** `PLANNED / NOT ACTIVATED`
+- **Product write owner:** None
+- **Migration:** V034 remains unreserved
+
+The scope authority contains the six reviewed candidates P5-E01-005 through
+P5-E01-010 and explicit exclusions.
+
+Reasons for sequencing:
 
 1. Original P5-A1 is complete.
 2. All six original P5-A2 candidates remain not evidenced.
@@ -121,19 +139,21 @@ Reasons:
 5. Work-location, jurisdiction resolution and registration lifecycle are
    foundational for later India statutory, readiness and compliance work.
 
-This is a recommendation only. It is not active implementation authority.
+This planning authority does not authorize product implementation.
 
 ## 7. Immediate next action
 
-After this status-closure pull request is merged and independently verified:
+After the P5-JRF-01 governance-authority publication is merged and independently
+verified:
 
-1. close this documentation write ownership;
-2. confirm no active owner and V034 unreserved;
-3. prepare and critically review a separately named capability for:
-   `Original P5-A2 — Jurisdiction and Registration Foundations`;
-4. obtain explicit activation and migration-reservation authorization.
+1. synchronize the working thread from repository authority;
+2. perform the critical design/readiness review for `P5-JRF-01`;
+3. resolve the ten design questions in the capability scope;
+4. define the exact product file/module boundary;
+5. obtain separate explicit activation and V034-reservation authorization before
+   any product implementation.
 
-Do not use the ambiguous bare phrase `Proceed with P5-A4`.
+Do not interpret `PLANNED / NOT ACTIVATED` as implementation authority.
 
 ## 8. Remaining full-product scope
 

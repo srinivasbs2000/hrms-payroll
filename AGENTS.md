@@ -366,3 +366,25 @@ next capability is selected:
 6. only then plan and authorize the next capability.
 
 Every new thread reads `docs/governance/payroll-program-status.md` first.
+
+<!-- P5-JRF-CROSS-THREAD-AUTHORITY:START -->
+## Capability scope, execution lessons and reasoning routing
+
+For every repository-aware Payroll thread:
+
+1. read `docs/governance/payroll-program-status.md` first;
+2. when program status names a planned/active capability, read its exact scope
+   authority before proposing implementation;
+3. read `docs/governance/payroll-automation-lessons-and-package-checklist.md`
+   before creating an executable repository package;
+4. read `docs/governance/hrms-payroll-model-routing-policy.md` and state
+   `RECOMMENDED_REASONING_LEVEL: R1 | R2 | R3` with a short reason.
+
+For the currently planned Original P5-A2 work, the unambiguous execution
+identity is `P5-JRF-01` and its scope authority is:
+
+`docs/planning/pln-01/p5-jrf-01-jurisdiction-registration-foundations-scope.md`
+
+`P5-JRF-01` remains PLANNED / NOT ACTIVATED. This authority does not reserve
+V034 or grant product write ownership.
+<!-- P5-JRF-CROSS-THREAD-AUTHORITY:END -->

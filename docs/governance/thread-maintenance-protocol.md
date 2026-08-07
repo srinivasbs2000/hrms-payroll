@@ -153,3 +153,24 @@ This protocol becomes implicit for repository-aware work by:
 It cannot make unrelated chat threads automatically read GitHub. The project
 owner must seed each existing/new thread once with the standard start prompt.
 After that, every continuation should be repository-driven.
+
+<!-- CAPABILITY-AUTHORITY-STARTUP:START -->
+## 11. Capability authority, execution lessons and reasoning routing
+
+Before implementation ownership is requested, a thread must additionally read:
+
+1. `docs/governance/payroll-program-status.md`;
+2. the exact capability-scope authority named there;
+3. `docs/governance/payroll-automation-lessons-and-package-checklist.md`;
+4. `docs/governance/hrms-payroll-model-routing-policy.md`.
+
+The thread must state the capability execution identity separately from the
+original PLN-01 package ID and must report whether the capability is
+recommended, planned, activated or authorized.
+
+Every substantive thread start also reports
+`RECOMMENDED_REASONING_LEVEL: R1 | R2 | R3`.
+
+Conversation history may explain why a rule exists, but it cannot replace these
+committed authorities.
+<!-- CAPABILITY-AUTHORITY-STARTUP:END -->
