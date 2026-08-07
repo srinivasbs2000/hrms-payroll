@@ -1,7 +1,7 @@
 # Payroll Feature Delivery Lineage
 
-**Repository baseline:** `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
-**Product implementation baseline:** `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`
+**Repository baseline:** `23df1f7a11f4090cef8715eba7104f5b1138b760`
+**Product implementation baseline:** `b4f3013e1d7404d09eac64a305ad3736e5a28a5c`
 **Purpose:** Trace original epic -> original backlog row -> current story -> migration -> commit -> PR/merge -> evidence -> remaining scope.
 
 ## 1. Epic-level lineage
@@ -119,3 +119,30 @@ separately controlled.
 P5-A3 remains configuration-design scope. Formula-engine expansion, official
 payroll, legal rules/rates, employee assignment and live eligibility persistence
 remain outside this increment.
+
+<!-- P5-A3-PROGRAM-RECONCILIATION -->
+## P5-A3 merge and program reconciliation
+
+Current P5-A3 merged through PR #32 and the React test-hygiene follow-up merged
+through PR #33.
+
+Primary original-package mapping:
+
+- current P5-A1 -> original P5-A1;
+- current P5-A2 -> primarily original P5-B1 and selected P5-B3 controls;
+- current P5-A3 -> primarily original P5-B4, P5-B5 and selected P5-B6 controls.
+
+Reconciled detailed-story counts:
+
+- 11 implemented;
+- 155 partially implemented;
+- 94 not evidenced;
+- 159 not started;
+- 31 legal/domain revalidation.
+
+The complete story ledger is
+`backlog/payroll-detailed-story-status.csv`.
+
+Recommended next package: original P5-A2 jurisdiction and registration
+foundations. This recommendation grants no implementation or migration
+authority.
