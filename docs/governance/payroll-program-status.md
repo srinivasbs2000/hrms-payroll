@@ -2,16 +2,16 @@
 
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Verified repository baseline:** `b922d6d388214ab83cf365a35516468f8045ca4f`
+**Verified repository baseline:** `main` at `ff581cafce3be5495d93932abfae3931b139358f`; current P5-JRF-01 work is local/uncommitted
 **Latest merged product increment:** Current P5-A3 through PR #32
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **Latest merged status closure:** PR #34 / `b922d6d388214ab83cf365a35516468f8045ca4f`
-**Active product write owner:** None
-**Migration state:** V001–V033 committed and immutable
-**Next migration:** V034 unreserved
+**Active product write owner:** `P5-JRF-01`
+**Migration state:** V001–V033 committed and immutable; V034 locally implemented and reserved
+**Next migration:** V034 publication pending; do not allocate V035 until authority closure
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 6 August 2026
-**Planned next execution capability:** `P5-JRF-01` — PLANNED / NOT ACTIVATED
+**Last reconciled:** 8 August 2026 local implementation checkpoint; story-ledger delta remains post-merge
+**Current execution capability:** `P5-JRF-01` — LOCAL VERIFIED / PUBLICATION PENDING
 
 ## 1. Mandatory starting point
 
@@ -100,7 +100,9 @@ execution increments reused those labels.
 ## 5. Current original-package position
 
 - Original P5-A1: complete.
-- Original P5-A2 — jurisdiction and registration foundations: not started.
+- Original P5-A2 — jurisdiction and registration foundations:
+  implementation verified locally through P5-JRF-01; publication and
+  post-merge story reconciliation remain.
 - Original P5-A3 — foundation bank, authority, snapshots and readiness:
   partially evidenced; bank/signatory/readiness scope remains.
 - Original P5-A4 — pay groups, period generation and milestone rules:
@@ -112,48 +114,34 @@ execution increments reused those labels.
   material remaining scope is recorded in the story ledger.
 - P5-C1 through P5-C5: incomplete.
 
-## 6. Planned execution identity for Original P5-A2
-
-The Payroll Program Reconciliation Gate recommends:
+## 6. Current execution identity for Original P5-A2
 
 **Original P5-A2 — Jurisdiction and Registration Foundations**
-
-The unambiguous execution identity is:
 
 - **Execution capability:** `P5-JRF-01`
 - **Title:** Jurisdiction and Registration Foundations
 - **Scope authority:** `docs/planning/pln-01/p5-jrf-01-jurisdiction-registration-foundations-scope.md`
-- **State:** `PLANNED / NOT ACTIVATED`
-- **Product write owner:** None
-- **Migration:** V034 remains unreserved
+- **State:** `LOCAL IMPLEMENTATION VERIFIED / PUBLICATION PENDING`
+- **Product write owner:** `P5-JRF-01`
+- **Branch:** `feature/p5-jrf-01-jurisdiction-registration-foundations`
+- **Activation base:** `ff581cafce3be5495d93932abfae3931b139358f`
+- **Migration:** V034 locally implemented, uncommitted and reserved
 
-The scope authority contains the six reviewed candidates P5-E01-005 through
-P5-E01-010 and explicit exclusions.
-
-Reasons for sequencing:
-
-1. Original P5-A1 is complete.
-2. All six original P5-A2 candidates remain not evidenced.
-3. It unlocks original P5-A3 bank/authority/readiness.
-4. It unlocks completion of employee statutory/tax profiles under P5-C4.
-5. Work-location, jurisdiction resolution and registration lifecycle are
-   foundational for later India statutory, readiness and compliance work.
-
-This planning authority does not authorize product implementation.
+The separate owner activation, architecture review and implementation gates
+have been completed locally. This does not mean the capability is merged.
 
 ## 7. Immediate next action
 
-After the P5-JRF-01 governance-authority publication is merged and independently
-verified:
+1. complete G03-C pre-publication full verification and documentation closure;
+2. only after G03-C is GREEN, prepare the owner-executed commit/push/draft-PR;
+3. require normal repository CI, including gitleaks/dependency review and
+   OpenAPI/Maven/frontend gates;
+4. after merge, reconcile `backlog/payroll-detailed-story-status.csv`;
+5. publish the small post-merge program-status/authority closure;
+6. release P5-JRF-01 path ownership and V034 reservation before selecting the
+   next capability.
 
-1. synchronize the working thread from repository authority;
-2. perform the critical design/readiness review for `P5-JRF-01`;
-3. resolve the ten design questions in the capability scope;
-4. define the exact product file/module boundary;
-5. obtain separate explicit activation and V034-reservation authorization before
-   any product implementation.
-
-Do not interpret `PLANNED / NOT ACTIVATED` as implementation authority.
+Until merge, report P5-JRF-01 as LOCAL VERIFIED / PUBLICATION PENDING.
 
 ## 8. Remaining full-product scope
 

@@ -146,3 +146,19 @@ The complete story ledger is
 Recommended next package: original P5-A2 jurisdiction and registration
 foundations. This recommendation grants no implementation or migration
 authority.
+
+## P5-JRF-01 local delivery lineage
+
+| Increment | Original package/story mapping | Migration | Local evidence | Publication |
+|---|---|---|---|---|
+| P5-JRF-01 | Original P5-A2; P5-E01-005 through P5-E01-010 | V034 | G02-A through G03-A; architecture consistency checkpoint; AC-G03-B1 v1.3 GREEN; AC-G03-B2 v1.2 GREEN; G03-C pre-publication closure | Pending commit/PR/merge |
+
+Delivered locally: work-location identity/version, jurisdiction hierarchy and
+deterministic resolution/evidence, generic registration type/instance/version
+lifecycle, parent registration integrity, bounded readiness, masked identifier
+handling with audited reveal, business-selector operator UI and successor
+lifecycle controls.
+
+The detailed-story ledger is intentionally not rewritten before publication.
+Reconcile source-linked story status after the product PR is merged, then close
+V034 reservation and active ownership in a separate authority/status closure.

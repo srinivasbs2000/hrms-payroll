@@ -184,6 +184,12 @@
           "statutory-ledger.post",
           "statutory-ledger.read",
           "statutory-reconciliation.read",
+          "statutory-registration.approve",
+          "statutory-registration.identifier.read",
+          "statutory-registration.read",
+          "statutory-registration.verify",
+          "statutory-registration.write",
+          "statutory-registration-type.write",
           "statutory-remittance.read"
         ]
       }
@@ -235,6 +241,7 @@
           "statutory-evaluation.read",
           "statutory-ledger.read",
           "statutory-reconciliation.read",
+          "statutory-registration.read",
           "statutory-remittance.read"
         ]
       }

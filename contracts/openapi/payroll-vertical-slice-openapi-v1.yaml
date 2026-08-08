@@ -77,6 +77,62 @@ paths:
     $ref: '#/components/pathItems/OrganisationAudit'
   /establishments/{identityId}/audit:
     $ref: '#/components/pathItems/OrganisationAudit'
+  /payroll-jurisdictions:
+    $ref: '#/components/pathItems/JrfPayrollJurisdictionCollection'
+  /payroll-jurisdictions/{identityId}:
+    $ref: '#/components/pathItems/JrfPayrollJurisdictionIdentity'
+  /payroll-jurisdictions/{identityId}/versions:
+    $ref: '#/components/pathItems/JrfPayrollJurisdictionVersions'
+  /payroll-jurisdictions/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/JrfPayrollJurisdictionApproval'
+  /work-locations:
+    $ref: '#/components/pathItems/JrfWorkLocationCollection'
+  /work-locations/{identityId}:
+    $ref: '#/components/pathItems/JrfWorkLocationIdentity'
+  /work-locations/{identityId}/versions:
+    $ref: '#/components/pathItems/JrfWorkLocationVersions'
+  /work-locations/{identityId}/versions/{versionId}/approval:
+    $ref: '#/components/pathItems/JrfWorkLocationApproval'
+  /jurisdiction-overrides:
+    $ref: '#/components/pathItems/JrfJurisdictionOverrideCollection'
+  /jurisdiction-overrides/{overrideId}:
+    $ref: '#/components/pathItems/JrfJurisdictionOverrideIdentity'
+  /jurisdiction-overrides/{overrideId}/approval:
+    $ref: '#/components/pathItems/JrfJurisdictionOverrideApproval'
+  /jurisdiction-resolutions/preview:
+    $ref: '#/components/pathItems/JrfJurisdictionResolutionPreview'
+  /jurisdiction-resolutions:
+    $ref: '#/components/pathItems/JrfJurisdictionResolutionRecord'
+  /statutory-registration-types:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationTypeCollection'
+  /statutory-registration-types/{identityId}:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationTypeIdentity'
+  /statutory-registration-types/{identityId}/versions:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationTypeVersions'
+  /statutory-registration-types/{identityId}/versions/{versionId}/approval:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationTypeApproval'
+  /statutory-registrations:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationCollection'
+  /statutory-registrations/{identityId}:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationIdentity'
+  /statutory-registrations/{identityId}/versions:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationVersions'
+  /statutory-registrations/{identityId}/versions/{versionId}/submission:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationSubmission'
+  /statutory-registrations/{identityId}/versions/{versionId}/verification:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationVerification'
+  /statutory-registrations/{identityId}/versions/{versionId}/approval-request:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationApprovalRequest'
+  /statutory-registrations/{identityId}/versions/{versionId}/approval:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationApproval'
+  /statutory-registrations/{identityId}/versions/{versionId}/rejection:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationRejection'
+  /statutory-registrations/{identityId}/versions/{versionId}/suspension:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationSuspension'
+  /statutory-registrations/{identityId}/versions/{versionId}/identifier-reveal:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationIdentifierReveal'
+  /foundation-readiness/jurisdiction-registration:
+    $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationReadiness'
   /organisation-hierarchy:
     parameters:
     - $ref: '#/components/parameters/CorrelationId'
@@ -539,6 +595,396 @@ components:
       description: Numeric version ETag used for optimistic concurrency.
       schema: {type: string, pattern: '^(W/)?"?[0-9]+"?$'}
   pathItems:
+    JrfPayrollJurisdictionCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags: [Organisation]
+        summary: List effective payroll jurisdictions
+        operationId: listPayrollJurisdictions
+        x-permission: organisation.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            description: Effective payroll jurisdictions
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/JrfPayrollJurisdictionView'
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+      post:
+        tags: [Organisation]
+        summary: Create a payroll-jurisdiction identity and draft version
+        operationId: createPayrollJurisdiction
+        x-permission: organisation.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JrfPayrollJurisdictionCreateRequest'
+        responses:
+          '201':
+            description: Jurisdiction created
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfPayrollJurisdictionView'
+          '400': {$ref: '#/components/responses/Problem'}
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '409': {$ref: '#/components/responses/Problem'}
+          '422': {$ref: '#/components/responses/Problem'}
+    JrfPayrollJurisdictionIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags: [Organisation]
+        summary: Read the effective payroll-jurisdiction version
+        operationId: getPayrollJurisdiction
+        x-permission: organisation.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            description: Effective jurisdiction
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfPayrollJurisdictionView'
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '404': {$ref: '#/components/responses/Problem'}
+    JrfPayrollJurisdictionVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        tags: [Organisation]
+        summary: Add a payroll-jurisdiction draft version
+        operationId: addPayrollJurisdictionVersion
+        x-permission: organisation.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JrfPayrollJurisdictionVersionWriteRequest'
+        responses:
+          '201':
+            description: Jurisdiction version created
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfPayrollJurisdictionView'
+          '400': {$ref: '#/components/responses/Problem'}
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '404': {$ref: '#/components/responses/Problem'}
+          '409': {$ref: '#/components/responses/Problem'}
+          '422': {$ref: '#/components/responses/Problem'}
+    JrfPayrollJurisdictionApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      post:
+        tags: [Organisation]
+        summary: Approve a payroll-jurisdiction version
+        operationId: approvePayrollJurisdictionVersion
+        x-permission: organisation.approve
+        responses:
+          '200':
+            description: Jurisdiction version approved
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfPayrollJurisdictionView'
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '404': {$ref: '#/components/responses/Problem'}
+          '409': {$ref: '#/components/responses/Problem'}
+    JrfWorkLocationCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags: [Organisation]
+        summary: List effective work locations
+        operationId: listWorkLocations
+        x-permission: organisation.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            description: Effective work locations
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/JrfWorkLocationView'
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+      post:
+        tags: [Organisation]
+        summary: Create a work-location identity and draft version
+        operationId: createWorkLocation
+        x-permission: organisation.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JrfWorkLocationCreateRequest'
+        responses:
+          '201':
+            description: Work location created
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfWorkLocationView'
+          '400': {$ref: '#/components/responses/Problem'}
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '409': {$ref: '#/components/responses/Problem'}
+          '422': {$ref: '#/components/responses/Problem'}
+    JrfWorkLocationIdentity:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags: [Organisation]
+        summary: Read the effective work-location version
+        operationId: getWorkLocation
+        x-permission: organisation.read
+        parameters:
+        - $ref: '#/components/parameters/AsOf'
+        responses:
+          '200':
+            description: Effective work location
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfWorkLocationView'
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '404': {$ref: '#/components/responses/Problem'}
+    JrfWorkLocationVersions:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        tags: [Organisation]
+        summary: Add a work-location draft version
+        operationId: addWorkLocationVersion
+        x-permission: organisation.version.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JrfWorkLocationVersionWriteRequest'
+        responses:
+          '201':
+            description: Work-location version created
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfWorkLocationView'
+          '400': {$ref: '#/components/responses/Problem'}
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '404': {$ref: '#/components/responses/Problem'}
+          '409': {$ref: '#/components/responses/Problem'}
+          '422': {$ref: '#/components/responses/Problem'}
+    JrfWorkLocationApproval:
+      parameters:
+      - $ref: '#/components/parameters/IdentityId'
+      - $ref: '#/components/parameters/VersionId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      post:
+        tags: [Organisation]
+        summary: Approve a work-location version
+        operationId: approveWorkLocationVersion
+        x-permission: organisation.approve
+        responses:
+          '200':
+            description: Work-location version approved
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfWorkLocationView'
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '404': {$ref: '#/components/responses/Problem'}
+          '409': {$ref: '#/components/responses/Problem'}
+    JrfJurisdictionOverrideCollection:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        tags: [Organisation]
+        summary: Create a draft jurisdiction-resolution override
+        operationId: createJurisdictionOverride
+        x-permission: organisation.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JrfJurisdictionOverrideWriteRequest'
+        responses:
+          '201':
+            description: Override created
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfJurisdictionOverrideView'
+          '400': {$ref: '#/components/responses/Problem'}
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '409': {$ref: '#/components/responses/Problem'}
+          '422': {$ref: '#/components/responses/Problem'}
+    JrfJurisdictionOverrideIdentity:
+      parameters:
+      - name: overrideId
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+      - $ref: '#/components/parameters/CorrelationId'
+      get:
+        tags: [Organisation]
+        summary: Read a jurisdiction-resolution override
+        operationId: getJurisdictionOverride
+        x-permission: organisation.read
+        responses:
+          '200':
+            description: Override
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfJurisdictionOverrideView'
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '404': {$ref: '#/components/responses/Problem'}
+    JrfJurisdictionOverrideApproval:
+      parameters:
+      - name: overrideId
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      post:
+        tags: [Organisation]
+        summary: Approve a jurisdiction-resolution override
+        operationId: approveJurisdictionOverride
+        x-permission: organisation.approve
+        responses:
+          '200':
+            description: Override approved
+            headers:
+              ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfJurisdictionOverrideView'
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '404': {$ref: '#/components/responses/Problem'}
+          '409': {$ref: '#/components/responses/Problem'}
+    JrfJurisdictionResolutionPreview:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        tags: [Organisation]
+        summary: Preview deterministic payroll-jurisdiction resolution
+        operationId: previewJurisdictionResolution
+        x-permission: organisation.read
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JrfJurisdictionResolutionRequest'
+        responses:
+          '200':
+            description: Resolution preview
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfJurisdictionResolutionView'
+          '400': {$ref: '#/components/responses/Problem'}
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '422': {$ref: '#/components/responses/Problem'}
+    JrfJurisdictionResolutionRecord:
+      parameters:
+      - $ref: '#/components/parameters/CorrelationId'
+      post:
+        tags: [Organisation]
+        summary: Resolve and persist immutable payroll-jurisdiction evidence
+        operationId: recordJurisdictionResolution
+        x-permission: organisation.create
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JrfJurisdictionResolutionRequest'
+        responses:
+          '200':
+            description: Persisted resolution evidence
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/JrfJurisdictionResolutionView'
+          '400': {$ref: '#/components/responses/Problem'}
+          '401': {$ref: '#/components/responses/Problem'}
+          '403': {$ref: '#/components/responses/Problem'}
+          '409': {$ref: '#/components/responses/Problem'}
+          '422': {$ref: '#/components/responses/Problem'}
     P5A3CtcPolicyCollection:
       parameters:
       - $ref: '#/components/parameters/CorrelationId'
@@ -2317,6 +2763,311 @@ components:
         type: string
         format: uuid
   schemas:
+    JrfPayrollJurisdictionVersionWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [name, countryCode, levelCode, levelRank, effectiveFrom]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 160}
+        countryCode: {type: string, pattern: '^[A-Z]{2}$'}
+        levelCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,29}$'}
+        levelRank: {type: integer, minimum: 1}
+        parentJurisdictionId:
+          type: [string, 'null']
+          format: uuid
+        parentJurisdictionVersionId:
+          type: [string, 'null']
+          format: uuid
+        effectiveFrom: {type: string, format: date}
+        effectiveTo:
+          type: [string, 'null']
+          format: date
+    JrfPayrollJurisdictionCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [code, version]
+      properties:
+        code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+        version:
+          $ref: '#/components/schemas/JrfPayrollJurisdictionVersionWriteRequest'
+    JrfPayrollJurisdictionView:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - identityStatus
+      - identityVersionNo
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - countryCode
+      - levelCode
+      - levelRank
+      - effectiveFrom
+      - approvalStatus
+      - superseded
+      - createdBy
+      properties:
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        identityStatus: {type: string, enum: [PENDING_APPROVAL, ACTIVE, RETIRED]}
+        identityVersionNo: {type: integer, format: int64, minimum: 0}
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        name: {type: string}
+        countryCode: {type: string, pattern: '^[A-Z]{2}$'}
+        levelCode: {type: string}
+        levelRank: {type: integer, minimum: 1}
+        parentJurisdictionId:
+          type: [string, 'null']
+          format: uuid
+        parentJurisdictionVersionId:
+          type: [string, 'null']
+          format: uuid
+        effectiveFrom: {type: string, format: date}
+        effectiveTo:
+          type: [string, 'null']
+          format: date
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        supersedesVersionId:
+          type: [string, 'null']
+          format: uuid
+        superseded: {type: boolean}
+        createdBy: {type: string}
+        approvedAt:
+          type: [string, 'null']
+          format: date-time
+        approvedBy:
+          type: [string, 'null']
+    JrfWorkLocationVersionWriteRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - payrollJurisdictionId
+      - payrollJurisdictionVersionId
+      - countryCode
+      - effectiveFrom
+      properties:
+        name: {type: string, minLength: 1, maxLength: 160}
+        establishmentVersionId:
+          type: [string, 'null']
+          format: uuid
+        payrollJurisdictionId: {type: string, format: uuid}
+        payrollJurisdictionVersionId: {type: string, format: uuid}
+        addressLine1:
+          type: [string, 'null']
+          maxLength: 200
+        addressLine2:
+          type: [string, 'null']
+          maxLength: 200
+        locality:
+          type: [string, 'null']
+          maxLength: 120
+        stateCode:
+          type: [string, 'null']
+          maxLength: 40
+        postalCode:
+          type: [string, 'null']
+          maxLength: 24
+        countryCode: {type: string, pattern: '^[A-Z]{2}$'}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo:
+          type: [string, 'null']
+          format: date
+    JrfWorkLocationCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [code, version]
+      properties:
+        code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+        version:
+          $ref: '#/components/schemas/JrfWorkLocationVersionWriteRequest'
+    JrfWorkLocationView:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - identityStatus
+      - identityVersionNo
+      - versionId
+      - versionSequence
+      - versionNo
+      - name
+      - payrollJurisdictionId
+      - payrollJurisdictionVersionId
+      - countryCode
+      - effectiveFrom
+      - approvalStatus
+      - superseded
+      - createdBy
+      properties:
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        identityStatus: {type: string, enum: [PENDING_APPROVAL, ACTIVE, RETIRED]}
+        identityVersionNo: {type: integer, format: int64, minimum: 0}
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        name: {type: string}
+        establishmentVersionId:
+          type: [string, 'null']
+          format: uuid
+        payrollJurisdictionId: {type: string, format: uuid}
+        payrollJurisdictionVersionId: {type: string, format: uuid}
+        addressLine1:
+          type: [string, 'null']
+        addressLine2:
+          type: [string, 'null']
+        locality:
+          type: [string, 'null']
+        stateCode:
+          type: [string, 'null']
+        postalCode:
+          type: [string, 'null']
+        countryCode: {type: string}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo:
+          type: [string, 'null']
+          format: date
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        supersedesVersionId:
+          type: [string, 'null']
+          format: uuid
+        superseded: {type: boolean}
+        createdBy: {type: string}
+        approvedAt:
+          type: [string, 'null']
+          format: date-time
+        approvedBy:
+          type: [string, 'null']
+    JrfJurisdictionOverrideWriteRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - targetKind
+      - payrollJurisdictionId
+      - payrollJurisdictionVersionId
+      - effectiveFrom
+      - reason
+      properties:
+        targetKind: {type: string, enum: [WORK_LOCATION, ESTABLISHMENT]}
+        workLocationVersionId:
+          type: [string, 'null']
+          format: uuid
+        establishmentVersionId:
+          type: [string, 'null']
+          format: uuid
+        payrollJurisdictionId: {type: string, format: uuid}
+        payrollJurisdictionVersionId: {type: string, format: uuid}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo:
+          type: [string, 'null']
+          format: date
+        reason: {type: string, minLength: 1, maxLength: 500}
+    JrfJurisdictionOverrideView:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - versionNo
+      - targetKind
+      - payrollJurisdictionId
+      - payrollJurisdictionVersionId
+      - effectiveFrom
+      - reason
+      - approvalStatus
+      - createdBy
+      properties:
+        id: {type: string, format: uuid}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        targetKind: {type: string, enum: [WORK_LOCATION, ESTABLISHMENT]}
+        workLocationVersionId:
+          type: [string, 'null']
+          format: uuid
+        establishmentVersionId:
+          type: [string, 'null']
+          format: uuid
+        payrollJurisdictionId: {type: string, format: uuid}
+        payrollJurisdictionVersionId: {type: string, format: uuid}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo:
+          type: [string, 'null']
+          format: date
+        reason: {type: string}
+        approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+        createdBy: {type: string}
+        approvedAt:
+          type: [string, 'null']
+          format: date-time
+        approvedBy:
+          type: [string, 'null']
+    JrfJurisdictionResolutionRequest:
+      type: object
+      additionalProperties: false
+      required: [asOf]
+      properties:
+        asOf: {type: string, format: date}
+        workLocationVersionId:
+          type: [string, 'null']
+          format: uuid
+        establishmentVersionId:
+          type: [string, 'null']
+          format: uuid
+    JrfJurisdictionFindingView:
+      type: object
+      additionalProperties: false
+      required: [code, severity, message]
+      properties:
+        code: {type: string}
+        severity: {type: string, enum: [BLOCKER, WARNING]}
+        message: {type: string}
+    JrfJurisdictionResolutionView:
+      type: object
+      additionalProperties: false
+      required:
+      - asOf
+      - resolutionSource
+      - resolutionStatus
+      - inputFingerprint
+      - resultFingerprint
+      - findings
+      properties:
+        evidenceId:
+          type: [string, 'null']
+          format: uuid
+        asOf: {type: string, format: date}
+        workLocationVersionId:
+          type: [string, 'null']
+          format: uuid
+        establishmentVersionId:
+          type: [string, 'null']
+          format: uuid
+        overrideId:
+          type: [string, 'null']
+          format: uuid
+        resolvedJurisdictionId:
+          type: [string, 'null']
+          format: uuid
+        resolvedJurisdictionVersionId:
+          type: [string, 'null']
+          format: uuid
+        resolutionSource:
+          type: string
+          enum: [EXPLICIT_OVERRIDE, WORK_LOCATION, ESTABLISHMENT_FALLBACK, NONE]
+        resolutionStatus:
+          type: string
+          enum: [RESOLVED, UNRESOLVED, CONFLICT]
+        inputFingerprint: {type: string, pattern: '^[0-9a-f]{64}$'}
+        resultFingerprint: {type: string, pattern: '^[0-9a-f]{64}$'}
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/JrfJurisdictionFindingView'
     P5A3EndDate:
       type: object
       additionalProperties: false
