@@ -26,6 +26,25 @@ parameters:
     schema:
       type: string
       pattern: ^(W/\s*)?"?[0-9]+"?$
+  IdentityId:
+    name: identityId
+    in: path
+    required: true
+    schema:
+      $ref: '#/schemas/Uuid'
+  VersionId:
+    name: versionId
+    in: path
+    required: true
+    schema:
+      $ref: '#/schemas/Uuid'
+  AsOf:
+    name: asOf
+    in: query
+    required: false
+    schema:
+      type: string
+      format: date
 headers:
   ETag:
     description: Numeric payroll-cycle version
@@ -43,6 +62,467 @@ responses:
         schema:
           $ref: '#/schemas/Problem'
 pathItems:
+  RegistrationTypeCollection:
+    get:
+      tags: [Statutory]
+      summary: List effective statutory-registration types
+      operationId: listStatutoryRegistrationTypes
+      x-permission: statutory-registration.read
+      parameters:
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective registration types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/RegistrationTypeView'
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Statutory]
+      summary: Create a registration-type identity and draft version
+      operationId: createStatutoryRegistrationType
+      x-permission: statutory-registration-type.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/RegistrationTypeCreateRequest'
+      responses:
+        '201':
+          description: Registration type created
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/RegistrationTypeView'
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationTypeIdentity:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    get:
+      tags: [Statutory]
+      summary: Read the effective statutory-registration type
+      operationId: getStatutoryRegistrationType
+      x-permission: statutory-registration.read
+      parameters:
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective registration type
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/RegistrationTypeView'
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+  RegistrationTypeVersions:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    post:
+      tags: [Statutory]
+      summary: Add a statutory-registration-type draft version
+      operationId: addStatutoryRegistrationTypeVersion
+      x-permission: statutory-registration-type.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/RegistrationTypeVersionWriteRequest'
+      responses:
+        '201':
+          description: Registration-type version created
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/RegistrationTypeView'
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationTypeApproval:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Statutory]
+      summary: Approve a statutory-registration-type version
+      operationId: approveStatutoryRegistrationTypeVersion
+      x-permission: statutory-registration.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      responses:
+        '200':
+          description: Registration type approved
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/RegistrationTypeView'
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationCollection:
+    get:
+      tags: [Statutory]
+      summary: List effective statutory registrations
+      operationId: listStatutoryRegistrations
+      x-permission: statutory-registration.read
+      parameters:
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective active or suspended registrations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/StatutoryRegistrationView'
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Statutory]
+      summary: Create a statutory-registration identity and draft version
+      operationId: createStatutoryRegistration
+      x-permission: statutory-registration.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/StatutoryRegistrationCreateRequest'
+      responses:
+        '201':
+          description: Registration created
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryRegistrationView'
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationIdentity:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    get:
+      tags: [Statutory]
+      summary: Read the effective statutory registration
+      operationId: getStatutoryRegistration
+      x-permission: statutory-registration.read
+      parameters:
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective registration
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryRegistrationView'
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+  RegistrationVersions:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    get:
+      tags: [Statutory]
+      summary: List statutory-registration version history
+      operationId: listStatutoryRegistrationVersions
+      x-permission: statutory-registration.read
+      responses:
+        '200':
+          description: Registration history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/schemas/StatutoryRegistrationView'
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+    post:
+      tags: [Statutory]
+      summary: Add a successor statutory-registration draft version
+      operationId: addStatutoryRegistrationVersion
+      x-permission: statutory-registration.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/StatutoryRegistrationVersionWriteRequest'
+      responses:
+        '201':
+          description: Registration version created
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryRegistrationView'
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationSubmission:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Statutory]
+      summary: Submit a draft statutory registration for verification
+      operationId: submitStatutoryRegistration
+      x-permission: statutory-registration.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      responses:
+        '200':
+          description: Registration submitted
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryRegistrationView'
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationVerification:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Statutory]
+      summary: Verify a submitted statutory registration
+      operationId: verifyStatutoryRegistration
+      x-permission: statutory-registration.verify
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/RegistrationVerificationRequest'
+      responses:
+        '200':
+          description: Registration verified
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryRegistrationView'
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationApprovalRequest:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Statutory]
+      summary: Request final approval for a verified statutory registration
+      operationId: requestStatutoryRegistrationApproval
+      x-permission: statutory-registration.verify
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      responses:
+        '200':
+          description: Registration moved to approval pending
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryRegistrationView'
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationApproval:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Statutory]
+      summary: Activate an independently verified statutory registration
+      operationId: approveStatutoryRegistration
+      x-permission: statutory-registration.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/RegistrationApprovalRequest'
+      responses:
+        '200':
+          description: Registration activated
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryRegistrationView'
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationRejection:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Statutory]
+      summary: Reject a submitted or approval-pending statutory registration
+      operationId: rejectStatutoryRegistration
+      x-permission: statutory-registration.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/RegistrationRejectionRequest'
+      responses:
+        '200':
+          description: Registration rejected
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryRegistrationView'
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationSuspension:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Statutory]
+      summary: Suspend an active statutory registration
+      operationId: suspendStatutoryRegistration
+      x-permission: statutory-registration.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/RegistrationSuspensionRequest'
+      responses:
+        '200':
+          description: Registration suspended
+          headers:
+            ETag: {$ref: '#/headers/ETag'}
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/StatutoryRegistrationView'
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+        '409': {$ref: '#/responses/Problem'}
+  RegistrationIdentifierReveal:
+    parameters:
+    - $ref: '#/parameters/IdentityId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Statutory]
+      summary: Reveal the exact statutory-registration identifier for an authorized compliance operator
+      operationId: revealStatutoryRegistrationIdentifier
+      x-permission: statutory-registration.identifier.read
+      responses:
+        '200':
+          description: Exact registration identifier; response must not be cached
+          headers:
+            Cache-Control:
+              description: Sensitive response cache policy
+              schema:
+                type: string
+                enum: [no-store]
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/RegistrationIdentifierRevealView'
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/Problem'}
+  RegistrationReadiness:
+    post:
+      tags: [Statutory]
+      summary: Evaluate bounded jurisdiction-registration foundation readiness
+      operationId: evaluateJurisdictionRegistrationReadiness
+      x-permission: statutory-registration.read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/schemas/RegistrationReadinessRequest'
+      responses:
+        '200':
+          description: Bounded readiness findings
+          content:
+            application/json:
+              schema:
+                $ref: '#/schemas/RegistrationReadinessView'
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
   StatutoryEvaluations:
     parameters:
     - $ref: '#/parameters/CycleId'
@@ -332,6 +812,346 @@ pathItems:
         '404':
           $ref: '#/responses/Problem'
 schemas:
+  RegistrationOwnerKind:
+    type: string
+    enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT, ESTABLISHMENT]
+  RegistrationTypeVersionWriteRequest:
+    type: object
+    additionalProperties: false
+    required:
+    - name
+    - obligationCode
+    - authorityCode
+    - jurisdictionLevelCode
+    - identifierPatternDialect
+    - identifierCasePolicy
+    - parentRequired
+    - ownerKinds
+    - effectiveFrom
+    properties:
+      name: {type: string, minLength: 1, maxLength: 160}
+      obligationCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+      authorityCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+      jurisdictionLevelCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,29}$'}
+      identifierPattern:
+        type: [string, 'null']
+        maxLength: 240
+        description: JAVA_REGEX_V1 expression evaluated with java.util.regex.Pattern using whole-string matches semantics.
+      identifierCasePolicy: {type: string, enum: [UPPER, PRESERVE]}
+      parentRequired: {type: boolean}
+      parentRegistrationTypeId:
+        type: [string, 'null']
+        format: uuid
+      ownerKinds:
+        type: array
+        minItems: 1
+        uniqueItems: true
+        items:
+          $ref: '#/schemas/RegistrationOwnerKind'
+      effectiveFrom: {type: string, format: date}
+      effectiveTo:
+        type: [string, 'null']
+        format: date
+  RegistrationTypeCreateRequest:
+    type: object
+    additionalProperties: false
+    required: [code, version]
+    properties:
+      code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+      version:
+        $ref: '#/schemas/RegistrationTypeVersionWriteRequest'
+  RegistrationTypeView:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - code
+    - identityStatus
+    - identityVersionNo
+    - versionId
+    - versionSequence
+    - versionNo
+    - name
+    - obligationCode
+    - authorityCode
+    - jurisdictionLevelCode
+    - identifierCasePolicy
+    - parentRequired
+    - ownerKinds
+    - effectiveFrom
+    - approvalStatus
+    - superseded
+    - createdBy
+    properties:
+      identityId: {$ref: '#/schemas/Uuid'}
+      code: {type: string}
+      identityStatus: {type: string, enum: [PENDING_APPROVAL, ACTIVE, RETIRED]}
+      identityVersionNo: {type: integer, format: int64, minimum: 0}
+      versionId: {$ref: '#/schemas/Uuid'}
+      versionSequence: {type: integer, minimum: 1}
+      versionNo: {type: integer, format: int64, minimum: 0}
+      name: {type: string}
+      obligationCode: {type: string}
+      authorityCode: {type: string}
+      jurisdictionLevelCode: {type: string}
+      identifierPattern:
+        type: [string, 'null']
+      identifierPatternDialect:
+        type: string
+        enum: [JAVA_REGEX_V1]
+        description: Versioned application-level identifier-pattern dialect; PostgreSQL stores but does not interpret this expression.
+      identifierCasePolicy: {type: string, enum: [UPPER, PRESERVE]}
+      parentRequired: {type: boolean}
+      parentRegistrationTypeId:
+        type: [string, 'null']
+        format: uuid
+      ownerKinds:
+        type: array
+        items:
+          $ref: '#/schemas/RegistrationOwnerKind'
+      effectiveFrom: {type: string, format: date}
+      effectiveTo:
+        type: [string, 'null']
+        format: date
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesVersionId:
+        type: [string, 'null']
+        format: uuid
+      superseded: {type: boolean}
+      createdBy: {type: string}
+      approvedAt:
+        type: [string, 'null']
+        format: date-time
+      approvedBy:
+        type: [string, 'null']
+  StatutoryRegistrationVersionWriteRequest:
+    type: object
+    additionalProperties: false
+    required:
+    - registrationTypeId
+    - registrationTypeVersionId
+    - identifier
+    - ownerKind
+    - ownerId
+    - payrollJurisdictionId
+    - payrollJurisdictionVersionId
+    - effectiveFrom
+    properties:
+      registrationTypeId: {$ref: '#/schemas/Uuid'}
+      registrationTypeVersionId: {$ref: '#/schemas/Uuid'}
+      identifier: {type: string, minLength: 1, maxLength: 160}
+      ownerKind: {$ref: '#/schemas/RegistrationOwnerKind'}
+      ownerId: {$ref: '#/schemas/Uuid'}
+      payrollJurisdictionId: {$ref: '#/schemas/Uuid'}
+      payrollJurisdictionVersionId: {$ref: '#/schemas/Uuid'}
+      parentRegistrationId:
+        type: [string, 'null']
+        format: uuid
+      parentRegistrationVersionId:
+        type: [string, 'null']
+        format: uuid
+      effectiveFrom: {type: string, format: date}
+      effectiveTo:
+        type: [string, 'null']
+        format: date
+  StatutoryRegistrationCreateRequest:
+    type: object
+    additionalProperties: false
+    required: [registrationTypeId, referenceCode, version]
+    properties:
+      registrationTypeId: {$ref: '#/schemas/Uuid'}
+      referenceCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+      version:
+        $ref: '#/schemas/StatutoryRegistrationVersionWriteRequest'
+  StatutoryRegistrationView:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - registrationTypeId
+    - referenceCode
+    - identityVersionNo
+    - versionId
+    - versionSequence
+    - versionNo
+    - registrationTypeVersionId
+    - identifier
+    - identifierNormalized
+    - ownerKind
+    - ownerId
+    - payrollJurisdictionId
+    - payrollJurisdictionVersionId
+    - effectiveFrom
+    - lifecycleStatus
+    - superseded
+    - createdBy
+    properties:
+      identityId: {$ref: '#/schemas/Uuid'}
+      registrationTypeId: {$ref: '#/schemas/Uuid'}
+      referenceCode: {type: string}
+      identityVersionNo: {type: integer, format: int64, minimum: 0}
+      versionId: {$ref: '#/schemas/Uuid'}
+      versionSequence: {type: integer, minimum: 1}
+      versionNo: {type: integer, format: int64, minimum: 0}
+      registrationTypeVersionId: {$ref: '#/schemas/Uuid'}
+      identifier:
+        type: string
+        description: Masked identifier representation for routine reads. Exact access requires statutory-registration.identifier.read.
+      identifierNormalized:
+        type: string
+        description: Masked normalized identifier representation for routine reads.
+      ownerKind: {$ref: '#/schemas/RegistrationOwnerKind'}
+      ownerId: {$ref: '#/schemas/Uuid'}
+      payrollJurisdictionId: {$ref: '#/schemas/Uuid'}
+      payrollJurisdictionVersionId: {$ref: '#/schemas/Uuid'}
+      parentRegistrationId:
+        type: [string, 'null']
+        format: uuid
+      parentRegistrationVersionId:
+        type: [string, 'null']
+        format: uuid
+      effectiveFrom: {type: string, format: date}
+      effectiveTo:
+        type: [string, 'null']
+        format: date
+      lifecycleStatus:
+        type: string
+        enum:
+        - DRAFT
+        - PENDING_VERIFICATION
+        - VERIFIED
+        - APPROVAL_PENDING
+        - ACTIVE
+        - REJECTED
+        - SUSPENDED
+        - EXPIRED
+        - SUPERSEDED
+      verificationEvidenceRef:
+        type: [string, 'null']
+      verifiedAt:
+        type: [string, 'null']
+        format: date-time
+      verifiedBy:
+        type: [string, 'null']
+      approvedAt:
+        type: [string, 'null']
+        format: date-time
+      approvedBy:
+        type: [string, 'null']
+      approvalEvidenceRef:
+        type: [string, 'null']
+      rejectedAt:
+        type: [string, 'null']
+        format: date-time
+      rejectedBy:
+        type: [string, 'null']
+      rejectionReason:
+        type: [string, 'null']
+      rejectionEvidenceRef:
+        type: [string, 'null']
+      authorityReference:
+        type: [string, 'null']
+      suspendedAt:
+        type: [string, 'null']
+        format: date-time
+      suspendedBy:
+        type: [string, 'null']
+      suspensionReason:
+        type: [string, 'null']
+      supersedesVersionId:
+        type: [string, 'null']
+        format: uuid
+      superseded: {type: boolean}
+      createdBy: {type: string}
+  RegistrationIdentifierRevealView:
+    type: object
+    additionalProperties: false
+    required: [identityId, versionId, identifier, identifierNormalized]
+    properties:
+      identityId: {$ref: '#/schemas/Uuid'}
+      versionId: {$ref: '#/schemas/Uuid'}
+      identifier:
+        type: string
+        description: Exact registration identifier. Sensitive response; do not cache or log.
+      identifierNormalized:
+        type: string
+        description: Exact normalized registration identifier. Sensitive response; do not cache or log.
+  RegistrationVerificationRequest:
+    type: object
+    additionalProperties: false
+    required: [evidenceRef]
+    properties:
+      evidenceRef: {type: string, minLength: 1, maxLength: 240}
+  RegistrationApprovalRequest:
+    type: object
+    additionalProperties: false
+    required: [evidenceRef]
+    properties:
+      evidenceRef: {type: string, minLength: 1, maxLength: 240}
+  RegistrationRejectionRequest:
+    type: object
+    additionalProperties: false
+    required: [reason, evidenceRef, authorityReference]
+    properties:
+      reason: {type: string, minLength: 1, maxLength: 500}
+      evidenceRef: {type: string, minLength: 1, maxLength: 240}
+      authorityReference: {type: string, minLength: 1, maxLength: 240}
+  RegistrationSuspensionRequest:
+    type: object
+    additionalProperties: false
+    required: [reason]
+    properties:
+      reason: {type: string, minLength: 1, maxLength: 500}
+  RegistrationReadinessRequest:
+    type: object
+    additionalProperties: false
+    required:
+    - registrationTypeId
+    - ownerKind
+    - ownerId
+    - payrollJurisdictionId
+    - asOf
+    - warningHorizonDays
+    properties:
+      registrationTypeId: {$ref: '#/schemas/Uuid'}
+      ownerKind: {$ref: '#/schemas/RegistrationOwnerKind'}
+      ownerId: {$ref: '#/schemas/Uuid'}
+      payrollJurisdictionId: {$ref: '#/schemas/Uuid'}
+      asOf: {type: string, format: date}
+      warningHorizonDays: {type: integer, minimum: 0, maximum: 365}
+  RegistrationReadinessFindingView:
+    type: object
+    additionalProperties: false
+    required: [code, severity, message]
+    properties:
+      code: {type: string}
+      severity: {type: string, enum: [BLOCKER, WARNING]}
+      message: {type: string}
+  RegistrationReadinessView:
+    type: object
+    additionalProperties: false
+    required:
+    - registrationTypeId
+    - ownerKind
+    - ownerId
+    - payrollJurisdictionId
+    - asOf
+    - ready
+    - findings
+    properties:
+      registrationTypeId: {$ref: '#/schemas/Uuid'}
+      ownerKind: {$ref: '#/schemas/RegistrationOwnerKind'}
+      ownerId: {$ref: '#/schemas/Uuid'}
+      payrollJurisdictionId: {$ref: '#/schemas/Uuid'}
+      asOf: {type: string, format: date}
+      ready: {type: boolean}
+      registrationVersionId:
+        type: [string, 'null']
+        format: uuid
+      findings:
+        type: array
+        items:
+          $ref: '#/schemas/RegistrationReadinessFindingView'
   Uuid:
     type: string
     format: uuid

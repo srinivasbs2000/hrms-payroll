@@ -1,10 +1,12 @@
 # P5-JRF-01 — Jurisdiction and Registration Foundations
 
-**Status:** PLANNED — NOT ACTIVATED
+**Status:** LOCAL IMPLEMENTATION VERIFIED — PUBLICATION PENDING
 **Execution capability:** `P5-JRF-01`
 **Original program mapping:** `P5-A2 — Jurisdiction and Registration Foundations`
 **Dependency:** Original P5-A1 complete
-**Migration:** V034 remains unreserved until explicit activation and design review
+**Activation base:** `ff581cafce3be5495d93932abfae3931b139358f`
+**Branch:** `feature/p5-jrf-01-jurisdiction-registration-foundations`
+**Migration:** V034 implemented locally and reserved to P5-JRF-01 until publication/closure
 
 ## 1. Objective
 
@@ -200,19 +202,31 @@ Required evidence categories:
 - final critical review;
 - reconciled detailed-story ledger after merge.
 
-## 7. Activation boundary
+## 7. Activation and local implementation closure
 
-A recommendation or approved scope document does not activate implementation.
+The project owner explicitly activated `P5-JRF-01` from
+`ff581cafce3be5495d93932abfae3931b139358f` on branch
+`feature/p5-jrf-01-jurisdiction-registration-foundations`, reserved V034 and
+approved the reviewed maximum file/module boundary and explicit exclusions.
 
-Activation requires a separate owner authorization that names:
+The local implementation resolves the ten pre-activation design questions:
 
-- execution capability `P5-JRF-01`;
-- exact starting `main` SHA;
-- branch name;
-- file/module boundary;
-- migration reservation, if any;
-- prohibited actions.
+- work location uses a dedicated identity/version model;
+- jurisdiction hierarchy is extensible through level code/rank and exact parent version;
+- generic precedence is approved override -> approved work location ->
+  establishment fallback -> unresolved, with material disagreement surfaced as conflict;
+- resolution supports preview plus immutable persisted evidence;
+- PostgreSQL enforces tenant-safe registration uniqueness and effective overlap rules;
+- maker/verifier/final-approver segregation protects activation and suspension;
+- parent registrations reference exact versions and require same/ancestor jurisdiction;
+- only the approved bounded event set is published;
+- readiness remains bounded to jurisdiction/registration foundation concerns;
+- organisation, statutory-deductions and payroll-boot remain the approved module boundary.
 
-Until then:
+AC-G03-B1 v1.3 and AC-G03-B2 v1.2 are locally GREEN. G03-C is the
+pre-publication full-regression, documentation and critical-review closure.
+V034 remains uncommitted and reserved until publication and authority closure.
 
-`P5-JRF-01 = PLANNED / NOT ACTIVATED`
+Country-specific legal rule packs, filing, remittance, bank/signatory scope,
+complete readiness, payroll calculation changes, employee assignment changes,
+minimum wage, retro and production deployment remain excluded.

@@ -1,7 +1,7 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 6 August 2026
-**Repository baseline:** `main` at `23df1f7a11f4090cef8715eba7104f5b1138b760`
+**Last verified:** 8 August 2026
+**Repository baseline:** `main` at `ff581cafce3be5495d93932abfae3931b139358f`
 **Latest merged product increment:** Current P5-A3 through PR #32
 **Latest merged quality increment:** PR #33
 
@@ -29,17 +29,20 @@ migration number.
 | P5-A2 | CLOSED | Component catalogue and named payroll bases | PR #30 merged; PR #31 closure | V032 immutable | None |
 | P5-A3 | CLOSED | Salary structure, CTC, eligibility and design-time simulation | PR #32 merged; PR #33 quality follow-up | V033 immutable | None |
 | S4-06A | CLOSED | Secured statutory API integration quality | PR #28 merged; PR #29 closure | None | None |
+| P5-JRF-01 | ACTIVE — LOCAL GREEN | Jurisdiction and registration foundations | Local AC-G03-B1 v1.3 and AC-G03-B2 v1.2 evidence; publication pending | V034 reserved / uncommitted | `feature/p5-jrf-01-jurisdiction-registration-foundations`; reviewed 88-path maximum |
 
 ## Active capability workstream
 
-**None.**
+**P5-JRF-01 — LOCAL IMPLEMENTATION VERIFIED / PUBLICATION PENDING.**
 
-- No branch has active project write ownership.
-- No path allow-list is active.
+- Active branch: `feature/p5-jrf-01-jurisdiction-registration-foundations`.
+- Starting main authority: `ff581cafce3be5495d93932abfae3931b139358f`.
+- Only the reviewed 88-path maximum boundary is authorized.
 - V001–V033 are immutable.
-- V034 is unreserved.
+- V034 is locally implemented and remains exclusively reserved until
+  publication and explicit authority closure.
+- Assistant/agent GitHub access remains read-only.
 - S4-06B remains planned and unauthorized.
-- Original P5-A2 is recommended but not activated.
 - Historical branches are retained and must not be reused or deleted implicitly.
 
 ## Program-status closure process

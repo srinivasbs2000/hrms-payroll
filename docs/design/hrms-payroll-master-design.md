@@ -2,12 +2,12 @@
 
 **Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Repository baseline:** `main` at PR #33 merge `23df1f7a11f4090cef8715eba7104f5b1138b760`
-**Latest repository publication:** PR #33 P5-A3 React test-hygiene closure
+**Repository baseline:** `main` at `ff581cafce3be5495d93932abfae3931b139358f`; P5-JRF-01 local branch is uncommitted
+**Current local capability:** `P5-JRF-01` — LOCAL IMPLEMENTATION VERIFIED / PUBLICATION PENDING
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **Latest merged product increment:** P5-A3 through PR #32 merge `b4f3013e1d7404d09eac64a305ad3736e5a28a5c`
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
-**Last verified:** 6 August 2026
+**Last verified:** 8 August 2026
 **Maintainers:** Project owner and the currently authorised capability workstream
 **Full product scope authority:** `docs/product/payroll-product-scope-and-epic-catalog.md`
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
@@ -106,7 +106,7 @@ product epics.
 
 ## 6. Material remaining capabilities
 
-- complete jurisdiction and registration foundation;
+- post-JRF bank, signatory, complete readiness and country-specific statutory/tax configuration;
 - CTC, eligibility, simulation and broader salary-structure completion;
 - complete bank/statutory/tax readiness;
 - general formula and balance engines;
@@ -137,7 +137,8 @@ remain mandatory.
 
 - `database/flyway/sql` is the ordered migration authority.
 - V001-V033 are committed and immutable.
-- V034 is unreserved and requires separate capability activation.
+- V034 is implemented locally for P5-JRF-01, uncommitted and exclusively
+  reserved to the active capability until publication/closure.
 - future migrations are forward-only and separately authorised;
 - tenant-owned FKs include tenant ownership;
 - stable identity plus immutable effective-dated versions preserve lineage;
@@ -197,15 +198,18 @@ risk are committed.
 | Sprint 4 | Generic statutory lifecycle and evidence | V027-V030 | PR #19 merged; S4-06A quality closure merged through PR #28 |
 | P5-A1 | Organisation hierarchy lifecycle closure | V031 | PR #25 merged |
 | P5-A2 | General pay-component catalogue and named payroll bases | V032 | PR #30 merged; authority released |
-| P5-A3 | Salary-structure design, CTC policy, typed eligibility and deterministic design-time simulation | V033 | PR #32 merged; PR #33 test-hygiene follow-up merged; authority closure pending |
+| P5-A3 | Salary-structure design, CTC policy, typed eligibility and deterministic design-time simulation | V033 | PR #32 merged; PR #33 test-hygiene follow-up merged |
+| P5-JRF-01 | Work-location, jurisdiction-resolution and statutory-registration foundations | V034 | Local implementation verified through AC-G03-B2 v1.2; publication pending |
 | Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26, PR #29 and PR #31 merged |
 | Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | PR #28 merged; Thread 7 closed and ownership released |
 
 ## 13. Current controlled debt and planning
 
 - Current P5-A3 is merged through PR #32; PR #33 merged the React test-hygiene follow-up.
-- V001-V033 are committed and immutable; V034 is unreserved.
-- No product capability currently owns files or a migration.
+- V001-V033 are committed and immutable; V034 is locally implemented,
+  uncommitted and reserved to P5-JRF-01.
+- P5-JRF-01 owns only its reviewed 88-path maximum boundary until publication
+  and explicit authority closure.
 - The 450 detailed stories reconcile to 11 implemented, 155 partially
   implemented, 94 not evidenced, 159 not started and 31 requiring
   legal/domain revalidation.
@@ -312,3 +316,38 @@ activation and migration reservation.
 
 Every future product increment requires a repository-wide status-closure update
 before the next increment is selected.
+
+## 20. P5-JRF-01 implemented architecture
+
+P5-JRF-01 adds a dedicated work-location identity/version model, an extensible
+payroll-jurisdiction hierarchy, deterministic resolution with immutable
+evidence, and a generic statutory-registration type/instance/version lifecycle.
+
+Generic resolution precedence is approved override, approved work location,
+establishment-derived fallback, then unresolved. Material disagreement is
+surfaced as conflict rather than silently resolved. Residential address is not
+used as a fallback.
+
+Registration activation preserves maker, independent verifier and independent
+final-approver evidence. Parent registrations reference exact versions and must
+use the same jurisdiction or an approved ancestor. Renewal and other successor
+drafts append history and do not hide the current effective approved/active
+version before the successor itself becomes effective and approved.
+
+PostgreSQL 17 remains intentional. FORCE RLS, tenant-safe foreign keys,
+exclusion/uniqueness constraints and narrow controlled row-lock functions are
+defense-in-depth integrity controls. Runtime direct table UPDATE remains
+prohibited where the capability uses EXECUTE-only lock functions.
+
+Registration identifier format metadata is application-level
+`JAVA_REGEX_V1`. Routine APIs expose masked identifiers; exact reveal uses the
+dedicated `statutory-registration.identifier.read` permission and produces
+audit evidence without copying the identifier into audit/outbox payloads.
+
+AC-G03-B1 v1.3 and AC-G03-B2 v1.2 are locally GREEN. Country-specific legal
+rates/formulas, filing, remittance, bank/signatory scope, complete readiness,
+employee statutory profiles, payroll calculation/assignment changes, minimum
+wage, retro and production deployment remain outside this capability.
+
+Publication, CI evidence, post-merge story-ledger reconciliation and authority
+release remain separate closure steps.
