@@ -1,9 +1,11 @@
 # HRMS Payroll Thread and Capability Registry
 
 **Last verified:** 8 August 2026
-**Repository baseline:** `main` at `ff581cafce3be5495d93932abfae3931b139358f`
-**Latest merged product increment:** Current P5-A3 through PR #32
+**Repository baseline:** `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Latest merged product increment:** P5-JRF-01 through PR #36
 **Latest merged quality increment:** PR #33
+**Active product write owner:** None
+**Migration authority:** V001–V034 immutable; V035 unreserved
 
 Thread numbers are historical conversation labels, not implementation
 authority. Only an explicitly active capability entry may own files or a
@@ -29,32 +31,32 @@ migration number.
 | P5-A2 | CLOSED | Component catalogue and named payroll bases | PR #30 merged; PR #31 closure | V032 immutable | None |
 | P5-A3 | CLOSED | Salary structure, CTC, eligibility and design-time simulation | PR #32 merged; PR #33 quality follow-up | V033 immutable | None |
 | S4-06A | CLOSED | Secured statutory API integration quality | PR #28 merged; PR #29 closure | None | None |
-| P5-JRF-01 | ACTIVE — LOCAL GREEN | Jurisdiction and registration foundations | Local AC-G03-B1 v1.3 and AC-G03-B2 v1.2 evidence; publication pending | V034 reserved / uncommitted | `feature/p5-jrf-01-jurisdiction-registration-foundations`; reviewed 88-path maximum |
+| P5-JRF-01 | CLOSED | Jurisdiction and registration foundations | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` | V034 immutable | None |
 
 ## Active capability workstream
 
-**P5-JRF-01 — LOCAL IMPLEMENTATION VERIFIED / PUBLICATION PENDING.**
+**NONE.**
 
-- Active branch: `feature/p5-jrf-01-jurisdiction-registration-foundations`.
-- Starting main authority: `ff581cafce3be5495d93932abfae3931b139358f`.
-- Only the reviewed 88-path maximum boundary is authorized.
-- V001–V033 are immutable.
-- V034 is locally implemented and remains exclusively reserved until
-  publication and explicit authority closure.
-- Assistant/agent GitHub access remains read-only.
-- S4-06B remains planned and unauthorized.
-- Historical branches are retained and must not be reused or deleted implicitly.
+P5-JRF-01 is historical/closed:
+
+- activation base `ff581cafce3be5495d93932abfae3931b139358f`;
+- publication commit `c8ab727787a23b0b211caf27c2158300a38a8eab`;
+- PR #36 merge `6ee101bd398b745a0078bd0517b4e3797c571c2b`;
+- historical branch `feature/p5-jrf-01-jurisdiction-registration-foundations` is retained;
+- exact product ownership is released by this post-merge closure;
+- the temporary three-path dependency-security exception authority is released;
+- V034 is committed and immutable;
+- V035 is unreserved.
+
+No next product capability, path ownership or migration reservation is implied
+by this closure. A future capability must be separately selected and activated.
 
 ## Program-status closure process
-
-The documentation branch created for the program-status closure owns only its
-exact ten-path documentation/governance boundary until its PR is merged or
-closed. It grants no product or migration authority.
 
 After each future product increment:
 
 1. verify product merge;
-2. reconcile the detailed-story ledger;
+2. reconcile the detailed-story ledger by semantic mapping;
 3. update `docs/governance/payroll-program-status.md`;
 4. merge a small status-closure PR;
 5. release ownership and migration reservation;

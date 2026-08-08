@@ -1,12 +1,12 @@
 # P5-JRF-01 — Jurisdiction and Registration Foundations
 
-**Status:** LOCAL IMPLEMENTATION VERIFIED — PUBLICATION PENDING
+**Status:** MERGED / CLOSED — POST-MERGE AUTHORITY RELEASE
 **Execution capability:** `P5-JRF-01`
 **Original program mapping:** `P5-A2 — Jurisdiction and Registration Foundations`
 **Dependency:** Original P5-A1 complete
 **Activation base:** `ff581cafce3be5495d93932abfae3931b139358f`
 **Branch:** `feature/p5-jrf-01-jurisdiction-registration-foundations`
-**Migration:** V034 implemented locally and reserved to P5-JRF-01 until publication/closure
+**Migration:** V034 committed and immutable through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`; V035 unreserved
 
 ## 1. Objective
 
@@ -202,14 +202,14 @@ Required evidence categories:
 - final critical review;
 - reconciled detailed-story ledger after merge.
 
-## 7. Activation and local implementation closure
+## 7. Activation, implementation and merged closure
 
 The project owner explicitly activated `P5-JRF-01` from
 `ff581cafce3be5495d93932abfae3931b139358f` on branch
 `feature/p5-jrf-01-jurisdiction-registration-foundations`, reserved V034 and
 approved the reviewed maximum file/module boundary and explicit exclusions.
 
-The local implementation resolves the ten pre-activation design questions:
+The implementation resolved the ten pre-activation design questions:
 
 - work location uses a dedicated identity/version model;
 - jurisdiction hierarchy is extensible through level code/rank and exact parent version;
@@ -223,9 +223,29 @@ The local implementation resolves the ten pre-activation design questions:
 - readiness remains bounded to jurisdiction/registration foundation concerns;
 - organisation, statutory-deductions and payroll-boot remain the approved module boundary.
 
-AC-G03-B1 v1.3 and AC-G03-B2 v1.2 are locally GREEN. G03-C is the
-pre-publication full-regression, documentation and critical-review closure.
-V034 remains uncommitted and reserved until publication and authority closure.
+Local G03-C closure was GREEN before publication. The final publication commit is
+`c8ab727787a23b0b211caf27c2158300a38a8eab`; PR #36 merged it into `main` as
+`6ee101bd398b745a0078bd0517b4e3797c571c2b` with all nine hosted checks GREEN.
+
+The six execution candidates `P5-E01-005` through `P5-E01-010` do not map
+one-for-one to the canonical `PLN-E01-*` CSV numbering. Post-merge
+reconciliation therefore updates the canonical ledger as follows:
+
+- `PLN-E01-005` — IMPLEMENTED: work locations, jurisdiction resolution and
+  conflict/unresolved handling;
+- `PLN-E01-006` — IMPLEMENTED: generic statutory-registration framework;
+- `PLN-E01-007` — IMPLEMENTED: registration approval/renewal workflow;
+- `PLN-E01-012` — PARTIALLY IMPLEMENTED: bounded jurisdiction/registration
+  readiness contribution.
+
+Canonical `PLN-E01-008`, `009` and `010` are employer bank accounts,
+authorised signatories and immutable configuration snapshots. They were explicit
+P5-JRF-01 exclusions and are not incorrectly marked implemented by this closure.
+
+V034 is now committed and immutable. P5-JRF-01 product-path ownership and the
+temporary three-path dependency-security exception authority are released when
+this post-merge closure reaches `main`. V035 remains unreserved until a
+separate next-capability activation.
 
 Country-specific legal rule packs, filing, remittance, bank/signatory scope,
 complete readiness, payroll calculation changes, employee assignment changes,

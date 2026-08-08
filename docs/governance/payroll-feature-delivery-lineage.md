@@ -1,14 +1,14 @@
 # Payroll Feature Delivery Lineage
 
-**Repository baseline:** `23df1f7a11f4090cef8715eba7104f5b1138b760`
-**Product implementation baseline:** `b4f3013e1d7404d09eac64a305ad3736e5a28a5c`
+**Repository baseline:** `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Product implementation baseline:** `c8ab727787a23b0b211caf27c2158300a38a8eab` (P5-JRF-01); merged to main as `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **Purpose:** Trace original epic -> original backlog row -> current story -> migration -> commit -> PR/merge -> evidence -> remaining scope.
 
 ## 1. Epic-level lineage
 
 | Epic | Current Stories | Migrations | Commit Evidence | PR/Merge | Classification |
 |---|---|---|---|---|---|
-| E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06 | V014-V016 (plus foundational V001-V013) | b9f6bcf888c4d22c04a237f0a13c37d4d4d24c36; 47654eb11c69838924da172479a4c4d72a5c2729; da5dad33d7d228e1e7ee1467fb198ec21d0934ca | PR #2; merge 27947e1202ff018c3494a32584487ff3879876ab | PARTIALLY IMPLEMENTED |
+| E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06; P5-JRF-01 | V014-V016; V034 (plus foundational V001-V013) | b9f6bcf888c4d22c04a237f0a13c37d4d4d24c36; 47654eb11c69838924da172479a4c4d72a5c2729; da5dad33d7d228e1e7ee1467fb198ec21d0934ca; c8ab727787a23b0b211caf27c2158300a38a8eab | PR #2; PR #36 / merge 6ee101bd398b745a0078bd0517b4e3797c571c2b | PARTIALLY IMPLEMENTED |
 | E02 | S2-01, S2-02; population execution contributes through S3-01 | V017-V018 | Inherited Sprint 2 range through 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
 | E03 | S2-03; P5-A2 general catalogue and named bases | V019; V032 | Sprint 2 foundation plus `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` | PR #3; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` | PARTIALLY IMPLEMENTED |
 | E04 | S2-04 | V020 | Inherited Sprint 2 entry head 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
@@ -147,18 +147,31 @@ Recommended next package: original P5-A2 jurisdiction and registration
 foundations. This recommendation grants no implementation or migration
 authority.
 
-## P5-JRF-01 local delivery lineage
+## P5-JRF-01 merged delivery lineage
 
-| Increment | Original package/story mapping | Migration | Local evidence | Publication |
+| Increment | Original package/story mapping | Migration | Product evidence | PR/Merge |
 |---|---|---|---|---|
-| P5-JRF-01 | Original P5-A2; P5-E01-005 through P5-E01-010 | V034 | G02-A through G03-A; architecture consistency checkpoint; AC-G03-B1 v1.3 GREEN; AC-G03-B2 v1.2 GREEN; G03-C pre-publication closure | Pending commit/PR/merge |
+| P5-JRF-01 | Original P5-A2; execution candidates P5-E01-005 through P5-E01-010 | V034 | `c8ab727787a23b0b211caf27c2158300a38a8eab`; local G03-C GREEN; hosted PR CI 9/9 GREEN | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 
-Delivered locally: work-location identity/version, jurisdiction hierarchy and
+Delivered: work-location identity/version, jurisdiction hierarchy and
 deterministic resolution/evidence, generic registration type/instance/version
 lifecycle, parent registration integrity, bounded readiness, masked identifier
 handling with audited reveal, business-selector operator UI and successor
 lifecycle controls.
 
-The detailed-story ledger is intentionally not rewritten before publication.
-Reconcile source-linked story status after the product PR is merged, then close
-V034 reservation and active ownership in a separate authority/status closure.
+Canonical detailed-story reconciliation is based on story meaning, not numeric
+coincidence between execution-candidate and PLN IDs:
+
+- `PLN-E01-005` -> IMPLEMENTED;
+- `PLN-E01-006` -> IMPLEMENTED;
+- `PLN-E01-007` -> IMPLEMENTED;
+- `PLN-E01-012` -> PARTIALLY IMPLEMENTED.
+
+Canonical `PLN-E01-008`, `009` and `010` remain unchanged because bank
+accounts, authorised signatories and immutable configuration snapshots were
+explicit P5-JRF-01 exclusions.
+
+V034 is committed and immutable. Active P5-JRF-01 path ownership and the
+temporary three-path dependency-security exception authority are released by
+the post-merge status closure. V035 remains unreserved pending separate
+capability activation.

@@ -1,20 +1,26 @@
 # Payroll vertical-slice Flyway package
 
-`sql/` is the canonical source for the ordered V001-V033 migrations. The Maven
+`sql/` is the canonical source for the ordered V001-V034 migrations. The Maven
 `backend/database-migrations` module packages these files at `db/migration` and
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
 
-V001-V033 are committed and byte-for-byte immutable. V032 is
+V001-V034 are committed and byte-for-byte immutable. V032 is
 `V032__compensation_catalogue_named_bases.sql`, merged through PR #30.
 
 V033 is `V033__salary_structure_ctc_eligibility_simulation.sql`, merged through
-PR #32. V034 is unreserved and requires separate capability activation and
-migration reservation. V033 implements
-the P5-A3 configuration-design foundation: schema-1 salary structures,
-versioned CTC policies, typed eligibility rules and deterministic design-time
-simulation/validation evidence. It preserves V020/V021 UUID lineage and does
-not change the V025/V026 official starter calculator.
+PR #32. V034 is `V034__jurisdiction_registration_foundations.sql`, merged
+through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`. V034 is committed and immutable. V035 is
+unreserved and must not be allocated without separate capability activation
+after this post-merge authority closure.
+
+V033 implements the P5-A3 configuration-design foundation: schema-1 salary
+structures, versioned CTC policies, typed eligibility rules and deterministic
+design-time simulation/validation evidence. V034 implements P5-JRF-01:
+work-location identity/version, payroll-jurisdiction hierarchy and resolution
+evidence, generic statutory-registration type/instance/version lifecycle,
+bounded readiness and associated tenant/RLS integrity. Neither migration changes
+the V025/V026 official starter calculator.
 
 Apply `bootstrap/001_admin_bootstrap.sql` once as a database administrator, then
 run Flyway as `payroll_migrator`. Application traffic uses `payroll_app`, which
@@ -63,6 +69,7 @@ Migration order:
 31. organisation identity lifecycle, maker-checker approval, responsibility/establishment classifications, safe version allocation and controlled retirement
 32. P5-A2 compensation catalogue, named payroll bases, exact component/base memberships, maker-checker and controlled retirement
 33. P5-A3 salary-structure design, versioned CTC policy, typed eligibility rules, deterministic design-time simulation and immutable validation evidence
+34. P5-JRF-01 work-location identity/version, payroll-jurisdiction hierarchy/resolution evidence, generic statutory-registration lifecycle and bounded readiness
 
 This remains a greenfield product with no evidenced production deployment.
 Forward-only migrations and populated-upgrade tests protect reproducible local,
