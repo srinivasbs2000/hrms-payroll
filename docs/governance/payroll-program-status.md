@@ -2,16 +2,16 @@
 
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Verified repository baseline:** `main` at `ff581cafce3be5495d93932abfae3931b139358f`; current P5-JRF-01 work is local/uncommitted
-**Latest merged product increment:** Current P5-A3 through PR #32
+**Verified repository baseline:** `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Latest merged product increment:** P5-JRF-01 through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
-**Latest merged status closure:** PR #34 / `b922d6d388214ab83cf365a35516468f8045ca4f`
-**Active product write owner:** `P5-JRF-01`
-**Migration state:** V001–V033 committed and immutable; V034 locally implemented and reserved
-**Next migration:** V034 publication pending; do not allocate V035 until authority closure
+**Latest merged status closure:** PR #34; this P5-JRF-01 post-merge closure supersedes its active-authority state when merged
+**Active product write owner:** None
+**Migration state:** V001–V034 committed and immutable
+**Next migration:** V035 unreserved; allocate only through a separately activated capability
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 8 August 2026 local implementation checkpoint; story-ledger delta remains post-merge
-**Current execution capability:** `P5-JRF-01` — LOCAL VERIFIED / PUBLICATION PENDING
+**Last reconciled:** 8 August 2026 after P5-JRF-01 PR #36
+**Current execution capability:** None — P5-JRF-01 merged and closed by this authority/status closure
 
 ## 1. Mandatory starting point
 
@@ -34,29 +34,40 @@ project-status authority.
 
 ## 2. Latest completed milestone
 
-Current P5-A3 delivered:
+P5-JRF-01 delivered Original P5-A2 jurisdiction and registration foundations:
 
-- schema-1 salary-structure lifecycle and controlled approval;
-- versioned CTC policies and four distinguishable cost views;
-- typed, effective-dated eligibility-rule configuration;
-- deterministic design-time simulation, comparison and validation;
-- immutable validation evidence and exact passing fingerprints;
-- aligned backend, OpenAPI, Keycloak and React workbench behavior.
+- stable work-location identity and immutable effective-dated versions;
+- extensible payroll-jurisdiction hierarchy and exact parent-version lineage;
+- deterministic approved override -> work location -> establishment fallback
+  resolution with conflict/unresolved outcomes;
+- immutable jurisdiction-resolution evidence;
+- generic registration-type metadata and valid owner kinds;
+- registration identity/version lifecycle, uniqueness and exact parent lineage;
+- maker/verifier/final-approver segregation, rejection, suspension, expiry and
+  renewal-successor history;
+- `JAVA_REGEX_V1` application/domain identifier validation semantics;
+- routine masked identifiers with permission-controlled audited reveal;
+- bounded jurisdiction/registration readiness;
+- aligned PostgreSQL/RLS, backend, OpenAPI, Keycloak and React operator flows.
 
 Evidence:
 
-- PR #32 merged as `b4f3013e1d7404d09eac64a305ad3736e5a28a5c`;
-- PR #33 merged as `23df1f7a11f4090cef8715eba7104f5b1138b760`;
-- PR #34 merged as `b922d6d388214ab83cf365a35516468f8045ca4f`;
-- V033 is committed;
-- 220 backend tests passed before publication;
-- PostgreSQL 17.10 Testcontainers and Flyway V001–V033 passed;
-- frontend lint, tests and production build passed;
-- PR #33 removed React asynchronous-test warnings without production changes.
+- activation base: `ff581cafce3be5495d93932abfae3931b139358f`;
+- publication commit: `c8ab727787a23b0b211caf27c2158300a38a8eab`;
+- PR #36 merge/main: `6ee101bd398b745a0078bd0517b4e3797c571c2b`;
+- V034 committed;
+- local G03-C full regression GREEN;
+- hosted PR #36 CI: 9/9 checks GREEN, including Maven, frontend, OpenAPI,
+  Flyway/RLS, auth smoke, dependency review, SBOM, browser E2E and secret scan.
 
-P5-A3 did not implement official payroll calculation changes, legal/statutory
-rates, employee compensation assignments, live eligibility persistence,
-flexible-benefit elections, multi-currency, deployment or production migration.
+The final secret-scan correction changed only two synthetic test
+`Idempotency-Key` literals, preserved the exact 82-path publication delta and
+passed Gitleaks 8.24.3 over the complete PR history.
+
+P5-JRF-01 did not implement bank accounts, authorised signatories, complete
+configuration snapshots, complete foundation readiness, country-specific legal
+rates/rules, filing/remittance, payroll calculation changes or production
+deployment.
 
 ## 3. Reconciled detailed-story status
 
@@ -64,12 +75,24 @@ The approved program contains 450 detailed source-linked stories:
 
 | Status | Stories | Percentage |
 |---|---:|---:|
-| Implemented | 11 | 2.44% |
-| Partially implemented | 155 | 34.44% |
-| Not evidenced | 94 | 20.89% |
+| Implemented | 14 | 3.11% |
+| Partially implemented | 156 | 34.67% |
+| Not evidenced | 90 | 20.00% |
 | Not started | 159 | 35.33% |
 | Legal/domain revalidation | 31 | 6.89% |
 | **Total** | **450** | **100%** |
+
+P5-JRF-01 changed the canonical ledger as follows:
+
+- `PLN-E01-005`: NOT EVIDENCED -> IMPLEMENTED;
+- `PLN-E01-006`: NOT EVIDENCED -> IMPLEMENTED;
+- `PLN-E01-007`: NOT EVIDENCED -> IMPLEMENTED;
+- `PLN-E01-012`: NOT EVIDENCED -> PARTIALLY IMPLEMENTED.
+
+The six execution-candidate IDs `P5-E01-005` through `P5-E01-010` are not
+the same numbering scheme as the canonical `PLN-E01-*` rows. In particular,
+canonical `PLN-E01-008`, `009` and `010` are bank accounts, signatories
+and snapshots and remain unchanged because those were explicit exclusions.
 
 The original 72 broad control rows remain:
 
@@ -86,25 +109,24 @@ The machine-readable authority is:
 
 ## 4. Execution-label to original-package mapping
 
-Execution labels and original PLN-01 package identifiers are separate fields:
-
 | Completed execution increment | Primary original package mapping |
 |---|---|
 | Current P5-A1 — organisation hierarchy closure | Original P5-A1 |
 | Current P5-A2 — component catalogue and named bases | Primarily original P5-B1, plus selected P5-B3 lifecycle/workbench controls |
 | Current P5-A3 — salary structure, CTC, eligibility and simulation | Primarily original P5-B4, P5-B5 and selected P5-B6 controls |
+| P5-JRF-01 — jurisdiction and registration foundations | Original P5-A2 |
 
-The original packages named P5-A2 and P5-A3 are not complete merely because
-execution increments reused those labels.
+Execution labels and original PLN-01 package identifiers remain separate fields.
+Reuse of a label does not imply completion of the original package with the same
+textual identifier.
 
 ## 5. Current original-package position
 
 - Original P5-A1: complete.
-- Original P5-A2 — jurisdiction and registration foundations:
-  implementation verified locally through P5-JRF-01; publication and
-  post-merge story reconciliation remain.
+- Original P5-A2 — jurisdiction and registration foundations: complete through
+  P5-JRF-01 / PR #36.
 - Original P5-A3 — foundation bank, authority, snapshots and readiness:
-  partially evidenced; bank/signatory/readiness scope remains.
+  partially evidenced; bank/signatory/snapshot and complete readiness scope remains.
 - Original P5-A4 — pay groups, period generation and milestone rules:
   partially implemented and dependency-ready.
 - Original P5-A5: partially implemented and dependent on P5-A4.
@@ -114,40 +136,39 @@ execution increments reused those labels.
   material remaining scope is recorded in the story ledger.
 - P5-C1 through P5-C5: incomplete.
 
-## 6. Current execution identity for Original P5-A2
+## 6. Closed execution identity
 
-**Original P5-A2 — Jurisdiction and Registration Foundations**
+**P5-JRF-01 — Jurisdiction and Registration Foundations**
 
-- **Execution capability:** `P5-JRF-01`
-- **Title:** Jurisdiction and Registration Foundations
+- **Original program mapping:** Original P5-A2
 - **Scope authority:** `docs/planning/pln-01/p5-jrf-01-jurisdiction-registration-foundations-scope.md`
-- **State:** `LOCAL IMPLEMENTATION VERIFIED / PUBLICATION PENDING`
-- **Product write owner:** `P5-JRF-01`
-- **Branch:** `feature/p5-jrf-01-jurisdiction-registration-foundations`
+- **State:** MERGED / CLOSED
+- **Product write owner:** None
+- **Historical branch:** `feature/p5-jrf-01-jurisdiction-registration-foundations` retained
 - **Activation base:** `ff581cafce3be5495d93932abfae3931b139358f`
-- **Migration:** V034 locally implemented, uncommitted and reserved
-
-The separate owner activation, architecture review and implementation gates
-have been completed locally. This does not mean the capability is merged.
+- **Publication commit:** `c8ab727787a23b0b211caf27c2158300a38a8eab`
+- **PR/merge:** PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+- **Migration:** V034 committed and immutable
+- **Temporary dependency-security exception authority:** released by this closure
 
 ## 7. Immediate next action
 
-1. complete G03-C pre-publication full verification and documentation closure;
-2. only after G03-C is GREEN, prepare the owner-executed commit/push/draft-PR;
-3. require normal repository CI, including gitleaks/dependency review and
-   OpenAPI/Maven/frontend gates;
-4. after merge, reconcile `backlog/payroll-detailed-story-status.csv`;
-5. publish the small post-merge program-status/authority closure;
-6. release P5-JRF-01 path ownership and V034 reservation before selecting the
-   next capability.
+After this status-closure PR is merged:
 
-Until merge, report P5-JRF-01 as LOCAL VERIFIED / PUBLICATION PENDING.
+1. verify this file and the detailed-story ledger are on `main`;
+2. retain P5-JRF-01 as historical evidence with no active write ownership;
+3. keep V034 immutable;
+4. keep V035 unreserved;
+5. select the next capability through a separate design/activation decision;
+6. reserve V035 only if that separately approved capability actually requires it.
+
+No product capability is implicitly activated by this closure.
 
 ## 8. Remaining full-product scope
 
 The payroll product continues through:
 
-- complete P5 foundation/configuration/readiness gaps;
+- remaining P5 foundation/configuration/readiness gaps;
 - P6 calculation engine and payroll operations;
 - P7 India statutory rule packs after legal/domain revalidation;
 - P8 balances, retro, off-cycle and final settlement;
