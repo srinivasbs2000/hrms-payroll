@@ -61,7 +61,7 @@ The UI does not present this preview as a final or legally published payslip.
 
 ## Verification
 
-From `frontend/payroll-web`:
+From the standalone UI repository `C:\dev\hrms-payroll-web`:
 
 ```powershell
 npm ci

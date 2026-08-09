@@ -24,25 +24,7 @@ target/
 *.log
 .mvn/timing.properties
 
-# Node and frontend build output
-node_modules/
-.pnpm-store/
-dist/
-coverage/
-bom-*.json
-bom-*.xml
-*.tsbuildinfo
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
 # Local runtime state
 .docker/
 tmp/
 temp/
-
-# Playwright local state and failure evidence
-frontend/payroll-web/e2e/.auth/
-frontend/payroll-web/playwright-report/
-frontend/payroll-web/test-results/

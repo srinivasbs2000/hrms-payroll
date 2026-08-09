@@ -3,6 +3,7 @@
 param(
     [string]$RepositoryPath = 'C:\dev\hrms-payroll',
     [string]$EnvironmentFile = 'deploy/local/.env',
+    [string]$FrontendResultsPath = '',
     [string]$OutputDirectory = 'target/e2e-ci-artifacts'
 )
 
@@ -26,8 +27,17 @@ else {
     Join-Path $RepositoryPath $OutputDirectory
 }
 
-$frontendPath = Join-Path $RepositoryPath 'frontend/payroll-web'
-$resultsSource = Join-Path $frontendPath 'test-results'
+$resultsSource = if ([string]::IsNullOrWhiteSpace($FrontendResultsPath)) {
+    # Backward-compatible CI mirror used by the 01C workflow until its
+    # standalone failure-evidence call is separately simplified.
+    Join-Path $RepositoryPath 'frontend/payroll-web/test-results'
+}
+elseif ([IO.Path]::IsPathRooted($FrontendResultsPath)) {
+    $FrontendResultsPath
+}
+else {
+    Join-Path $RepositoryPath $FrontendResultsPath
+}
 $resultsOutput = Join-Path $outputPath 'test-results'
 $traceOutput = Join-Path $outputPath 'sanitized-traces'
 $serviceOutput = Join-Path $outputPath 'service-logs'

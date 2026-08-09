@@ -2,10 +2,11 @@
 
 Runnable payroll vertical slice covering tenant-safe organisation, payroll
 configuration, employee payroll identity, controlled regular payroll execution
-and jurisdiction-neutral statutory evidence. The repository contains a Java
-21/Spring Boot modular monolith, React 18/Vite web application, OpenAPI 3.1
-contracts, PostgreSQL 17/Flyway schema, Keycloak development realm, Docker
-Compose stack and a Sprint 0-4 delivery backlog.
+and jurisdiction-neutral statutory evidence. This backend/program repository contains the Java 21/Spring Boot modular
+monolith, OpenAPI 3.1 contracts, PostgreSQL 17/Flyway schema, Keycloak
+development realm, Docker Compose stack, governance authorities and delivery
+backlog. The React 18/Vite Payroll UI is independently owned by
+`srinivasbs2000/hrms-payroll-web`.
 
 The implemented regular-payroll path supports approved fixed monthly BASIC,
 HRA and SPECIAL_ALLOWANCE components, immutable sealed inputs, deterministic
@@ -26,30 +27,32 @@ explicitly excluded.
 
 ## Current controlled restart state
 
-- Current verified repository base: PR #20 merge
-  `4b5da975eb851434957667bdecf138ea9b43f929`.
-- Latest product implementation baseline: Sprint 4 merge
-  `def3dd2e212f85c440eee5497e292be2f1f2bf64`.
-- V001-V030 are committed and immutable.
-- V031 remains unreserved.
-- S4-06A Statutory API Integration Closure is the next selected implementation
-  increment after the documentation restart is merged and separately authorised.
-- S4-06B statutory-specific Playwright E2E is planned but not authorised.
-- The Sprint 4 manual-smoke file is an unsigned historical checklist and is not
-  proof that a live manual smoke was completed.
+- Latest merged product increment: P5-JRF-01 through PR #36 /
+  `6ee101bd398b745a0078bd0517b4e3797c571c2b`.
+- P5-JRF-01 post-merge product authority is closed.
+- HK-UI-SPLIT-01 is closed by the repository split/cleanup authority.
+- Backend/program repository: `srinivasbs2000/hrms-payroll`.
+- Payroll UI repository: `srinivasbs2000/hrms-payroll-web`.
+- V001-V034 are committed and immutable.
+- V035 remains unreserved.
+- No product capability is active after housekeeping closure.
+- Resolve current repository HEADs from local Git and live read-only GitHub;
+  do not infer them from historical product merge SHAs.
 
 ## Repository layout
 
 - `backend/` - Maven modules and Spring Boot composition root
-- `frontend/payroll-web/` - React 18, TypeScript and Vite application
 - `contracts/openapi/` - aggregate and bounded-context OpenAPI 3.1 contracts
 - `database/flyway/` - canonical bootstrap, migrations, development seed and verification SQL
 - `deploy/local/` - PostgreSQL and Keycloak Docker Compose stack
 - `docs/adr/` - accepted architecture decisions
 - `docs/baseline/` - implementation packs and historical integration reports
 - `docs/quality/` - schema audits, negative-path evidence and Sprint closure reports
-- `docs/runbooks/` - API, UI, operational and project-continuation guidance
-- `backlog/` - Sprint 0-4 delivery backlog
+- `docs/runbooks/` - API, operational and project-continuation guidance
+- `backlog/` - Payroll delivery backlog
+- external `C:\dev\hrms-payroll-web` / `srinivasbs2000/hrms-payroll-web` -
+  React 18, TypeScript and Vite UI with frontend CI, SBOM, dependency automation
+  and cross-repository browser E2E
 
 ## Regular payroll execution flow
 
@@ -147,10 +150,11 @@ Run the checked-in Sprint 4 regression script:
 ```powershell
 pwsh.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
   -File "C:\dev\hrms-payroll\scripts\verify-sprint-4.ps1" `
-  -RepositoryPath "C:\dev\hrms-payroll"
+  -RepositoryPath "C:\dev\hrms-payroll" `
+  -FrontendRepositoryPath "C:\dev\hrms-payroll-web"
 ```
 
-The script runs frontend dependency installation, scoped npm-audit policy
+The script runs the standalone UI dependency installation, scoped npm-audit policy
 self-tests and live validation, lint, all frontend tests, production build,
 full Maven verification, aggregate OpenAPI validation with external
 statutory-fragment references resolved, `git diff --check` and final Git
@@ -206,7 +210,7 @@ persisted. The technical endpoint is disabled by default and forced off in the
 In another terminal:
 
 ```powershell
-Set-Location frontend/payroll-web
+Set-Location C:\dev\hrms-payroll-web
 npm run dev
 ```
 

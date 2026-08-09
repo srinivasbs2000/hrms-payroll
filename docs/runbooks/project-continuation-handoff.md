@@ -1,15 +1,17 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 9 August 2026 governance authority reconciliation
+**Updated:** 9 August 2026 HK-UI-SPLIT-01 repository separation closure
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
+**UI repository:** `srinivasbs2000/hrms-payroll-web`
+**Local UI repository:** `C:\\dev\\hrms-payroll-web`
 **Product reconciliation baseline:** P5-JRF-01 product merge on `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-JRF-01 through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **P5-JRF-01 product-status closure:** PR #39
 **Latest merged quality increment:** PR #33
 **Active capability:** None
-**Current state:** P5-JRF-01 MERGED / POST-MERGE AUTHORITY CLOSED
+**Current state:** P5-JRF-01 CLOSED; HK-UI-SPLIT-01 CLOSED; no active product capability
 **Migrations:** V001–V034 committed and immutable
 **Next migration:** V035 unreserved; do not reserve without separate capability activation
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -22,6 +24,9 @@ live read-only GitHub evidence before starting write-capable work.
 | Item | Current fact |
 |---|---|
 | Current remote `main` | Resolve live with local Git / read-only GitHub; do not infer it from the product merge SHA |
+| Payroll UI repository | `srinivasbs2000/hrms-payroll-web`; resolve current `main` live |
+| Repository topology | Backend/program authority in `hrms-payroll`; React/UI authority in `hrms-payroll-web` |
+| HK-UI-SPLIT-01 | CLOSED; history preserved, independent UI CI active, embedded source copy removed |
 | P5-JRF-01 publication commit | `c8ab727787a23b0b211caf27c2158300a38a8eab` |
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
@@ -92,9 +97,12 @@ be reused implicitly.
 
 ## Exact next controlled action
 
-After this status-closure PR is merged, select the next product capability from
-the reconciled program status and story ledger. That selection is a separate
-architecture/scope decision.
+Validate both repository `main` branches and hosted CI live, then perform a
+fresh product-capability reconciliation/selection against
+`docs/governance/payroll-program-status.md` and the canonical detailed-story
+ledger.
 
-Do not reserve V035, assign path ownership, create product code or delete the
-P5-JRF-01 branch until the next capability is explicitly activated.
+No product capability is active. Do not reserve V035, assign product path
+ownership or begin product code until the selected capability is explicitly
+activated. The two-repository split is infrastructure/housekeeping history and
+does not itself authorize product functionality.

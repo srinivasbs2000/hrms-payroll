@@ -9,7 +9,7 @@
 **Latest merged product increment:** P5-JRF-01 through PR #36 merge `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **P5-JRF-01 product-status closure:** PR #39
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
-**Last reconciled:** 9 August 2026 after P5-JRF-01 post-merge governance reconciliation
+**Last reconciled:** 9 August 2026 after HK-UI-SPLIT-01 repository separation closure
 **Maintainers:** Project owner and the currently authorised capability workstream
 **Full product scope authority:** `docs/product/payroll-product-scope-and-epic-catalog.md`
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
@@ -126,7 +126,7 @@ product epics.
 - Java 21 and Spring Boot modular monolith.
 - Maven multi-module repository under `backend/`.
 - `backend/payroll-boot` is the composition root.
-- React 18, TypeScript and Vite frontend.
+- React 18, TypeScript and Vite frontend in `srinivasbs2000/hrms-payroll-web`.
 - PostgreSQL 17 with Flyway.
 - Keycloak/OIDC development identity.
 - OpenAPI 3.1 contracts.
@@ -134,6 +134,22 @@ product epics.
 Direct cross-module repository access, internal-package imports and
 unapproved shared ownership are prohibited. Spring Modulith and ArchUnit
 remain mandatory.
+
+### 7.1 Repository ownership after HK-UI-SPLIT-01
+
+The Payroll system is intentionally split across two repositories without
+creating a third contract repository:
+
+- `srinivasbs2000/hrms-payroll` is authoritative for product/program
+  governance, backend code, PostgreSQL/Flyway, OpenAPI, Keycloak deployment,
+  deterministic backend fixtures and backend CI;
+- `srinivasbs2000/hrms-payroll-web` is authoritative for the React UI,
+  frontend dependency automation, frontend SBOM, frontend CI and browser E2E;
+- cross-repository E2E checks out the backend authority separately and supplies
+  it through `PAYROLL_BACKEND_REPOSITORY_PATH`;
+- the UI does not own or fork API/OpenAPI, database or legal/domain truth; and
+- the history-preserving extraction lineage remains recorded in the UI
+  repository's `EXTRACTION_PROVENANCE.md`.
 
 ## 8. Data and migration rules
 

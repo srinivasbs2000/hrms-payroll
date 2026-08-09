@@ -87,6 +87,8 @@ evidence.
 | MDR-060 | Newly published high-severity frontend dependency advisories found at P5-JRF-01 closure were remediated by patch-level dependency updates and removal of the temporary React Router audit exception; no vulnerable dependency is allow-listed when a compatible fix exists | Security/Supply chain | IMPLEMENTED | G03-C security closure; npm audit diagnostic 2026-08-08 | Security exception scope was limited to package.json, package-lock.json and verify-npm-audit.mjs |
 | MDR-061 | P5-JRF-01 is merged and post-merge product authority is closed; V034 is committed and immutable, JRF ownership is released, V035 remains unreserved and no next product capability is implicitly activated | Product/Governance | IMPLEMENTED | PR #36 product merge `6ee101bd398b745a0078bd0517b4e3797c571c2b`; PR #39 post-merge authority closure | Verify current repository HEAD live; separately activate any next capability and migration |
 
+| MDR-062 | Payroll UI is history-preservingly separated into `srinivasbs2000/hrms-payroll-web`; `hrms-payroll` remains the backend/program/API/OpenAPI/database/Keycloak governance authority, the web repository owns frontend CI/Dependabot/SBOM/browser E2E, and no third contract repository is introduced | Architecture/Delivery | IMPLEMENTED | HK-UI-SPLIT-01A seam PR #41; UI extraction/provenance; UI PR #1 / `ac677b4de57f9620a3ad255e5d72a406dc8f6c53`; HK-UI-SPLIT-01D source cleanup/closure | Preserve two-repository ownership and cross-repository E2E; do not re-embed the UI or reserve V035 implicitly |
+
 ## Decision identity reconciliation — 9 August 2026
 
 PR #32 assigned MDR-048 through MDR-053 to P5-A3 implemented decisions first.
