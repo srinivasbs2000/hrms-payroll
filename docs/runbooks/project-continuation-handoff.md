@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 9 August 2026 HK-UI-SPLIT-01 repository separation closure
+**Updated:** 10 August 2026 P5-FBA-01 activation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -10,10 +10,10 @@
 **Latest merged product increment:** P5-JRF-01 through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **P5-JRF-01 product-status closure:** PR #39
 **Latest merged quality increment:** PR #33
-**Active capability:** None
-**Current state:** P5-JRF-01 CLOSED; HK-UI-SPLIT-01 CLOSED; no active product capability
+**Active capability:** `P5-FBA-01 — Foundation Banking & Authority`
+**Current state:** P5-FBA-01 ACTIVATED; P5-JRF-01 and HK-UI-SPLIT-01 CLOSED
 **Migrations:** V001–V034 committed and immutable
-**Next migration:** V035 unreserved; do not reserve without separate capability activation
+**Next migration:** V035 reserved exclusively to P5-FBA-01
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -86,23 +86,23 @@ Closed package:
 
 ## Authority state
 
-There is no active product write owner.
+P5-FBA-01 is the active product write owner.
 
-P5-JRF-01 product-path ownership and its temporary dependency-security exception
-authority are released by this closure. V034 is committed and immutable. V035
-is unreserved.
-
-The branch `feature/p5-jrf-01-jurisdiction-registration-foundations` is retained as historical evidence and must not
-be reused implicitly.
+- scope authority:
+  `docs/planning/pln-01/p5-fba-01-foundation-banking-authority-scope.md`;
+- activation base:
+  `0cae307b0f5e7bcd05b47836e6e4df24c8701add`;
+- implementation branch:
+  `feature/p5-fba-01-foundation-banking-authority`;
+- V035 reserved exclusively to this capability;
+- primary story scope: PLN-E01-008 and PLN-E01-009;
+- PLN-E01-011/012 ownership is bounded to bank/signatory controls/readiness;
+- snapshots, employee bank accounts and payment execution remain excluded.
 
 ## Exact next controlled action
 
-Validate both repository `main` branches and hosted CI live, then perform a
-fresh product-capability reconciliation/selection against
-`docs/governance/payroll-program-status.md` and the canonical detailed-story
-ledger.
+Proceed directly with P5-FBA-01 G01 at R2: V035 database/RLS/crypto foundation
+and migration tests. Do not begin G02 until G01 is green.
 
-No product capability is active. Do not reserve V035, assign product path
-ownership or begin product code until the selected capability is explicitly
-activated. The two-repository split is infrastructure/housekeeping history and
-does not itself authorize product functionality.
+No additional owner confirmation is required for bounded steps inside the frozen
+scope. Stop only for a material authority/design conflict or evidence mismatch.

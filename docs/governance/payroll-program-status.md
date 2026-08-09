@@ -8,12 +8,12 @@
 **Latest merged product increment:** P5-JRF-01 through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
-**Active product write owner:** None
+**Active product write owner:** `P5-FBA-01 — Foundation Banking & Authority`
 **Migration state:** V001–V034 committed and immutable
-**Next migration:** V035 unreserved; allocate only through a separately activated capability
+**Next migration:** V035 reserved exclusively to `P5-FBA-01`; V001-V034 remain immutable
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 9 August 2026 after HK-UI-SPLIT-01 repository separation closure
-**Current execution capability:** None — P5-JRF-01 merged and closed by this authority/status closure
+**Last reconciled:** 10 August 2026 after P5-FBA-01 capability activation
+**Current execution capability:** `P5-FBA-01` — ACTIVATED; implementation not yet started
 
 ## 1. Mandatory starting point
 
@@ -172,20 +172,34 @@ textual identifier.
 - **Migration:** V034 committed and immutable
 - **Temporary dependency-security exception authority:** released by this closure
 
+## 6A. Active execution identity
+
+**P5-FBA-01 — Foundation Banking & Authority**
+
+- **Original program mapping:** Original P5-A3
+- **Primary canonical stories:** PLN-E01-008 and PLN-E01-009
+- **Cross-cutting partial scope:** bank/signatory portions of PLN-E01-011 and PLN-E01-012
+- **Scope authority:** `docs/planning/pln-01/p5-fba-01-foundation-banking-authority-scope.md`
+- **Activation base:** `0cae307b0f5e7bcd05b47836e6e4df24c8701add`
+- **Implementation branch:** `feature/p5-fba-01-foundation-banking-authority`
+- **Migration:** V035 reserved exclusively to P5-FBA-01
+- **Backend owner:** organisation foundation plus bounded database/OpenAPI/Keycloak/payroll-boot integration
+- **UI owner:** standalone `srinivasbs2000/hrms-payroll-web`
+- **Explicit exclusion:** PLN-E01-010 snapshots and complete foundation-readiness closure
+
 ## 7. Immediate next action
 
-After HK-UI-SPLIT-01 closure:
+Execute P5-FBA-01 in the frozen G01-G06 sequence defined by its scope authority.
 
-1. verify both repository `main` branches and their hosted CI live;
-2. keep P5-JRF-01 historical/closed with no active write ownership;
-3. keep V001-V034 immutable and V035 unreserved;
-4. perform a fresh product-capability reconciliation/selection against the
-   canonical story ledger and original-package mapping;
-5. explicitly activate the selected capability, path ownership and migration
-   reservation before any product write.
+1. G01 — V035 database/RLS/crypto foundation.
+2. G02 — employer bank-account backend with masked read and audited reveal.
+3. G03 — signatory/delegated authority and bounded banking readiness.
+4. G04 — OpenAPI, Keycloak and backend integration.
+5. G05 — standalone React UI and cross-repository E2E.
+6. G06 — R3 critical review, product publication, story reconciliation and status closure.
 
-No historical P5-A3 label, repository split activity or housekeeping closure
-implicitly activates the next product capability.
+Do not implement PLN-E01-010 snapshots, payment execution or complete readiness
+inside P5-FBA-01. V035 remains exclusively reserved until capability closure.
 
 ## 8. Remaining full-product scope
 
