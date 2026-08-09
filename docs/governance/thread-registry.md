@@ -1,8 +1,10 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 8 August 2026
-**Repository baseline:** `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Last verified:** 9 August 2026 governance authority reconciliation
+**Product reconciliation baseline:** P5-JRF-01 product merge on `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-JRF-01 through PR #36
+**P5-JRF-01 product-status closure:** PR #39
 **Latest merged quality increment:** PR #33
 **Active product write owner:** None
 **Migration authority:** V001–V034 immutable; V035 unreserved

@@ -266,10 +266,11 @@ payroll payloads in browser storage.
 ## Database migrations
 
 `database/flyway/sql` is the single source of ordered versioned migrations.
-V001-V033 are committed and immutable. V033 is
+V001-V034 are committed and immutable. V033 is
 `V033__salary_structure_ctc_eligibility_simulation.sql`, merged through PR #32.
-V034 is unreserved. Later schema work is forward-only from V034 after explicit
-reservation by one active implementation owner. Versioned migrations
+V034 is `V034__jurisdiction_registration_foundations.sql`, merged through
+PR #36. V035 is unreserved. Later schema work is forward-only from V035 after
+explicit reservation by one active implementation owner. Versioned migrations
 must fail loudly; do not add permissive `IF NOT EXISTS` clauses to them. The
 `backend/database-migrations` Maven module packages the canonical directory as
 `db/migration`. Administrator bootstrap, development seed and verification SQL
@@ -308,9 +309,9 @@ permitted.
 For the full Sprint 4 baseline, run `scripts/verify-sprint-4.ps1`.
 
 `docs/runbooks/sprint-4-manual-smoke.md` is an unsigned historical checklist.
-Do not claim it proves a completed live smoke. S4-06A must close the real
-statutory API integration-test gap before the next feature increment. S4-06B is
-a planned statutory-specific Playwright follow-up and is not authorised.
+Do not claim it proves a completed live smoke. S4-06A secured
+HTTP/PostgreSQL integration quality closure is merged through PR #28 and its
+authority closure through PR #29. S4-06B remains planned and not authorised.
 
 Before handoff, run `git status --short`, list verification performed, compare
 the original scope checklist with the actual changed files, and disclose
@@ -380,11 +381,15 @@ For every repository-aware Payroll thread:
 4. read `docs/governance/hrms-payroll-model-routing-policy.md` and state
    `RECOMMENDED_REASONING_LEVEL: R1 | R2 | R3` with a short reason.
 
-For the currently planned Original P5-A2 work, the unambiguous execution
-identity is `P5-JRF-01` and its scope authority is:
+`P5-JRF-01` is historical/closed. Its durable scope authority remains:
 
 `docs/planning/pln-01/p5-jrf-01-jurisdiction-registration-foundations-scope.md`
 
-`P5-JRF-01` remains PLANNED / NOT ACTIVATED. This authority does not reserve
-V034 or grant product write ownership.
+P5-JRF-01 merged through PR #36 and its post-merge product-status authority
+closed through PR #39. V034 is committed and immutable; V035 is unreserved.
+There is no active P5-JRF-01 product owner or path ownership.
+
+No next product capability is implied by this historical section. Resolve the
+current capability from `docs/governance/payroll-program-status.md` after live
+local/GitHub verification.
 <!-- P5-JRF-CROSS-THREAD-AUTHORITY:END -->
