@@ -2,12 +2,14 @@
 
 **Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Repository baseline:** `main` at `ff581cafce3be5495d93932abfae3931b139358f`; P5-JRF-01 local branch is uncommitted
-**Current local capability:** `P5-JRF-01` — LOCAL IMPLEMENTATION VERIFIED / PUBLICATION PENDING
+**Product reconciliation baseline:** P5-JRF-01 product merge on `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
+**Current product capability:** None — P5-JRF-01 merged and post-merge authority closed
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
-**Latest merged product increment:** P5-A3 through PR #32 merge `b4f3013e1d7404d09eac64a305ad3736e5a28a5c`
+**Latest merged product increment:** P5-JRF-01 through PR #36 merge `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**P5-JRF-01 product-status closure:** PR #39
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
-**Last verified:** 8 August 2026
+**Last reconciled:** 9 August 2026 after P5-JRF-01 post-merge governance reconciliation
 **Maintainers:** Project owner and the currently authorised capability workstream
 **Full product scope authority:** `docs/product/payroll-product-scope-and-epic-catalog.md`
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
@@ -136,10 +138,9 @@ remain mandatory.
 ## 8. Data and migration rules
 
 - `database/flyway/sql` is the ordered migration authority.
-- V001-V033 are committed and immutable.
-- V034 is implemented locally for P5-JRF-01, uncommitted and exclusively
-  reserved to the active capability until publication/closure.
-- future migrations are forward-only and separately authorised;
+- V001-V034 are committed and immutable.
+- V035 is unreserved and requires separate capability activation before allocation.
+- future migrations are forward-only and separately authorised from V035;
 - tenant-owned FKs include tenant ownership;
 - stable identity plus immutable effective-dated versions preserve lineage;
 - consumed evidence is never rewritten;
@@ -199,24 +200,23 @@ risk are committed.
 | P5-A1 | Organisation hierarchy lifecycle closure | V031 | PR #25 merged |
 | P5-A2 | General pay-component catalogue and named payroll bases | V032 | PR #30 merged; authority released |
 | P5-A3 | Salary-structure design, CTC policy, typed eligibility and deterministic design-time simulation | V033 | PR #32 merged; PR #33 test-hygiene follow-up merged |
-| P5-JRF-01 | Work-location, jurisdiction-resolution and statutory-registration foundations | V034 | Local implementation verified through AC-G03-B2 v1.2; publication pending |
-| Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26, PR #29 and PR #31 merged |
+| P5-JRF-01 | Work-location, jurisdiction-resolution and statutory-registration foundations | V034 | PR #36 merged; PR #39 post-merge authority closure; ownership released |
+| Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26, PR #29, PR #31 and PR #39 merged |
 | Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | PR #28 merged; Thread 7 closed and ownership released |
 
 ## 13. Current controlled debt and planning
 
 - Current P5-A3 is merged through PR #32; PR #33 merged the React test-hygiene follow-up.
-- V001-V033 are committed and immutable; V034 is locally implemented,
-  uncommitted and reserved to P5-JRF-01.
-- P5-JRF-01 owns only its reviewed 88-path maximum boundary until publication
-  and explicit authority closure.
-- The 450 detailed stories reconcile to 11 implemented, 155 partially
-  implemented, 94 not evidenced, 159 not started and 31 requiring
+- P5-JRF-01 is merged through PR #36 and authority-closed through PR #39; no
+  active product owner or product-path ownership remains.
+- V001-V034 are committed and immutable; V035 is unreserved.
+- The 450 detailed stories reconcile to 14 implemented, 156 partially
+  implemented, 90 not evidenced, 159 not started and 31 requiring
   legal/domain revalidation.
 - Current execution labels P5-A2 and P5-A3 must not be confused with the
   original PLN-01 packages with the same identifiers.
-- Original P5-A2 jurisdiction/registration is the recommended next package but
-  is not activated.
+- Original P5-A2 jurisdiction/registration is complete through P5-JRF-01.
+- No next product capability is implicitly activated by the P5-JRF-01 closure.
 - S4-06B remains planned and not authorised.
 - E09 still requires current legal/domain revalidation.
 ## 14. Documentation model
@@ -248,6 +248,8 @@ risk are committed.
 | 4 Aug 2026 | Activated P5-A2 capability preparation and reserved V032 | P5-A2 scope definition and critical review; exact 46-path maximum boundary |
 | 5 Aug 2026 | Merged P5-A2 product implementation and final authority closure | PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; PR #31 merge `887347fb23b35ca72c479f377c0f6e3a1bf89722` |
 | 5 Aug 2026 | Activated P5-A3 preparation and exclusively reserved V033 | P5-A3 planning package `d704409e9fb4792f15ce05d5ade5cb4f04c80be04e0dc1d31d357402f12e5f77`; independent critical review; exact 69-path maximum boundary |
+| 5 Aug 2026 | Merged P5-A3 implementation and quality follow-up | PR #32; PR #33; V033 immutable |
+| 8 Aug 2026 | Merged P5-JRF-01 and completed post-merge authority closure | PR #36 product merge `6ee101bd398b745a0078bd0517b4e3797c571c2b`; PR #39 closure; V034 immutable; V035 unreserved |
 
 ## 16. P5-A2 delivered architecture and authority closure
 
@@ -262,17 +264,18 @@ PR #30 merged implementation commit `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` a
 feature branch is retained as historical evidence. No active P5-A2 write owner
 remains. V032 is committed and immutable. V033 was unreserved at P5-A2 closure; its current reservation is governed by the active P5-A3 authority.
 
-## 17. P5-A3 activated preparation architecture
+## 17. Historical P5-A3 activation architecture
 
 P5-A3 is bounded to salary-structure design, versioned CTC policies, typed
 effective-dated eligibility-rule configuration and deterministic design-time
 simulation, comparison and validation. It remains separate from official
 payroll execution and the future general calculation engine.
 
-The active preparation branch is `feature/p5-a3-salary-structure-ctc-eligibility-simulation`. V033 is exclusively reserved, but
-the SQL file and product implementation require a later separate authorisation.
-The exact 69-path maximum boundary and blocking critical-review controls are
-recorded in
+At activation, the preparation branch was
+`feature/p5-a3-salary-structure-ctc-eligibility-simulation` and V033 was
+exclusively reserved. That reservation was consumed by the merged V033
+implementation through PR #32 and is now historical. The exact 69-path maximum
+boundary and blocking critical-review controls are recorded in
 `docs/planning/pln-01/p5-a3-salary-structure-ctc-eligibility-simulation-scope.md`.
 
 P5-A3 must preserve existing structure/assignment UUID lineage, the V025/V026
@@ -298,9 +301,10 @@ controller/service/view model rather than the larger initially anticipated
 class split. This is an approved implementation consolidation, not missing
 scope.
 
-Local G07 verification covers OpenAPI, frontend, Maven, PostgreSQL 17,
-migrations through V033 and 220 backend tests. Repository publication remains
-separately controlled.
+Local G07 verification covered OpenAPI, frontend, Maven, PostgreSQL 17,
+migrations through V033 and 220 backend tests at the pre-publication checkpoint.
+P5-A3 subsequently merged through PR #32 and its React test-hygiene follow-up
+merged through PR #33.
 
 <!-- PROGRAM-RECONCILIATION-2026-08-06 -->
 ## 19. Program reconciliation after P5-A3
@@ -310,9 +314,10 @@ The canonical current checkpoint is
 `backlog/payroll-detailed-story-status.csv`.
 
 The reconciliation separates current execution labels from original PLN-01
-package identifiers. It recommends original P5-A2 jurisdiction and registration
-foundations as the next package, subject to separate planning, critical review,
-activation and migration reservation.
+package identifiers. It recommended original P5-A2 jurisdiction and registration
+foundations as the next package. That recommendation was fulfilled by
+P5-JRF-01, which merged through PR #36 and completed post-merge authority
+closure through PR #39.
 
 Every future product increment requires a repository-wide status-closure update
 before the next increment is selected.
@@ -344,10 +349,14 @@ Registration identifier format metadata is application-level
 dedicated `statutory-registration.identifier.read` permission and produces
 audit evidence without copying the identifier into audit/outbox payloads.
 
-AC-G03-B1 v1.3 and AC-G03-B2 v1.2 are locally GREEN. Country-specific legal
-rates/formulas, filing, remittance, bank/signatory scope, complete readiness,
-employee statutory profiles, payroll calculation/assignment changes, minimum
-wage, retro and production deployment remain outside this capability.
+AC-G03-B1 v1.3 and AC-G03-B2 v1.2 were locally GREEN before publication.
+Country-specific legal rates/formulas, filing, remittance, bank/signatory scope,
+complete readiness, employee statutory profiles, payroll calculation/assignment
+changes, minimum wage, retro and production deployment remain outside this
+capability.
 
-Publication, CI evidence, post-merge story-ledger reconciliation and authority
-release remain separate closure steps.
+P5-JRF-01 publication commit `c8ab727787a23b0b211caf27c2158300a38a8eab`
+merged through PR #36 as `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+with all nine hosted checks GREEN. PR #39 completed the post-merge story-ledger
+and authority closure. V034 is committed and immutable, V035 is unreserved,
+and no next product capability is implicitly activated.

@@ -2,15 +2,16 @@
 
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Verified repository baseline:** `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Product reconciliation baseline:** P5-JRF-01 product merge on `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
 **Latest merged product increment:** P5-JRF-01 through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
-**Latest merged status closure:** PR #34; this P5-JRF-01 post-merge closure supersedes its active-authority state when merged
+**P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **Active product write owner:** None
 **Migration state:** V001–V034 committed and immutable
 **Next migration:** V035 unreserved; allocate only through a separately activated capability
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 8 August 2026 after P5-JRF-01 PR #36
+**Last reconciled:** 9 August 2026 after live verification of P5-JRF-01 PR #39 closure
 **Current execution capability:** None — P5-JRF-01 merged and closed by this authority/status closure
 
 ## 1. Mandatory starting point

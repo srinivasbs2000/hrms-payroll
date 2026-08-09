@@ -32,13 +32,13 @@ evidence.
 | MDR-012 | Frontend lint, tests and build are separate gates | Process | IMPLEMENTED | CI | Verify separately |
 | MDR-013 | High-risk Payroll changes require independent critical review | Process | IMPLEMENTED | `AGENTS.md` | Attach findings |
 | MDR-014 | One write-capable thread owns overlapping files | Process | APPROVED | Registry/protocol | Track explicitly |
-| MDR-015 | V001-V032 are committed and immutable; V033 is reserved exclusively for P5-A3 but its SQL file and product implementation are not yet authorised | Database | APPROVED | P5-A3 activation from `887347fb23b35ca72c479f377c0f6e3a1bf89722` | Preserve the reservation until P5-A3 closes or is explicitly released |
+| MDR-015 | P5-A3 activation reserved V033 exclusively before its implementation was separately authorised | Database | SUPERSEDED | P5-A3 activation from `887347fb23b35ca72c479f377c0f6e3a1bf89722`; P5-A3 later merged through PR #32 | Historical activation only; current migration authority is MDR-061 |
 | MDR-016 | Generic statutory infrastructure is implemented; country-specific legal rules remain excluded | Product | CONTROLLED | Sprint 4 | Require legal design |
 | MDR-017 | Retro, off-cycle, settlement, payments, accounting and legal payslip remain outside implemented baseline | Product | APPROVED | Master design/gap assessment | Remove only through approved stories |
 | MDR-018 | Historical Thread 1 decisions are evidence, not automatic current state | Process | APPROVED | Thread 1 extract | Reconcile first |
 | MDR-019 | Feed-dependent OWASP data requires cached/scheduled handling | Security | TEMPORARY/DEBT | CI/handoff | Close with cache design |
 | MDR-020 | Each chat thread starts from repository authorities | Process | APPROVED | Thread protocol | Use start prompt |
-| MDR-021 | Repository HEAD and latest product merge are distinct baselines | Process | APPROVED | PR #31 merge `887347fb23b35ca72c479f377c0f6e3a1bf89722` is the current repository authority; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` is the latest product increment; Sprint 4 remains the prior sprint baseline | Preserve all labels explicitly |
+| MDR-021 | Repository HEAD and latest product merge are distinct baselines | Process | APPROVED | PR #39 governance closure after PR #36 product merge demonstrates the distinction; current repository HEAD is always live-verified rather than hard-coded as product state | Preserve product/reconciliation SHAs as evidence and resolve current HEAD live |
 | MDR-022 | Sprint 4 is functionally merged; S4-06A secured HTTP/PostgreSQL integration closure is merged and S4-06B remains separate and unauthorized | Quality | IMPLEMENTED | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 | Preserve S4-06A closure without absorbing S4-06B |
 | MDR-023 | Text artifacts use UTF-8 and must not contain mojibake | Process | APPROVED | Repository cleanup | Reject corruption |
 | MDR-024 | Identify historical work by capability, migration, commit and PR when labels diverge | Process | APPROVED | Reconciliation | Use durable identifiers |
@@ -71,15 +71,34 @@ evidence.
 | MDR-044 | S4-06A completed as an exact six-file test-only quality closure; no production, migration, contract, security, dependency, frontend or CI change was introduced and V032 remained unreserved at its closure | Quality/Governance | IMPLEMENTED | PR #28; merge `12f3210c91ca95f3f331911d4cdc1755f2afd701`; CI run 100 | Preserve the merged evidence and historical stop-and-split rule |
 | MDR-045 | P5-A2 completed the general pay-component catalogue and named payroll-base foundation within the reviewed 46-path boundary; V032 is committed and authority is released | Product/Governance | IMPLEMENTED | Activation `e9e297de5e59762f3701ce39ca2295e1839d7d16`; implementation `c30cb1f2f0c16cd78387bb9551b93825bc7ef688`; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; workflow run `30957450623` | Preserve closed evidence; V033, P5-A3 and S4-06B require separate authorization |
 | MDR-046 | HRMS Payroll is greenfield with no evidenced production deployment; migration/version controls protect deterministic local/CI state and future upgrades rather than a current production migration | Architecture/Delivery | APPROVED | Repository state, synthetic development seed and P5-A2 activation clarification | Keep compatibility tests proportionate but do not weaken committed lineage controls |
-| MDR-047 | P5-A3 is the active preparation workstream on `feature/p5-a3-salary-structure-ctc-eligibility-simulation`; it exclusively reserves V033 and owns only the reviewed 69-path maximum boundary | Product/Governance | APPROVED | P5-A3 planning package `d704409e9fb4792f15ce05d5ade5cb4f04c80be04e0dc1d31d357402f12e5f77`; independent critical review; owner authorisation on 5 August 2026 | Historical; P5-A3 later merged and V033 became immutable |
+| MDR-047 | P5-A3 was activated on `feature/p5-a3-salary-structure-ctc-eligibility-simulation`, reserving V033 and the reviewed 69-path maximum boundary | Product/Governance | SUPERSEDED | P5-A3 planning package `d704409e9fb4792f15ce05d5ade5cb4f04c80be04e0dc1d31d357402f12e5f77`; owner authorisation 5 August 2026; later PR #32/#33 closure | Historical activation only; V033 is immutable |
+| MDR-048 | P5-A3 is implemented as a configuration-design capability through V033; official payroll calculation and employee assignment remain unchanged | Product/Architecture | IMPLEMENTED | V033; PR #32 | Preserve design-time versus official-payroll boundary |
+| MDR-049 | Salary-structure approval is bound to the newest exact passing validation fingerprint | Architecture/Quality | IMPLEMENTED | P5-A3 validation model; V033; PR #32 | Reject stale validation evidence |
+| MDR-050 | Eligibility criteria remain allow-listed, typed and conjunctive; arbitrary executable expressions are prohibited | Architecture/Security | IMPLEMENTED | P5-A3 eligibility model; V033; PR #32 | Preserve typed non-executable criteria |
+| MDR-051 | Design-time simulation is deterministic, immutable when retained as approval evidence, and always identified as non-payroll | Architecture/Quality | IMPLEMENTED | P5-A3 simulation/validation; PR #32 | Never mutate official payroll results from design-time simulation |
+| MDR-052 | The initially planned separate simulation classes were superseded by the consolidated salary-structure controller/service/validation implementation | Architecture | IMPLEMENTED | P5-A3 final implementation; PR #32 | Treat consolidation as approved implementation shape, not missing scope |
+| MDR-053 | P5-A3 G07 closed local quality/governance only; Git publication remained a separate owner-controlled action | Process/Governance | IMPLEMENTED | P5-A3 G07; later PR #32 publication | Preserve local-closure versus publication distinction |
+| MDR-054 | PostgreSQL 17 remains the approved P5-JRF-01 persistence/security platform; hypothetical Oracle or multi-RDBMS support does not weaken PostgreSQL-native integrity/RLS design | Architecture | IMPLEMENTED | P5-JRF architecture consistency checkpoint; V034; AC-G03-B2 | Treat any future Oracle requirement as a separately approved replatforming program |
+| MDR-055 | Generic payroll-jurisdiction resolution precedence is approved explicit override -> approved work-location version -> establishment-derived fallback -> UNRESOLVED; material work-location/establishment disagreement is CONFLICT | Domain | IMPLEMENTED | V034; jurisdiction resolution service/repository/tests | Country/state rule packs may refine behavior only through separately approved jurisdiction-specific design |
+| MDR-056 | Registration identifier format metadata uses the explicit application-level `JAVA_REGEX_V1` dialect with whole-string Java matching; PostgreSQL stores but does not interpret business regex | Architecture/Security | IMPLEMENTED | AC-G03-B1 v1.3 | Validate malformed patterns before type approval/activation |
+| MDR-057 | Routine statutory-registration APIs/events expose masked/minimized registration identifiers; exact reveal requires `statutory-registration.identifier.read` and audited explicit access | Security | IMPLEMENTED | AC-G03-B1 v1.3; OpenAPI; Keycloak; integration tests | Never place exact identifiers in URLs, logs, errors, audit or outbox payloads |
+| MDR-058 | JRF successor creation preserves runtime least privilege through narrow tenant-checked controlled row-lock functions; direct runtime table UPDATE remains revoked | Security/Concurrency | IMPLEMENTED | AC-G03-B2 v1.1-v1.2; V034; integration tests | Preserve RLS, tenant checks and EXECUTE-only boundary |
+| MDR-059 | A future/unapproved successor draft must not hide the currently effective approved/active jurisdiction, work location, registration type or statutory registration | Domain/Effective dating | IMPLEMENTED | AC-G03-B2 v1.2 integration coverage | Keep current-effective reads independent from merely existing draft successors |
+| MDR-060 | Newly published high-severity frontend dependency advisories found at P5-JRF-01 closure were remediated by patch-level dependency updates and removal of the temporary React Router audit exception; no vulnerable dependency is allow-listed when a compatible fix exists | Security/Supply chain | IMPLEMENTED | G03-C security closure; npm audit diagnostic 2026-08-08 | Security exception scope was limited to package.json, package-lock.json and verify-npm-audit.mjs |
+| MDR-061 | P5-JRF-01 is merged and post-merge product authority is closed; V034 is committed and immutable, JRF ownership is released, V035 remains unreserved and no next product capability is implicitly activated | Product/Governance | IMPLEMENTED | PR #36 product merge `6ee101bd398b745a0078bd0517b4e3797c571c2b`; PR #39 post-merge authority closure | Verify current repository HEAD live; separately activate any next capability and migration |
 
-| MDR-048 | PostgreSQL 17 remains the approved P5-JRF-01 persistence/security platform; hypothetical Oracle or multi-RDBMS support does not weaken PostgreSQL-native integrity/RLS design | Architecture | IMPLEMENTED | P5-JRF architecture consistency checkpoint; V034; AC-G03-B2 | Treat any future Oracle requirement as a separately approved replatforming program |
-| MDR-049 | Generic payroll-jurisdiction resolution precedence is approved explicit override -> approved work-location version -> establishment-derived fallback -> UNRESOLVED; material work-location/establishment disagreement is CONFLICT | Domain | IMPLEMENTED | V034; jurisdiction resolution service/repository/tests | Country/state rule packs may refine behavior only through separately approved jurisdiction-specific design |
-| MDR-050 | Registration identifier format metadata uses the explicit application-level `JAVA_REGEX_V1` dialect with whole-string Java matching; PostgreSQL stores but does not interpret business regex | Architecture/Security | IMPLEMENTED | AC-G03-B1 v1.3 | Validate malformed patterns before type approval/activation |
-| MDR-051 | Routine statutory-registration APIs/events expose masked/minimized registration identifiers; exact reveal requires `statutory-registration.identifier.read` and audited explicit access | Security | IMPLEMENTED | AC-G03-B1 v1.3; OpenAPI; Keycloak; integration tests | Never place exact identifiers in URLs, logs, errors, audit or outbox payloads |
-| MDR-052 | JRF successor creation preserves runtime least privilege through narrow tenant-checked controlled row-lock functions; direct runtime table UPDATE remains revoked | Security/Concurrency | IMPLEMENTED | AC-G03-B2 v1.1-v1.2; V034; integration tests | Preserve RLS, tenant checks and EXECUTE-only boundary |
-| MDR-053 | A future/unapproved successor draft must not hide the currently effective approved/active jurisdiction, work location, registration type or statutory registration | Domain/Effective dating | IMPLEMENTED | AC-G03-B2 v1.2 integration coverage | Keep current-effective reads independent from merely existing draft successors |
-| MDR-054 | Newly published high-severity frontend dependency advisories found at closure are remediated by patch-level dependency updates and removal of the temporary React Router audit exception; no vulnerable dependency is allow-listed when a compatible fix exists | Security/Supply chain | IMPLEMENTED | G03-C security closure; npm audit diagnostic 2026-08-08 | Security exception scope is limited to package.json, package-lock.json and verify-npm-audit.mjs |
+## Decision identity reconciliation — 9 August 2026
+
+PR #32 assigned MDR-048 through MDR-053 to P5-A3 implemented decisions first.
+PR #36 later reused MDR-048 through MDR-054 for P5-JRF-01 decisions. A
+repository-wide `git grep` at clean base `022dd94864ed007e8053d3a22986c9d8007ec9ca`
+found no MDR-048 through MDR-054 references outside this decision register.
+
+This reconciliation preserves the first durable assignment and rekeys the later
+P5-JRF-01 block as follows:
+
+`048 -> 054`, `049 -> 055`, `050 -> 056`, `051 -> 057`, `052 -> 058`,
+`053 -> 059`, `054 -> 060`.
 
 ## Adding a decision
 
@@ -99,10 +118,10 @@ action. Do not record brainstorms as approved decisions.
 - The V025/V026 starter calculator remains unchanged; named bases are not yet
   consumed by the calculation engine.
 - PR #30 merged as `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; post-merge workflow run `30957450623`
-  succeeded; P5-A2 write ownership is released. V033 was unreserved at P5-A2
-  closure; its current state is governed by MDR-015 and MDR-047.
+  succeeded; P5-A2 write ownership is released. The later P5-A3 V033 activation
+  is historical under MDR-015/MDR-047; current migration state is MDR-061.
 
-## P5-A3 activated preparation decisions
+## Historical P5-A3 activated preparation decisions
 
 - P5-A3 is configuration-design scope only: richer salary structures, versioned
   CTC policies, typed eligibility rules and deterministic design-time
@@ -114,8 +133,9 @@ action. Do not record brainstorms as approved decisions.
   component/base behaviour must remain unchanged.
 - Structure approval requires the newest passing validation fingerprint to
   match the exact current configuration.
-- V033 is exclusively reserved, but `V033__salary_structure_ctc_eligibility_simulation.sql` must not be created until
-  product implementation is separately authorised.
+- At activation V033 was exclusively reserved and
+  `V033__salary_structure_ctc_eligibility_simulation.sql` was not authorised
+  until the later implementation approval; V033 is now committed and immutable.
 - The exact 69-path maximum boundary is recorded in
   `docs/planning/pln-01/p5-a3-salary-structure-ctc-eligibility-simulation-scope.md`.
 

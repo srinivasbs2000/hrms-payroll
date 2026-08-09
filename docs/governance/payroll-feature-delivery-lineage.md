@@ -1,6 +1,6 @@
 # Payroll Feature Delivery Lineage
 
-**Repository baseline:** `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Product reconciliation baseline:** `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **Product implementation baseline:** `c8ab727787a23b0b211caf27c2158300a38a8eab` (P5-JRF-01); merged to main as `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **Purpose:** Trace original epic -> original backlog row -> current story -> migration -> commit -> PR/merge -> evidence -> remaining scope.
 
