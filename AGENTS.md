@@ -214,10 +214,11 @@ A task is complete only when:
 
 ## Scope and architecture
 
-This repository is the organisation-to-statutory-evidence vertical-slice
-baseline through Sprint 4. It is a Java 21 Spring Boot modular monolith with a
-React 18 SPA, PostgreSQL, Flyway, and Keycloak/OIDC. Keep code grouped by
-payroll capability under `backend/`; the composition root is
+This repository is the organisation-to-statutory-evidence backend/program
+authority through the current Payroll baseline. It is a Java 21 Spring Boot
+modular monolith with PostgreSQL, Flyway and Keycloak/OIDC. The React 18 SPA is
+owned by the separate `srinivasbs2000/hrms-payroll-web` repository. Keep code
+grouped by payroll capability under `backend/`; the composition root is
 `backend/payroll-boot`. Only a module's public API may be consumed by another
 module. Do not add cross-module JPA relationships, repository access, or
 internal-package imports.
@@ -306,7 +307,8 @@ repository scoped npm-audit policy. Never use real credentials, employee
 records or payroll data in source or tests; only clearly synthetic fixtures are
 permitted.
 
-For the full Sprint 4 baseline, run `scripts/verify-sprint-4.ps1`.
+For the full Sprint 4 baseline, run `scripts/verify-sprint-4.ps1` with
+`-FrontendRepositoryPath C:\dev\hrms-payroll-web`.
 
 `docs/runbooks/sprint-4-manual-smoke.md` is an unsigned historical checklist.
 Do not claim it proves a completed live smoke. S4-06A secured
@@ -326,6 +328,31 @@ Once enabled, producers use the integrations module public `OutboxWriter`;
 consumers commit their inbox record and effect atomically. Retry,
 poison-message and replay policy is recorded in
 `docs/runbooks/event-reliability.md`.
+
+<!-- HK-UI-SPLIT-01-REPOSITORY-TOPOLOGY:START -->
+## Repository topology and execution interaction after HK-UI-SPLIT-01
+
+- `srinivasbs2000/hrms-payroll` owns Payroll program governance,
+  backend/domain code, database/Flyway, API/OpenAPI, Keycloak deployment,
+  deterministic backend fixtures and backend CI.
+- `srinivasbs2000/hrms-payroll-web` owns the React UI, frontend dependency
+  automation, frontend SBOM, frontend CI and browser E2E.
+- Browser E2E integrates the repositories through
+  `PAYROLL_BACKEND_REPOSITORY_PATH`; do not recreate an embedded UI copy or a
+  third contract repository.
+- Product/API/database semantics remain governed by `hrms-payroll`; the UI
+  consumes those contracts rather than redefining them.
+- V035 remains unreserved until a separately activated product capability
+  requires it.
+
+For non-business execution work, when the next bounded action is obvious and
+already authorised by the standing project rules, proceed without redundant
+confirmation. Keep execution responses concise. Expand for business
+functionality, architecture, material trade-offs, safety/security boundaries
+or design decisions. Encode durable cross-thread operating changes at thread or
+workstream closure rather than interrupting every bounded execution step.
+
+<!-- HK-UI-SPLIT-01-REPOSITORY-TOPOLOGY:END -->
 
 <!-- LIVING-PROJECT-AUTHORITY:START -->
 ## Living project authority and multi-thread maintenance

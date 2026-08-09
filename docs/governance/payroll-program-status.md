@@ -2,6 +2,7 @@
 
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
+**Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
 **Product reconciliation baseline:** P5-JRF-01 product merge on `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
 **Latest merged product increment:** P5-JRF-01 through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`
@@ -11,7 +12,7 @@
 **Migration state:** V001–V034 committed and immutable
 **Next migration:** V035 unreserved; allocate only through a separately activated capability
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 9 August 2026 after live verification of P5-JRF-01 PR #39 closure
+**Last reconciled:** 9 August 2026 after HK-UI-SPLIT-01 repository separation closure
 **Current execution capability:** None — P5-JRF-01 merged and closed by this authority/status closure
 
 ## 1. Mandatory starting point
@@ -69,6 +70,25 @@ P5-JRF-01 did not implement bank accounts, authorised signatories, complete
 configuration snapshots, complete foundation readiness, country-specific legal
 rates/rules, filing/remittance, payroll calculation changes or production
 deployment.
+
+## 2A. Repository separation housekeeping closure
+
+HK-UI-SPLIT-01 changed repository topology only; it did not change Payroll
+business functionality, API semantics, OpenAPI semantics, database migrations,
+Keycloak claim/permission semantics or the canonical story ledger.
+
+Closure state:
+
+- backend/program repository: `srinivasbs2000/hrms-payroll`;
+- standalone UI repository: `srinivasbs2000/hrms-payroll-web`;
+- UI history preserved by `git subtree split` with provenance retained;
+- frontend lint/test/build/audit, frontend SBOM, npm dependency automation and
+  browser E2E are UI-repository owned;
+- browser E2E consumes the authoritative backend through
+  `PAYROLL_BACKEND_REPOSITORY_PATH`;
+- backend CI no longer duplicates frontend-owned gates;
+- the embedded `frontend/payroll-web` source copy is removed by 01D;
+- V001-V034 remain immutable and V035 remains unreserved.
 
 ## 3. Reconciled detailed-story status
 
@@ -154,16 +174,18 @@ textual identifier.
 
 ## 7. Immediate next action
 
-After this status-closure PR is merged:
+After HK-UI-SPLIT-01 closure:
 
-1. verify this file and the detailed-story ledger are on `main`;
-2. retain P5-JRF-01 as historical evidence with no active write ownership;
-3. keep V034 immutable;
-4. keep V035 unreserved;
-5. select the next capability through a separate design/activation decision;
-6. reserve V035 only if that separately approved capability actually requires it.
+1. verify both repository `main` branches and their hosted CI live;
+2. keep P5-JRF-01 historical/closed with no active write ownership;
+3. keep V001-V034 immutable and V035 unreserved;
+4. perform a fresh product-capability reconciliation/selection against the
+   canonical story ledger and original-package mapping;
+5. explicitly activate the selected capability, path ownership and migration
+   reservation before any product write.
 
-No product capability is implicitly activated by this closure.
+No historical P5-A3 label, repository split activity or housekeeping closure
+implicitly activates the next product capability.
 
 ## 8. Remaining full-product scope
 

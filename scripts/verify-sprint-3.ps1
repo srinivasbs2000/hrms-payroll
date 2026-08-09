@@ -1,7 +1,8 @@
-#requires -Version 5.1
+#requires -Version 7.0
 [CmdletBinding()]
 param(
-    [string]$RepositoryPath = 'C:\dev\hrms-payroll'
+    [string]$RepositoryPath = 'C:\dev\hrms-payroll',
+    [string]$FrontendRepositoryPath = 'C:\dev\hrms-payroll-web'
 )
 
 Set-StrictMode -Version Latest
@@ -24,7 +25,7 @@ function Invoke-Checked {
     Push-Location $WorkingDirectory
     try {
         Write-Host ''
-        Write-Host ("> " + $Command + " " + ($Arguments -join ' ')) `
+        Write-Host ('> ' + $Command + ' ' + ($Arguments -join ' ')) `
             -ForegroundColor Cyan
         & $Command @Arguments
         $exitCode = $LASTEXITCODE
@@ -40,10 +41,26 @@ function Invoke-Checked {
 if (-not (Test-Path -LiteralPath $RepositoryPath -PathType Container)) {
     throw "Repository path does not exist: $RepositoryPath"
 }
+if (
+    -not (
+        Test-Path `
+            -LiteralPath $FrontendRepositoryPath `
+            -PathType Container
+    )
+) {
+    throw "Frontend repository path does not exist: $FrontendRepositoryPath"
+}
 
-$frontend = Join-Path $RepositoryPath 'frontend\payroll-web'
+$RepositoryPath = (Resolve-Path -LiteralPath $RepositoryPath).Path
+$frontend = (
+    Resolve-Path -LiteralPath $FrontendRepositoryPath
+).Path
 $maven = Join-Path $RepositoryPath 'mvnw.cmd'
 $openApi = 'contracts/openapi/payroll-vertical-slice-openapi-v1.yaml'
+
+if (-not (Test-Path -LiteralPath (Join-Path $frontend 'package.json'))) {
+    throw "Frontend package.json does not exist: $frontend"
+}
 
 Invoke-Checked -Command 'npm.cmd' -Arguments @('ci') `
     -WorkingDirectory $frontend
@@ -72,9 +89,14 @@ Invoke-Checked -Command 'git.exe' -Arguments @('diff', '--check') `
     -WorkingDirectory $RepositoryPath
 
 Write-Host ''
-Write-Host 'Sprint 3 full regression passed.' -ForegroundColor Green
-Write-Host 'Current repository status:'
+Write-Host 'Sprint 3 cross-repository regression passed.' -ForegroundColor Green
+Write-Host 'Backend repository status:'
 & git.exe -C $RepositoryPath status --short --untracked-files=all
 if ($LASTEXITCODE -ne 0) {
-    throw "Unable to read Git status."
+    throw 'Unable to read backend Git status.'
+}
+Write-Host 'Frontend repository status:'
+& git.exe -C $frontend status --short --untracked-files=all
+if ($LASTEXITCODE -ne 0) {
+    throw 'Unable to read frontend Git status.'
 }

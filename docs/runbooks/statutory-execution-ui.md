@@ -47,7 +47,7 @@ Corrections append evidence. They never edit or delete prior ledger entries.
 
 ## Local validation
 
-From `frontend/payroll-web`:
+From the standalone UI repository `C:\dev\hrms-payroll-web`:
 
 ```powershell
 npm ci --ignore-scripts
@@ -58,15 +58,11 @@ npm test
 npm run build
 ```
 
-The scoped audit policy is the repository's final npm security gate. A raw
-`npm audit --audit-level=high` currently returns the approved
-`GHSA-qwww-vcr4-c8h2` finding and exit code 1; that raw result must not be
-treated as the architectural decision.
-
-The policy verifies declarative `BrowserRouter` usage, exact router versions,
-absence of RSC/Framework/Data/server dependencies and source patterns,
-absence of any additional high or critical advisory, and the
-2026-10-31 review deadline.
+The scoped audit policy is the UI repository's final npm security gate and
+requires zero high or critical advisories. It verifies the declared browser
+routing mode and the dependency state required by the current security policy.
+A compatible security fix is preferred over an allow-listed high/critical
+exception.
 
 The automated S4-05B verifier also runs the full Maven regression suite,
 exact payload checks, exact changed-file checks and `git diff --check`.
