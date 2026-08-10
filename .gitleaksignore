@@ -1,1 +1,11 @@
 0e5471f31b7c9d65cd735e2055148d802fb1b960:docs/planning/pln-01/p5-a3-salary-structure-ctc-eligibility-simulation-scope.md:generic-api-key:154
+3d987a865c442475b3bc1da86ff718194fb36571:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/EmployerBankAccountApiIT.java:generic-api-key:63
+3d987a865c442475b3bc1da86ff718194fb36571:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/EmployerBankAccountApiIT.java:generic-api-key:130
+3d987a865c442475b3bc1da86ff718194fb36571:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/EmployerBankAccountApiIT.java:generic-api-key:148
+3d987a865c442475b3bc1da86ff718194fb36571:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/EmployerBankAccountApiIT.java:generic-api-key:182
+62b148d2a58c1d7e31935d1447b6c3122411d731:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/AuthorisedSignatoryApiIT.java:generic-api-key:43
+62b148d2a58c1d7e31935d1447b6c3122411d731:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/AuthorisedSignatoryApiIT.java:generic-api-key:92
+62b148d2a58c1d7e31935d1447b6c3122411d731:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/AuthorisedSignatoryApiIT.java:generic-api-key:110
+62b148d2a58c1d7e31935d1447b6c3122411d731:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/AuthorisedSignatoryApiIT.java:generic-api-key:142
+62b148d2a58c1d7e31935d1447b6c3122411d731:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/AuthorisedSignatoryApiIT.java:generic-api-key:160
+62b148d2a58c1d7e31935d1447b6c3122411d731:backend/payroll-boot/src/test/java/com/acme/hrms/payroll/AuthorisedSignatoryApiIT.java:generic-api-key:223
