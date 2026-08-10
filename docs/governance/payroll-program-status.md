@@ -3,19 +3,19 @@
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
-**Product reconciliation baseline:** P5-FBA-01 backend product merge on `main` at `a0234d94ef280a41a744ea6e8483f786a497d211`; UI product merge `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
+**Product reconciliation baseline:** P5-FSR-01 backend final merge `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI merge `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
-**Latest merged product increment:** P5-FBA-01 backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
+**Latest merged product increment:** P5-FSR-01 backend PR #51 / `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI PR #13 / `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** P5-FSR-01 implementation workstream after activation-authority merge
-**Migration state:** V001–V035 committed and immutable
-**Next migration:** V036 reserved exclusively for P5-FSR-01 after activation-authority merge
+**Active product write owner:** None after this P5-FSR-01 status-closure PR merges
+**Migration state:** V001–V036 committed and immutable
+**Next migration:** V037 unreserved after this closure; separate activation authority required
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 10 August 2026 after fresh R3 capability reconciliation and P5-FSR-01 activation-authority preparation
-**Current execution capability:** P5-FSR-01 — Foundation Snapshot & Readiness Closure (ACTIVE after activation-authority merge)
-**P5-FBA-01 product merges:** backend `a0234d94ef280a41a744ea6e8483f786a497d211`; UI `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
+**Last reconciled:** 11 August 2026 after P5-FSR-01 backend/web product merges and semantic story reconciliation
+**Current execution capability:** None after P5-FSR-01 status closure; next capability requires fresh R3 selection
+**P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
 ## 1. Mandatory starting point
 
@@ -38,34 +38,45 @@ project-status authority.
 
 ## 2. Latest completed milestone
 
-P5-FBA-01 delivered the employer-banking and authorised-signatory slice of
-Original P5-A3:
+P5-FSR-01 delivered the bounded immutable foundation-snapshot and readiness
+closure of Original P5-A3:
 
-- stable tenant-safe employer bank-account and authorised-signatory identities;
-- immutable effective-dated successor-linked versions;
-- legal-entity/PSU ownership and currency/default controls;
-- AES-256-GCM ciphertext with key-versioned runtime configuration;
-- HMAC-SHA-256 equality/duplicate fingerprinting;
-- masked routine bank reads and restricted audited no-store reveal;
-- maker/verifier/final-approver segregation;
-- purpose/currency/optional amount delegated-authority scopes;
-- deterministic authority evaluation and bounded bank/signatory readiness;
-- aligned OpenAPI, Keycloak, backend runtime and standalone React workspace;
-- cross-repository browser E2E with distinct actor identities.
+- immutable cycle foundation-configuration snapshot identity/hash and exact
+  approved version lineage;
+- history-preserving populated V035 upgrade and immutable V036 persistence;
+- input, calculation-request and result binding to the exact snapshot;
+- drift rejection with no mutable-current fallback after sealing;
+- composed `FOUNDATION_ONLY` readiness over configuration snapshot,
+  employer-bank, signatory-authority and caller-declared full-period
+  registration requirements;
+- blocker/warning dimensions, findings and explicit exclusions;
+- UTC application/database-session date authority hardened after cross-repo
+  browser verification exposed the local-midnight mismatch;
+- standalone React Foundation Readiness workspace with exact merged-backend
+  browser E2E.
 
 Evidence:
 
-- G05 backend core head: `0c3be43bc8268d60b97973e9faa4f98e716ec26f`;
-- G05 UI head: `062e3a1e43e311a79687ae5645ae2934b8e5cb35`;
-- backend product PR #44 / merge `a0234d94ef280a41a744ea6e8483f786a497d211`;
-- UI product PR #12 / merge `5c45ab41ee3cb4466fac822c04c771f5de0ba119`;
-- G05 evidence SHA-256: `0f06ffbf06c886740d309007cba20fd1f988f728d35d0bebfc75d29e2a003e4d`;
-- hosted product-PR checks green before merge.
+- G01 PR #47 / merge `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`;
+- G02 PR #49 / merge `954ed05d11dcb367f6de6e1f3e78aafc17c8beab`;
+- UTC runtime PR #51 / merge `74bbd65449adad7b7058d8afd96097b1e08d2a0a`;
+- web PR #13 / merge `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`;
+- hosted backend and web CI green, including exact cross-repository browser E2E.
 
-P5-FBA-01 does not implement PLN-E01-010 immutable configuration snapshots,
-complete entity-scoped application approval delegation, complete foundation
-readiness, employee bank accounts, payment execution, country-specific legal
-rates/rules or production cutover.
+P5-FSR-01 does not implement country-specific statutory rules/rates or legal
+obligation inference, employee bank accounts, payment execution, retro/off-cycle
+or final settlement, accounting/ERP posting, migration/cutover or production
+operations. PLN-E01-011 also remains partial because reusable entity/PSU-scoped
+application approver authorization and effective-dated approval delegation were
+not added.
+
+### Previous completed milestone — P5-FBA-01
+
+P5-FBA-01 delivered employer bank accounts, authorised signatories and bounded
+banking/signatory readiness through backend PR #44 /
+`a0234d94ef280a41a744ea6e8483f786a497d211` and web PR #12 /
+`5c45ab41ee3cb4466fac822c04c771f5de0ba119`; its post-merge status closure was
+PR #45.
 
 ## 2A. Previous completed milestone — P5-JRF-01
 
@@ -130,8 +141,8 @@ The approved program contains 450 detailed source-linked stories:
 
 | Status | Stories | Percentage |
 |---|---:|---:|
-| Implemented | 16 | 3.56% |
-| Partially implemented | 156 | 34.67% |
+| Implemented | 18 | 4.00% |
+| Partially implemented | 154 | 34.22% |
 | Not evidenced | 88 | 19.56% |
 | Not started | 159 | 35.33% |
 | Legal/domain revalidation | 31 | 6.89% |
@@ -168,6 +179,18 @@ remain unfinished.
 The machine-readable authority is:
 
 `backlog/payroll-detailed-story-status.csv`
+P5-FSR-01 post-merge reconciliation adds:
+
+- `PLN-E01-010`: PARTIALLY IMPLEMENTED -> IMPLEMENTED;
+- `PLN-E01-012`: PARTIALLY IMPLEMENTED -> IMPLEMENTED for the bounded generic
+  `FOUNDATION_ONLY` readiness contract;
+- `PLN-E01-011`: remains PARTIALLY IMPLEMENTED; reusable entity/PSU-scoped
+  application approver authorization and effective-dated delegation remain open.
+
+Country-specific registration obligation inference is not silently counted as
+foundation readiness: generic registration requirements remain caller-declared
+and an empty requirement list is explicitly not a legal conclusion.
+
 
 ## 4. Execution-label to original-package mapping
 
@@ -190,7 +213,7 @@ textual identifier.
 - Original P5-A2 — jurisdiction and registration foundations: complete through
   P5-JRF-01 / PR #36.
 - Original P5-A3 — foundation bank, authority, snapshots and readiness:
-  partially evidenced; bank-account and authorised-signatory foundation are implemented through P5-FBA-01, while immutable snapshots and complete readiness remain.
+  the bank/signatory/snapshot/readiness core is implemented through P5-FBA-01 and P5-FSR-01; the package remains partially implemented only because PLN-E01-011 reusable application approver/delegation controls remain open.
 - Original P5-A4 — pay groups, period generation and milestone rules:
   partially implemented and dependency-ready.
 - Original P5-A5: partially implemented and dependent on P5-A4.
@@ -230,29 +253,27 @@ textual identifier.
 - **Stories remaining partial:** PLN-E01-011, PLN-E01-012
 - **Explicit remaining Original P5-A3 core:** PLN-E01-010 snapshots and complete readiness
 
-## 7. Active execution identity — P5-FSR-01
+## 7. Closed execution identity — P5-FSR-01
 
 **P5-FSR-01 — Foundation Snapshot & Readiness Closure**
 
 - **Original program mapping:** Original P5-A3 snapshot/readiness slice
-- **State:** ACTIVE after activation-authority merge; no implementation evidence claimed by activation
+- **State:** MERGED / CLOSED after this status-closure PR
 - **Scope authority:** `docs/planning/pln-01/p5-fsr-01-foundation-snapshot-readiness-closure-scope.md`
-- **Primary stories:** PLN-E01-010 and PLN-E01-012
-- **Cross-cutting story:** PLN-E01-011 remains PARTIALLY IMPLEMENTED unless separate implementation evidence closes its reusable application approver/delegation gap
-- **Activation branch:** `docs/p5-fsr-01-activation-authority`
-- **Product branch:** `feature/p5-fsr-01-foundation-snapshot-readiness-closure`, created only from activation-merged `main`
-- **Migration:** V036 reserved exclusively for P5-FSR-01 after activation-authority merge
-- **Backend/program owner:** P5-FSR-01 implementation workstream
-- **UI owner:** same capability only for the readiness workspace/API consumption and browser E2E bounded by the scope authority
+- **Backend G01 merge:** PR #47 / `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`
+- **Backend G02 merge:** PR #49 / `954ed05d11dcb367f6de6e1f3e78aafc17c8beab`
+- **Backend final runtime-hardening merge:** PR #51 / `74bbd65449adad7b7058d8afd96097b1e08d2a0a`
+- **UI product merge:** PR #13 / `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+- **Historical product branch:** `feature/p5-fsr-01-foundation-snapshot-readiness-closure` retained
+- **Migration:** V036 committed and immutable
+- **Product write owner:** None after this status closure
+- **Stories implemented:** PLN-E01-010, PLN-E01-012
+- **Story remaining partial:** PLN-E01-011
+- **Next migration:** V037 unreserved
+- **Next capability:** not selected by this closure
 
-Immediate controlled action after activation-authority merge:
-
-1. create the product branch from the new `main`;
-2. implement only the exact P5-FSR-01 scope and V036 reservation;
-3. bind payroll calculation to immutable foundation-configuration snapshot identity/hash;
-4. compose bounded foundation readiness without claiming later statutory/payment/global readiness;
-5. run local verification, independent R3 critical review, backend publication/merge, then web publication/merge in cross-repo hosted-CI order;
-6. perform post-merge story reconciliation/status closure before selecting another capability.
+After this closure merges, perform a fresh R3 reconciliation before assigning
+any new product ownership or migration number.
 
 ## 8. Remaining full-product scope
 

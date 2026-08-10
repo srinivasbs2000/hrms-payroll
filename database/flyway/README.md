@@ -13,10 +13,11 @@ PR #32. V034 is `V034__jurisdiction_registration_foundations.sql`, merged
 through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`. V034 is committed and immutable.
 V035 is `V035__foundation_banking_authority.sql`, merged through P5-FBA-01
 backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`. V035 is committed and
-immutable. V036 is `V036__foundation_snapshot_readiness_closure.sql`, reserved exclusively
-for P5-FSR-01 — Foundation Snapshot & Readiness Closure and implemented on the
-active product branch from the activation-merged `main`. V001-V035 remain
-immutable; V036 becomes immutable only after the reviewed backend product merge.
+immutable. V036 is `V036__foundation_snapshot_readiness_closure.sql`, delivered
+through P5-FSR-01 G01 backend PR #47 / `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`
+and retained unchanged through later FSR hardening. V036 is committed and
+immutable. V001-V036 are now immutable. V037 is unreserved and may not be
+claimed without a separately merged capability activation authority.
 
 V033 implements the P5-A3 configuration-design foundation: schema-1 salary
 structures, versioned CTC policies, typed eligibility rules and deterministic

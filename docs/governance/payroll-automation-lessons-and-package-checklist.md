@@ -273,3 +273,51 @@ artifact repository returns a transport/rate-limit error such as HTTP 429:
 P5-FBA-01 exposed both conditions during G06 publication: GitHub check
 registration lag caused an early resume stop, and Maven Central HTTP 429 stopped
 the Flyway/RLS job before the database-migrations module ran.
+## 15. Windows worktrees and Docker-mounted POSIX scripts
+
+A Git working tree on Windows may convert an LF-only tracked shell script to
+CRLF even when the committed blob is correct. When that working copy is
+bind-mounted into a Linux container, a shebang can become `bash\r` and fail
+before the application or migration under test starts.
+
+For disposable cross-platform worktrees:
+
+- verify the committed blob identity before changing the working copy;
+- normalize only Docker-mounted POSIX scripts to LF when the checkout policy can
+  introduce CRLF;
+- assert no carriage-return byte remains before container startup; and
+- never treat this disposable normalization as a source change.
+
+P5-FSR-01 exposed this during isolated PostgreSQL bootstrap on Windows.
+
+## 16. Failure cleanup must run before process exit
+
+Do not invoke `System.exit`, `exit`, or an equivalent terminal process action
+from a catch/failure branch when cleanup is implemented in `finally`.
+
+A deterministic package that owns Docker services, temporary worktrees or other
+external state must:
+
+- record the primary failure;
+- run cleanup in a true finally path;
+- make cleanup failure visible in the final exit result; and
+- verify stale state can be detected and removed on resume.
+
+P5-FSR-01 exposed this when an early browser-runner failure could otherwise
+leave an isolated Docker/worktree state behind.
+
+## 17. One runtime date authority must span application and database sessions
+
+If application lifecycle rules use an injected `Clock` while SQL casts
+`timestamptz` to `date`, JVM/JDBC/PostgreSQL session time zones can create
+different business dates around midnight.
+
+Runtime design and tests must:
+
+- define one authoritative application time zone;
+- initialize application database sessions to compatible date semantics;
+- avoid making the browser guess the server approval date; and
+- include a cross-midnight test with a non-authoritative host/JVM zone.
+
+P5-FSR-01 kept the existing UTC application `Clock` and aligned Hikari
+PostgreSQL sessions to UTC after browser E2E exposed the mismatch.
