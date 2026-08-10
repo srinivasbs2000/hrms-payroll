@@ -117,6 +117,22 @@ before mutation. It may not write outside the following maximum path set.
 - `e2e/start-backend.mjs`
 - `playwright.config.ts`
 
+### G02 R3 path amendment — 10 August 2026
+
+To preserve the modular-monolith boundary and MDR-065 while composing existing
+authoritative readiness findings, G02 may additionally write exactly these two
+public facade paths:
+
+- `backend/organisation/src/main/java/com/acme/hrms/payroll/organisation/BankingReadinessFacade.java`
+- `backend/statutory-deductions/src/main/java/com/acme/hrms/payroll/statutory/RegistrationReadinessFacade.java`
+
+These facades are contract adapters only. They may delegate to their own
+module's existing bounded readiness service and expose its existing public
+request/view types. They must not duplicate, weaken or redefine organisation
+banking/signatory rules or statutory registration readiness rules. No other
+organisation or statutory-deductions production path is added to P5-FSR-01
+ownership by this amendment.
+
 No other path is owned by this capability without a new R3 authority update.
 The presence of a directory wildcard above is a maximum ownership boundary, not
 permission for a runner to change every file below it.
