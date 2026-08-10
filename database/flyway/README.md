@@ -1,6 +1,6 @@
 # Payroll vertical-slice Flyway package
 
-`sql/` is the canonical source for the ordered V001-V035 migrations. The Maven
+`sql/` is the canonical source for the ordered V001-V036 migrations. The Maven
 `backend/database-migrations` module packages these files at `db/migration` and
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
@@ -13,10 +13,10 @@ PR #32. V034 is `V034__jurisdiction_registration_foundations.sql`, merged
 through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`. V034 is committed and immutable.
 V035 is `V035__foundation_banking_authority.sql`, merged through P5-FBA-01
 backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`. V035 is committed and
-immutable. V036 is reserved exclusively for P5-FSR-01 — Foundation Snapshot &
-Readiness Closure after its activation-authority merge. The activation increment
-does not create V036 SQL; product implementation must create it only from the
-activation-merged `main` and within the P5-FSR-01 scope authority.
+immutable. V036 is `V036__foundation_snapshot_readiness_closure.sql`, reserved exclusively
+for P5-FSR-01 — Foundation Snapshot & Readiness Closure and implemented on the
+active product branch from the activation-merged `main`. V001-V035 remain
+immutable; V036 becomes immutable only after the reviewed backend product merge.
 
 V033 implements the P5-A3 configuration-design foundation: schema-1 salary
 structures, versioned CTC policies, typed eligibility rules and deterministic
@@ -77,6 +77,7 @@ Migration order:
 33. P5-A3 salary-structure design, versioned CTC policy, typed eligibility rules, deterministic design-time simulation and immutable validation evidence
 34. P5-JRF-01 work-location identity/version, payroll-jurisdiction hierarchy/resolution evidence, generic statutory-registration lifecycle and bounded readiness
 35. P5-FBA-01 employer bank-account/signatory identity/version, encrypted bank secret metadata, delegated-authority scope and bounded banking readiness
+36. P5-FSR-01 immutable foundation-configuration snapshot, exact input/calculation binding and history-preserving V035 upgrade
 
 This remains a greenfield product with no evidenced production deployment.
 Forward-only migrations and populated-upgrade tests protect reproducible local,
