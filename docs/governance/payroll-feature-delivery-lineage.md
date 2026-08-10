@@ -1,14 +1,14 @@
 # Payroll Feature Delivery Lineage
 
-**Product reconciliation baseline:** `a0234d94ef280a41a744ea6e8483f786a497d211` (P5-FBA-01 backend); UI merge `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
-**Product implementation baseline:** `088484b1855b5af6f0c67dfe1426204b9a720b13` (P5-FBA-01 backend publication head); UI `062e3a1e43e311a79687ae5645ae2934b8e5cb35`; merged as backend `a0234d94ef280a41a744ea6e8483f786a497d211` / UI `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
+**Product reconciliation baseline:** `74bbd65449adad7b7058d8afd96097b1e08d2a0a` (P5-FSR-01 backend final merge); UI merge `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Product implementation baseline:** P5-FSR-01 G01 merge `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`; G02 merge `954ed05d11dcb367f6de6e1f3e78aafc17c8beab`; UTC runtime merge `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI head `a6433007a1552ab34f9e5086e2448f6a532e387a`, merged as `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 **Purpose:** Trace original epic -> original backlog row -> current story -> migration -> commit -> PR/merge -> evidence -> remaining scope.
 
 ## 1. Epic-level lineage
 
 | Epic | Current Stories | Migrations | Commit Evidence | PR/Merge | Classification |
 |---|---|---|---|---|---|
-| E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06; P5-JRF-01; P5-FBA-01 | V014-V016; V034-V035 (plus foundational V001-V013) | b9f6bcf888c4d22c04a237f0a13c37d4d4d24c36; 47654eb11c69838924da172479a4c4d72a5c2729; da5dad33d7d228e1e7ee1467fb198ec21d0934ca; c8ab727787a23b0b211caf27c2158300a38a8eab; P5-FBA-01 backend 088484b1855b5af6f0c67dfe1426204b9a720b13; UI 062e3a1e43e311a79687ae5645ae2934b8e5cb35 | PR #2; PR #36 / merge 6ee101bd398b745a0078bd0517b4e3797c571c2b; P5-FBA-01 backend PR #44 / a0234d94ef280a41a744ea6e8483f786a497d211; UI PR #12 / 5c45ab41ee3cb4466fac822c04c771f5de0ba119 | PARTIALLY IMPLEMENTED |
+| E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06; P5-JRF-01; P5-FBA-01; P5-FSR-01 | V014-V016; V034-V036 (plus foundational V001-V013) | P5-JRF-01 c8ab727787a23b0b211caf27c2158300a38a8eab; P5-FBA-01 backend 088484b1855b5af6f0c67dfe1426204b9a720b13 / UI 062e3a1e43e311a79687ae5645ae2934b8e5cb35; P5-FSR-01 G01 7a399bb58dddac485c460b9f6fc2985304eaf886, G02 640f3a354a5c607375c484e4f995205c613efac2, UTC runtime 9731d74f99fb7b458751c7b18da5cb1cc24fbc29, UI a6433007a1552ab34f9e5086e2448f6a532e387a | PR #36 / 6ee101bd398b745a0078bd0517b4e3797c571c2b; PR #44 / a0234d94ef280a41a744ea6e8483f786a497d211; UI #12 / 5c45ab41ee3cb4466fac822c04c771f5de0ba119; P5-FSR backend #47 / 16d2488252b8a5c3aecd64c0f43fe18b6743d6e8, #49 / 954ed05d11dcb367f6de6e1f3e78aafc17c8beab, #51 / 74bbd65449adad7b7058d8afd96097b1e08d2a0a; UI #13 / 8e8b47c829ac33aa2495ef07fba0ae2afd51e770 | PARTIALLY IMPLEMENTED |
 | E02 | S2-01, S2-02; population execution contributes through S3-01 | V017-V018 | Inherited Sprint 2 range through 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
 | E03 | S2-03; P5-A2 general catalogue and named bases | V019; V032 | Sprint 2 foundation plus `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` | PR #3; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` | PARTIALLY IMPLEMENTED |
 | E04 | S2-04 | V020 | Inherited Sprint 2 entry head 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
@@ -189,3 +189,29 @@ capability activation.
 - Canonical story delta: PLN-E01-008 and PLN-E01-009 -> IMPLEMENTED;
   PLN-E01-011 and PLN-E01-012 remain PARTIALLY IMPLEMENTED.
 - V035 is immutable after merge; V036 is unreserved.
+## P5-FSR-01 closure lineage
+
+P5-FSR-01 closes the bounded Original P5-A3 snapshot/readiness slice without
+claiming country-specific statutory, payment or production readiness.
+
+- activation authority: PR #46 / merge `1f7df0ba489c590abe0f15aa895a08e9185ea03d`;
+- G01 immutable snapshot/calculation binding: PR #47 / merge
+  `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`, migration V036;
+- G02 facade authority: PR #48 / merge
+  `15f6c88cf8def2810d901d7adb273558d1fc77d4`;
+- G02 composed readiness: PR #49 / merge
+  `954ed05d11dcb367f6de6e1f3e78aafc17c8beab`;
+- runtime-date authority amendment: PR #50 / merge
+  `04417f142103c3714cb6346602d7c48f2b1cf3ba`;
+- UTC database-session implementation: PR #51 / merge
+  `74bbd65449adad7b7058d8afd96097b1e08d2a0a`;
+- standalone React readiness workspace: web PR #13 / merge
+  `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`;
+- canonical stories: PLN-E01-010 IMPLEMENTED, PLN-E01-012 IMPLEMENTED,
+  PLN-E01-011 remains PARTIALLY IMPLEMENTED.
+
+The P5-FSR-01 readiness contract is `FOUNDATION_ONLY`. Registration obligations
+are caller-declared; an empty declaration is not a legal conclusion. Country
+rules/rates, employee banks, payment execution, retro/off-cycle/final
+settlement, accounting, migration/cutover and production operations remain
+separately governed.

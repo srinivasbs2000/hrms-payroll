@@ -1,14 +1,14 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 10 August 2026 P5-FBA-01 post-merge status closure
-**Product reconciliation baseline:** P5-FBA-01 backend product merge on `main` at `a0234d94ef280a41a744ea6e8483f786a497d211`; UI merge `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
+**Last verified:** 11 August 2026 P5-FSR-01 post-merge status reconciliation
+**Product reconciliation baseline:** P5-FSR-01 backend `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-FBA-01 backend PR #44; UI PR #12
+**Latest merged product increment:** P5-FSR-01 backend PR #51; UI PR #13
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active product write owner:** P5-FSR-01 implementation workstream after activation-authority merge
-**Migration authority:** V001–V035 immutable; V036 reserved exclusively for P5-FSR-01 after activation-authority merge
+**Active product write owner:** None after this P5-FSR-01 status closure
+**Migration authority:** V001–V036 immutable; V037 unreserved after this closure
 
 Thread numbers are historical conversation labels, not implementation
 authority. Only an explicitly active capability entry may own files or a
@@ -37,24 +37,18 @@ migration number.
 | P5-JRF-01 | CLOSED | Jurisdiction and registration foundations | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` | V034 immutable | None |
 | HK-UI-SPLIT-01 | CLOSED | History-preserving React UI repository split, independent UI CI and backend source cleanup | Backend PR #41 seam; web PR #1 independent CI; 01D closure | None | None |
 | P5-FBA-01 | CLOSED | Foundation employer banking, authorised signatories, delegated authority and bounded readiness | Backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`; closure PR #45 | V035 immutable | None |
-| P5-FSR-01 | ACTIVE after activation-authority merge | Immutable foundation configuration snapshot and composed foundation readiness closure | Activation authority first; product PRs not yet created | V036 reserved | P5-FSR-01 implementation workstream |
+| P5-FSR-01 | CLOSED after this status closure | Immutable foundation configuration snapshot, exact calculation binding and bounded composed foundation readiness | Backend PR #47 / `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`; PR #49 / `954ed05d11dcb367f6de6e1f3e78aafc17c8beab`; PR #51 / `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI PR #13 / `8e8b47c829ac33aa2495ef07fba0ae2afd51e770` | V036 immutable | None |
 
 ## Active capability workstream
 
-**P5-FSR-01 — Foundation Snapshot & Readiness Closure** is ACTIVE after the
-activation-authority PR merges.
+There is no active product capability after this P5-FSR-01 status closure.
 
-- primary canonical stories: PLN-E01-010 and PLN-E01-012;
-- PLN-E01-011 remains partial unless separately evidenced;
-- activation branch: `docs/p5-fsr-01-activation-authority`;
-- product branch after activation merge: `feature/p5-fsr-01-foundation-snapshot-readiness-closure`;
-- V035 remains immutable;
-- V036 is reserved exclusively for P5-FSR-01;
-- backend/program and bounded readiness-UI ownership is held by this capability;
-- exact maximum implementation boundary is the committed P5-FSR-01 scope authority;
-- no product code or V036 SQL is part of the activation increment itself.
+P5-FSR-01 is historical/closed and retains no ownership. V036 is immutable and
+V037 is unreserved. PLN-E01-010 and PLN-E01-012 are implemented; PLN-E01-011
+remains partially implemented.
 
-P5-FBA-01 is historical/closed and retains no ownership.
+A fresh R3 reconciliation and a separately merged activation authority are
+required before any next capability owns product paths or a migration number.
 
 ## Program-status closure process
 

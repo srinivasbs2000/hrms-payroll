@@ -1,12 +1,12 @@
 # P5-FSR-01 — Foundation Snapshot & Readiness Closure Scope Authority
 
-**Status:** ACTIVE after activation-authority merge
+**Status:** CLOSED after backend/web product merge and post-merge semantic reconciliation
 **Reasoning level:** R3 — cross-program capability selection, architecture, migration ownership and cross-repository sequencing
 **Repository authority:** `srinivasbs2000/hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Activation branch:** `docs/p5-fsr-01-activation-authority`
 **Product branch:** `feature/p5-fsr-01-foundation-snapshot-readiness-closure` created only from activation-merged `main`
-**Migration reservation:** V036 exclusively reserved after activation-authority merge
+**Migration reservation:** V036 committed/immutable; V037 unreserved after closure
 **Primary canonical stories:** PLN-E01-010, PLN-E01-012
 **Cross-cutting story:** PLN-E01-011 remains PARTIALLY IMPLEMENTED unless separate evidence closes its remaining reusable application-approval/delegation gap
 
@@ -252,3 +252,20 @@ Before product publication the capability must prove:
 
 Activation alone changes no story status. V036 is released only by the final
 status-closure authority after P5-FSR-01 product merge and reconciliation.
+## 8. Closure result
+
+P5-FSR-01 product evidence is merged and browser-verified:
+
+- G01 snapshot/calculation binding: PR #47 /
+  `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`;
+- G02 composed readiness: PR #49 /
+  `954ed05d11dcb367f6de6e1f3e78aafc17c8beab`;
+- runtime date-authority hardening: PR #51 /
+  `74bbd65449adad7b7058d8afd96097b1e08d2a0a`;
+- web workspace/E2E: PR #13 /
+  `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`.
+
+Post-merge reconciliation marks PLN-E01-010 and PLN-E01-012 IMPLEMENTED.
+PLN-E01-011 remains PARTIALLY IMPLEMENTED. V036 is immutable; V037 is
+unreserved. No next capability is activated and no product path remains owned
+by P5-FSR-01 after this closure merges.
