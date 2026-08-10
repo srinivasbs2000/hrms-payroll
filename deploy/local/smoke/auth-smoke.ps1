@@ -60,6 +60,9 @@ try {
   Assert-Contains $claims.realm_access.roles 'PAYROLL_OPERATOR' 'realm_access.roles'
   Assert-Contains $claims.permissions 'payroll.read' 'permissions'
   Assert-Contains $claims.permissions 'organisation.read' 'permissions'
+  Assert-Contains $claims.permissions 'organisation.bank-account.read' 'permissions'
+  Assert-Contains $claims.permissions 'organisation.banking-readiness.read' 'permissions'
+  Assert-Contains $claims.permissions 'organisation.signatory.read' 'permissions'
 
   $correlationId = [guid]::NewGuid().ToString()
   $response = Invoke-WebRequest -UseBasicParsing -Method Get -Uri "$ApplicationBaseUrl/internal/baseline/auth-smoke" -Headers @{
@@ -78,6 +81,18 @@ try {
   if ($hierarchyResponse.StatusCode -ne 200) { throw 'The secured organisation endpoint did not succeed.' }
   if ([string]$hierarchyResponse.Headers['X-Correlation-ID'] -ne $correlationId) { throw 'The organisation endpoint did not preserve the correlation ID.' }
 
+  $bankResponse = Invoke-WebRequest -UseBasicParsing -Method Get -Uri "$ApplicationBaseUrl/api/v1/employer-bank-accounts" -Headers @{
+    Authorization = "Bearer $accessToken"
+    'X-Correlation-ID' = $correlationId
+  }
+  if ($bankResponse.StatusCode -ne 200) { throw 'The secured employer bank-account endpoint did not succeed.' }
+
+  $signatoryResponse = Invoke-WebRequest -UseBasicParsing -Method Get -Uri "$ApplicationBaseUrl/api/v1/authorised-signatories" -Headers @{
+    Authorization = "Bearer $accessToken"
+    'X-Correlation-ID' = $correlationId
+  }
+  if ($signatoryResponse.StatusCode -ne 200) { throw 'The secured authorised-signatory endpoint did not succeed.' }
+
   [pscustomobject]@{
     Result = 'PASS'
     Issuer = $claims.iss
@@ -85,7 +100,7 @@ try {
     TenantId = $claims.tenant_id
     Roles = (@($claims.realm_access.roles) -join ',')
     Permissions = (@($claims.permissions) -join ',')
-    SecuredEndpoints = '/internal/baseline/auth-smoke, /api/v1/organisation-hierarchy (HTTP 200)'
+    SecuredEndpoints = '/internal/baseline/auth-smoke, /api/v1/organisation-hierarchy, /api/v1/employer-bank-accounts, /api/v1/authorised-signatories (HTTP 200)'
     CorrelationIdReused = $true
     RawTokenPrintedOrPersisted = $false
   } | Format-List

@@ -40,6 +40,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24.14.0
+      - name: Validate foundation banking authority contract alignment
+        run: node scripts/verify-foundation-banking-contracts.mjs
       - name: Validate OpenAPI
         run: npx --yes --package=@redocly/cli@2.39.0 redocly lint contracts/openapi/payroll-vertical-slice-openapi-v1.yaml 2>&1 | tee openapi-validation.log
       - name: Upload OpenAPI diagnostics

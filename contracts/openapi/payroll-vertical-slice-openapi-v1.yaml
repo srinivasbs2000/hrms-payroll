@@ -2,8 +2,8 @@ openapi: 3.1.0
 info:
   title: HRMS Payroll Vertical Slice API
   version: 1.0.0
-  description: Organisation-to-statutory-ledger implementation contract. Tax filing,
-    banking, accounting, retro, final settlement and payment execution remain outside this contract.
+  description: Organisation-to-statutory-ledger implementation contract with employer banking
+    and authorised-signatory foundations. Tax filing, accounting, retro, final settlement and payment execution remain outside this contract.
   license:
     name: Proprietary
     identifier: LicenseRef-Proprietary
@@ -133,6 +133,686 @@ paths:
     $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationIdentifierReveal'
   /foundation-readiness/jurisdiction-registration:
     $ref: './statutory-deductions-openapi-v1.yaml#/pathItems/RegistrationReadiness'
+  /employer-bank-accounts:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Organisation]
+      summary: List effective employer bank accounts with masked account numbers
+      operationId: listEmployerBankAccounts
+      x-permission: organisation.bank-account.read
+      parameters:
+      - name: ownerKind
+        in: query
+        required: false
+        schema: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+      - name: ownerId
+        in: query
+        required: false
+        schema: {type: string, format: uuid}
+      - name: currencyCode
+        in: query
+        required: false
+        schema: {type: string, pattern: '^[A-Z]{3}$'}
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective masked employer bank accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Organisation]
+      summary: Create an employer bank-account identity and draft version
+      operationId: createEmployerBankAccount
+      x-permission: organisation.bank-account.write
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaEmployerBankAccountCreateRequest'}
+      responses:
+        '201':
+          description: Employer bank account created
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  /employer-bank-accounts/{identityId}:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Organisation]
+      summary: Read the effective employer bank-account version
+      operationId: getEmployerBankAccount
+      x-permission: organisation.bank-account.read
+      parameters:
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective masked employer bank account
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+  /employer-bank-accounts/{identityId}/versions:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Organisation]
+      summary: Read employer bank-account version history
+      operationId: getEmployerBankAccountHistory
+      x-permission: organisation.bank-account.read
+      responses:
+        '200':
+          description: Complete employer bank-account version history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Organisation]
+      summary: Add a successor employer bank-account draft version
+      operationId: addEmployerBankAccountVersion
+      x-permission: organisation.bank-account.write
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaEmployerBankAccountVersionWriteRequest'}
+      responses:
+        '201':
+          description: Employer bank-account version created
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  /employer-bank-accounts/{identityId}/versions/{versionId}/submit:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Submit an employer bank-account draft for verification
+      operationId: submitEmployerBankAccountVersion
+      x-permission: organisation.bank-account.write
+      responses:
+        '200':
+          description: Submitted employer bank-account version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /employer-bank-accounts/{identityId}/versions/{versionId}/verify:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Independently verify an employer bank-account version
+      operationId: verifyEmployerBankAccountVersion
+      x-permission: organisation.bank-account.verify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaEvidenceRequest'}
+      responses:
+        '200':
+          description: Verified employer bank-account version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /employer-bank-accounts/{identityId}/versions/{versionId}/request-approval:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Request final approval for a verified employer bank-account version
+      operationId: requestEmployerBankAccountApproval
+      x-permission: organisation.bank-account.verify
+      responses:
+        '200':
+          description: Employer bank-account version awaiting approval
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /employer-bank-accounts/{identityId}/versions/{versionId}/approve:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Give independent final approval to an employer bank-account version
+      operationId: approveEmployerBankAccountVersion
+      x-permission: organisation.bank-account.approve
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaEvidenceRequest'}
+      responses:
+        '200':
+          description: Approved employer bank-account version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  /employer-bank-accounts/{identityId}/versions/{versionId}/reject:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Reject an employer bank-account version
+      operationId: rejectEmployerBankAccountVersion
+      x-permission: organisation.bank-account.approve
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaRejectRequest'}
+      responses:
+        '200':
+          description: Rejected employer bank-account version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /employer-bank-accounts/{identityId}/versions/{versionId}/suspend:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Suspend an approved employer bank-account version
+      operationId: suspendEmployerBankAccountVersion
+      x-permission: organisation.bank-account.approve
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaSuspendRequest'}
+      responses:
+        '200':
+          description: Suspended employer bank-account version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /employer-bank-accounts/{identityId}/versions/{versionId}/reveal:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags: [Organisation]
+      summary: Privileged audited reveal of an employer bank-account number
+      operationId: revealEmployerBankAccountNumber
+      x-permission: organisation.bank-account.reveal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaRevealRequest'}
+      responses:
+        '200':
+          description: Privileged employer bank-account reveal; response must not be cached
+          headers:
+            Cache-Control:
+              description: Prevent storage of the revealed account number
+              schema: {type: string, const: no-store}
+            Pragma:
+              description: Legacy no-cache protection for the revealed account number
+              schema: {type: string, const: no-cache}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaEmployerBankAccountRevealView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Organisation]
+      summary: List effective authorised signatories and delegated authority
+      operationId: listAuthorisedSignatories
+      x-permission: organisation.signatory.read
+      parameters:
+      - name: ownerKind
+        in: query
+        required: false
+        schema: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+      - name: ownerId
+        in: query
+        required: false
+        schema: {type: string, format: uuid}
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective authorised signatories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Organisation]
+      summary: Create an authorised-signatory identity and draft version
+      operationId: createAuthorisedSignatory
+      x-permission: organisation.signatory.write
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryCreateRequest'}
+      responses:
+        '201':
+          description: Authorised signatory created
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories/{identityId}:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Organisation]
+      summary: Read the effective authorised-signatory version
+      operationId: getAuthorisedSignatory
+      x-permission: organisation.signatory.read
+      parameters:
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective authorised signatory
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories/{identityId}/versions:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Organisation]
+      summary: Read authorised-signatory version history
+      operationId: getAuthorisedSignatoryHistory
+      x-permission: organisation.signatory.read
+      responses:
+        '200':
+          description: Complete authorised-signatory version history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Organisation]
+      summary: Add a successor authorised-signatory draft version
+      operationId: addAuthorisedSignatoryVersion
+      x-permission: organisation.signatory.write
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryVersionWriteRequest'}
+      responses:
+        '201':
+          description: Authorised-signatory version created
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories/{identityId}/versions/{versionId}/submit:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Submit an authorised-signatory draft for verification
+      operationId: submitAuthorisedSignatoryVersion
+      x-permission: organisation.signatory.write
+      responses:
+        '200':
+          description: Submitted authorised-signatory version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories/{identityId}/versions/{versionId}/verify:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Independently verify an authorised-signatory version
+      operationId: verifyAuthorisedSignatoryVersion
+      x-permission: organisation.signatory.verify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaEvidenceRequest'}
+      responses:
+        '200':
+          description: Verified authorised-signatory version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories/{identityId}/versions/{versionId}/request-approval:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Request final approval for a verified authorised-signatory version
+      operationId: requestAuthorisedSignatoryApproval
+      x-permission: organisation.signatory.verify
+      responses:
+        '200':
+          description: Authorised-signatory version awaiting approval
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories/{identityId}/versions/{versionId}/approve:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Give independent final approval to an authorised-signatory version
+      operationId: approveAuthorisedSignatoryVersion
+      x-permission: organisation.signatory.approve
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaEvidenceRequest'}
+      responses:
+        '200':
+          description: Approved authorised-signatory version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories/{identityId}/versions/{versionId}/reject:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Reject an authorised-signatory version
+      operationId: rejectAuthorisedSignatoryVersion
+      x-permission: organisation.signatory.approve
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaRejectRequest'}
+      responses:
+        '200':
+          description: Rejected authorised-signatory version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories/{identityId}/versions/{versionId}/suspend:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/CorrelationId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Organisation]
+      summary: Suspend an approved authorised-signatory version
+      operationId: suspendAuthorisedSignatoryVersion
+      x-permission: organisation.signatory.approve
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaSuspendRequest'}
+      responses:
+        '200':
+          description: Suspended authorised-signatory version
+          headers:
+            ETag: {description: Numeric optimistic-concurrency version, schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorisedSignatoryView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+  /authorised-signatories/authority-evaluations:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags: [Organisation]
+      summary: Evaluate effective delegated signatory authority for a purpose, currency and amount
+      operationId: evaluateAuthorisedSignatoryAuthority
+      x-permission: organisation.signatory.read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FbaAuthorityEvaluationRequest'}
+      responses:
+        '200':
+          description: Delegated-authority evaluation
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaAuthorityEvaluationView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  /banking-readiness:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Organisation]
+      summary: Evaluate bounded employer-bank and signatory readiness
+      description: This readiness is intentionally limited to BANKING_AND_SIGNATORY_ONLY and is not complete payroll-foundation readiness.
+      operationId: getBankingReadiness
+      x-permission: organisation.banking-readiness.read
+      parameters:
+      - name: ownerKind
+        in: query
+        required: true
+        schema: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+      - name: ownerId
+        in: query
+        required: true
+        schema: {type: string, format: uuid}
+      - name: currencyCode
+        in: query
+        required: true
+        schema: {type: string, pattern: '^[A-Z]{3}$'}
+      - name: purposeCode
+        in: query
+        required: true
+        schema: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+      - name: amount
+        in: query
+        required: false
+        schema: {type: number, exclusiveMinimum: 0}
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200':
+          description: Bounded banking/signatory readiness
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FbaBankingReadinessView'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
   /organisation-hierarchy:
     parameters:
     - $ref: '#/components/parameters/CorrelationId'
@@ -2763,6 +3443,313 @@ components:
         type: string
         format: uuid
   schemas:
+    FbaEmployerBankAccountVersionWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [bankName, accountHolderName, currencyCode, accountNumber, effectiveFrom]
+      properties:
+        bankName: {type: string, minLength: 1, maxLength: 160}
+        branchName: {type: [string, 'null'], maxLength: 160}
+        routingCode: {type: [string, 'null'], maxLength: 80}
+        accountHolderName: {type: string, minLength: 1, maxLength: 160}
+        currencyCode: {type: string, pattern: '^[A-Z]{3}$'}
+        accountNumber:
+          type: string
+          minLength: 1
+          writeOnly: true
+        defaultAccount: {type: boolean, default: false}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    FbaEmployerBankAccountCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [code, ownerKind, version]
+      properties:
+        code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+        ownerKind: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+        legalEntityId: {type: [string, 'null'], format: uuid}
+        payrollStatutoryUnitId: {type: [string, 'null'], format: uuid}
+        version: {$ref: '#/components/schemas/FbaEmployerBankAccountVersionWriteRequest'}
+    FbaEvidenceRequest:
+      type: object
+      additionalProperties: false
+      required: [evidenceRef]
+      properties:
+        evidenceRef: {type: string, minLength: 1, maxLength: 240}
+    FbaRejectRequest:
+      type: object
+      additionalProperties: false
+      required: [reason, evidenceRef]
+      properties:
+        reason: {type: string, minLength: 1, maxLength: 500}
+        evidenceRef: {type: string, minLength: 1, maxLength: 240}
+    FbaSuspendRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason: {type: string, minLength: 1, maxLength: 500}
+    FbaRevealRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason: {type: string, minLength: 1, maxLength: 500}
+    FbaEmployerBankAccountView:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - ownerKind
+      - identityStatus
+      - identityVersionNo
+      - versionId
+      - versionSequence
+      - versionNo
+      - bankName
+      - accountHolderName
+      - currencyCode
+      - maskedAccountNumber
+      - defaultAccount
+      - effectiveFrom
+      - lifecycleStatus
+      - superseded
+      - createdBy
+      properties:
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        ownerKind: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+        legalEntityId: {type: [string, 'null'], format: uuid}
+        payrollStatutoryUnitId: {type: [string, 'null'], format: uuid}
+        identityStatus: {type: string}
+        identityVersionNo: {type: integer, format: int64, minimum: 0}
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        bankName: {type: string}
+        branchName: {type: [string, 'null']}
+        routingCode: {type: [string, 'null']}
+        accountHolderName: {type: string}
+        currencyCode: {type: string, pattern: '^[A-Z]{3}$'}
+        maskedAccountNumber: {type: string}
+        defaultAccount: {type: boolean}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        lifecycleStatus: {type: string}
+        verificationEvidenceRef: {type: [string, 'null']}
+        verifiedAt: {type: [string, 'null'], format: date-time}
+        verifiedBy: {type: [string, 'null']}
+        approvedAt: {type: [string, 'null'], format: date-time}
+        approvedBy: {type: [string, 'null']}
+        approvalEvidenceRef: {type: [string, 'null']}
+        rejectedAt: {type: [string, 'null'], format: date-time}
+        rejectedBy: {type: [string, 'null']}
+        rejectionReason: {type: [string, 'null']}
+        rejectionEvidenceRef: {type: [string, 'null']}
+        suspendedAt: {type: [string, 'null'], format: date-time}
+        suspendedBy: {type: [string, 'null']}
+        suspensionReason: {type: [string, 'null']}
+        supersedesVersionId: {type: [string, 'null'], format: uuid}
+        superseded: {type: boolean}
+        createdBy: {type: string}
+    FbaEmployerBankAccountRevealView:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - versionId
+      - code
+      - ownerKind
+      - bankName
+      - accountHolderName
+      - currencyCode
+      - accountNumber
+      - effectiveFrom
+      properties:
+        identityId: {type: string, format: uuid}
+        versionId: {type: string, format: uuid}
+        code: {type: string}
+        ownerKind: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+        legalEntityId: {type: [string, 'null'], format: uuid}
+        payrollStatutoryUnitId: {type: [string, 'null'], format: uuid}
+        bankName: {type: string}
+        branchName: {type: [string, 'null']}
+        routingCode: {type: [string, 'null']}
+        accountHolderName: {type: string}
+        currencyCode: {type: string, pattern: '^[A-Z]{3}$'}
+        accountNumber: {type: string}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    FbaSignatoryScopeRequest:
+      type: object
+      additionalProperties: false
+      required: [purposeCode]
+      properties:
+        purposeCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+        currencyCode: {type: [string, 'null'], pattern: '^[A-Z]{3}$'}
+        maximumAmount: {type: [number, 'null'], exclusiveMinimum: 0}
+    FbaAuthorisedSignatoryVersionWriteRequest:
+      type: object
+      additionalProperties: false
+      required: [fullName, authorityReference, effectiveFrom, scopes]
+      properties:
+        fullName: {type: string, minLength: 1, maxLength: 160}
+        designation: {type: [string, 'null'], maxLength: 120}
+        authorityReference: {type: string, minLength: 1, maxLength: 240}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        scopes:
+          type: array
+          minItems: 1
+          items: {$ref: '#/components/schemas/FbaSignatoryScopeRequest'}
+    FbaAuthorisedSignatoryCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [code, ownerKind, version]
+      properties:
+        code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+        ownerKind: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+        legalEntityId: {type: [string, 'null'], format: uuid}
+        payrollStatutoryUnitId: {type: [string, 'null'], format: uuid}
+        version: {$ref: '#/components/schemas/FbaAuthorisedSignatoryVersionWriteRequest'}
+    FbaSignatoryScopeView:
+      type: object
+      additionalProperties: false
+      required: [scopeId, purposeCode]
+      properties:
+        scopeId: {type: string, format: uuid}
+        purposeCode: {type: string}
+        currencyCode: {type: [string, 'null']}
+        maximumAmount: {type: [number, 'null']}
+    FbaAuthorisedSignatoryView:
+      type: object
+      additionalProperties: false
+      required:
+      - identityId
+      - code
+      - ownerKind
+      - identityStatus
+      - identityVersionNo
+      - versionId
+      - versionSequence
+      - versionNo
+      - fullName
+      - authorityReference
+      - effectiveFrom
+      - lifecycleStatus
+      - superseded
+      - createdBy
+      - scopes
+      properties:
+        identityId: {type: string, format: uuid}
+        code: {type: string}
+        ownerKind: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+        legalEntityId: {type: [string, 'null'], format: uuid}
+        payrollStatutoryUnitId: {type: [string, 'null'], format: uuid}
+        identityStatus: {type: string}
+        identityVersionNo: {type: integer, format: int64, minimum: 0}
+        versionId: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        versionNo: {type: integer, format: int64, minimum: 0}
+        fullName: {type: string}
+        designation: {type: [string, 'null']}
+        authorityReference: {type: string}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        lifecycleStatus: {type: string}
+        verificationEvidenceRef: {type: [string, 'null']}
+        verifiedAt: {type: [string, 'null'], format: date-time}
+        verifiedBy: {type: [string, 'null']}
+        approvedAt: {type: [string, 'null'], format: date-time}
+        approvedBy: {type: [string, 'null']}
+        approvalEvidenceRef: {type: [string, 'null']}
+        rejectedAt: {type: [string, 'null'], format: date-time}
+        rejectedBy: {type: [string, 'null']}
+        rejectionReason: {type: [string, 'null']}
+        rejectionEvidenceRef: {type: [string, 'null']}
+        suspendedAt: {type: [string, 'null'], format: date-time}
+        suspendedBy: {type: [string, 'null']}
+        suspensionReason: {type: [string, 'null']}
+        supersedesVersionId: {type: [string, 'null'], format: uuid}
+        superseded: {type: boolean}
+        createdBy: {type: string}
+        scopes:
+          type: array
+          items: {$ref: '#/components/schemas/FbaSignatoryScopeView'}
+    FbaAuthorityEvaluationRequest:
+      type: object
+      additionalProperties: false
+      required: [ownerKind, purposeCode]
+      properties:
+        ownerKind: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+        legalEntityId: {type: [string, 'null'], format: uuid}
+        payrollStatutoryUnitId: {type: [string, 'null'], format: uuid}
+        purposeCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+        currencyCode: {type: [string, 'null'], pattern: '^[A-Z]{3}$'}
+        amount: {type: [number, 'null'], exclusiveMinimum: 0}
+        asOf: {type: [string, 'null'], format: date}
+    FbaAuthorityEvaluationView:
+      type: object
+      additionalProperties: false
+      required: [authorised, reasonCode, ownerKind, purposeCode, asOf]
+      properties:
+        authorised: {type: boolean}
+        reasonCode: {type: string}
+        ownerKind: {type: string}
+        legalEntityId: {type: [string, 'null'], format: uuid}
+        payrollStatutoryUnitId: {type: [string, 'null'], format: uuid}
+        purposeCode: {type: string}
+        currencyCode: {type: [string, 'null']}
+        requestedAmount: {type: [number, 'null']}
+        asOf: {type: string, format: date}
+        signatoryIdentityId: {type: [string, 'null'], format: uuid}
+        signatoryVersionId: {type: [string, 'null'], format: uuid}
+        signatoryCode: {type: [string, 'null']}
+        signatoryName: {type: [string, 'null']}
+        scopeCurrencyCode: {type: [string, 'null']}
+        maximumAmount: {type: [number, 'null']}
+    FbaBankingReadinessFinding:
+      type: object
+      additionalProperties: false
+      required: [code, source, severity, detail]
+      properties:
+        code: {type: string}
+        source: {type: string}
+        severity: {type: string}
+        detail: {type: string}
+    FbaBankingReadinessView:
+      type: object
+      additionalProperties: false
+      required:
+      - readinessScope
+      - ownerKind
+      - currencyCode
+      - purposeCode
+      - asOf
+      - bankReady
+      - signatoryReady
+      - ready
+      - findings
+      properties:
+        readinessScope: {type: string, const: BANKING_AND_SIGNATORY_ONLY}
+        ownerKind: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+        legalEntityId: {type: [string, 'null'], format: uuid}
+        payrollStatutoryUnitId: {type: [string, 'null'], format: uuid}
+        currencyCode: {type: string, pattern: '^[A-Z]{3}$'}
+        purposeCode: {type: string}
+        amount: {type: [number, 'null']}
+        asOf: {type: string, format: date}
+        bankReady: {type: boolean}
+        signatoryReady: {type: boolean}
+        ready: {type: boolean}
+        authorityEvaluation:
+          oneOf:
+          - {$ref: '#/components/schemas/FbaAuthorityEvaluationView'}
+          - {type: 'null'}
+        findings:
+          type: array
+          items: {$ref: '#/components/schemas/FbaBankingReadinessFinding'}
     JrfPayrollJurisdictionVersionWriteRequest:
       type: object
       additionalProperties: false
