@@ -4,6 +4,8 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/payroll}
     username: ${DB_USER:payroll_app}
     password: ${DB_PASSWORD:change-me}
+    hikari:
+      connection-init-sql: SET TIME ZONE 'UTC'
   jpa:
     open-in-view: false
     hibernate.ddl-auto: validate
