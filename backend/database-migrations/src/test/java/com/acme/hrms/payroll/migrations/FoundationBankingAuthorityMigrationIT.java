@@ -634,6 +634,136 @@ void futureDatedBankVersionCannotActivateBeforeItsEffectiveDate()
   }
 
 
+@Test
+void futureDatedSignatoryCannotActivateBeforeItsEffectiveDate()
+    throws Exception {
+  try (Connection connection = app()) {
+    connection.setAutoCommit(false);
+    try (Statement statement = connection.createStatement()) {
+      setTenant(statement, TENANT_A);
+
+      statement.execute(
+          """
+          INSERT INTO organisation.authorised_signatory(
+            id, tenant_id, code, owner_kind, legal_entity_id,
+            created_by, updated_by
+          ) VALUES (
+            '%s', '%s', 'SIGNATORY_FUTURE', 'LEGAL_ENTITY', '%s',
+            'maker', 'maker'
+          )
+          """
+              .formatted(SIGNATORY_A, TENANT_A, LEGAL_A));
+
+      statement.execute(
+          """
+          INSERT INTO organisation.authorised_signatory_version(
+            id, tenant_id, authorised_signatory_id, owner_key,
+            version_sequence, full_name, designation, authority_reference,
+            effective_from, effective_to, created_by, updated_by
+          ) VALUES (
+            '%s', '%s', '%s', 'LEGAL_ENTITY:%s',
+            1, 'Future Signatory', 'Director', 'BOARD:2099:001',
+            '2099-01-01', NULL, 'maker', 'maker'
+          )
+          """
+              .formatted(
+                  SIGNATORY_A_VERSION,
+                  TENANT_A,
+                  SIGNATORY_A,
+                  LEGAL_A));
+
+      statement.execute(
+          """
+          INSERT INTO organisation.authorised_signatory_scope(
+            tenant_id, authorised_signatory_id,
+            authorised_signatory_version_id,
+            purpose_code, currency_code, maximum_amount, created_by
+          ) VALUES (
+            '%s', '%s', '%s',
+            'PAYROLL_FUNDING', 'INR', 1000000.00, 'maker'
+          )
+          """
+              .formatted(
+                  TENANT_A,
+                  SIGNATORY_A,
+                  SIGNATORY_A_VERSION));
+
+      assertThat(
+              functionResult(
+                  statement,
+                  """
+                  SELECT organisation.submit_authorised_signatory_version(
+                    '%s', '%s', 0, 'maker', '%s'
+                  )
+                  """
+                      .formatted(
+                          TENANT_A,
+                          SIGNATORY_A_VERSION,
+                          Instant.parse("2026-08-10T03:00:00Z"))))
+          .isEqualTo(1);
+
+      assertThat(
+              functionResult(
+                  statement,
+                  """
+                  SELECT organisation.verify_authorised_signatory_version(
+                    '%s', '%s', 1, 'verifier',
+                    'SIGNATORY:VERIFY:FUTURE', '%s'
+                  )
+                  """
+                      .formatted(
+                          TENANT_A,
+                          SIGNATORY_A_VERSION,
+                          Instant.parse("2026-08-10T03:01:00Z"))))
+          .isEqualTo(1);
+
+      assertThat(
+              functionResult(
+                  statement,
+                  """
+                  SELECT organisation.request_authorised_signatory_approval(
+                    '%s', '%s', 2, 'verifier', '%s'
+                  )
+                  """
+                      .formatted(
+                          TENANT_A,
+                          SIGNATORY_A_VERSION,
+                          Instant.parse("2026-08-10T03:02:00Z"))))
+          .isEqualTo(1);
+
+      Savepoint futureActivation = connection.setSavepoint();
+      assertSqlState(
+          "23514",
+          () ->
+              statement.execute(
+                  """
+                  SELECT organisation.activate_authorised_signatory_version(
+                    '%s', '%s', 3, 'approver',
+                    'SIGNATORY:APPROVE:FUTURE', '%s'
+                  )
+                  """
+                      .formatted(
+                          TENANT_A,
+                          SIGNATORY_A_VERSION,
+                          Instant.parse("2026-08-10T03:03:00Z"))));
+      connection.rollback(futureActivation);
+
+      assertThat(
+              scalarString(
+                  statement,
+                  """
+                  SELECT lifecycle_status
+                  FROM organisation.authorised_signatory_version
+                  WHERE id='%s'
+                  """
+                      .formatted(SIGNATORY_A_VERSION)))
+          .isEqualTo("APPROVAL_PENDING");
+    }
+    connection.rollback();
+  }
+}
+
+
 private static void seedBankDraft(
     Statement statement,
     UUID identityId,

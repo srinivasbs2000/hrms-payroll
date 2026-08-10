@@ -1508,6 +1508,8 @@ DECLARE
   legal_id uuid;
   psu_id uuid;
   owner_status varchar(24);
+  effective_from_value date;
+  effective_to_value date;
 BEGIN
   IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
     RAISE EXCEPTION 'tenant context mismatch'
@@ -1520,14 +1522,18 @@ BEGIN
     version.authorised_signatory_id,
     identity.owner_kind,
     identity.legal_entity_id,
-    identity.payroll_statutory_unit_id
+    identity.payroll_statutory_unit_id,
+    version.effective_from,
+    version.effective_to
     INTO
       maker,
       verifier,
       identity_id,
       owner_kind_value,
       legal_id,
-      psu_id
+      psu_id,
+      effective_from_value,
+      effective_to_value
     FROM organisation.authorised_signatory_version version
     JOIN organisation.authorised_signatory identity
       ON identity.tenant_id = version.tenant_id
@@ -1550,6 +1556,15 @@ BEGIN
      OR btrim(p_evidence_ref) = '' THEN
     RAISE EXCEPTION 'independent final signatory approval evidence is required'
       USING ERRCODE = '42501';
+  END IF;
+
+  IF p_approved_at::date < effective_from_value
+     OR (
+       effective_to_value IS NOT NULL
+       AND p_approved_at::date >= effective_to_value
+     ) THEN
+    RAISE EXCEPTION 'signatory version must be effective on approval date'
+      USING ERRCODE = '23514';
   END IF;
 
   IF owner_kind_value = 'LEGAL_ENTITY' THEN
