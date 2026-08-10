@@ -1,14 +1,14 @@
 # Payroll Feature Delivery Lineage
 
-**Product reconciliation baseline:** `6ee101bd398b745a0078bd0517b4e3797c571c2b`
-**Product implementation baseline:** `c8ab727787a23b0b211caf27c2158300a38a8eab` (P5-JRF-01); merged to main as `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Product reconciliation baseline:** `a0234d94ef280a41a744ea6e8483f786a497d211` (P5-FBA-01 backend); UI merge `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
+**Product implementation baseline:** `088484b1855b5af6f0c67dfe1426204b9a720b13` (P5-FBA-01 backend publication head); UI `062e3a1e43e311a79687ae5645ae2934b8e5cb35`; merged as backend `a0234d94ef280a41a744ea6e8483f786a497d211` / UI `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 **Purpose:** Trace original epic -> original backlog row -> current story -> migration -> commit -> PR/merge -> evidence -> remaining scope.
 
 ## 1. Epic-level lineage
 
 | Epic | Current Stories | Migrations | Commit Evidence | PR/Merge | Classification |
 |---|---|---|---|---|---|
-| E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06; P5-JRF-01 | V014-V016; V034 (plus foundational V001-V013) | b9f6bcf888c4d22c04a237f0a13c37d4d4d24c36; 47654eb11c69838924da172479a4c4d72a5c2729; da5dad33d7d228e1e7ee1467fb198ec21d0934ca; c8ab727787a23b0b211caf27c2158300a38a8eab | PR #2; PR #36 / merge 6ee101bd398b745a0078bd0517b4e3797c571c2b | PARTIALLY IMPLEMENTED |
+| E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06; P5-JRF-01; P5-FBA-01 | V014-V016; V034-V035 (plus foundational V001-V013) | b9f6bcf888c4d22c04a237f0a13c37d4d4d24c36; 47654eb11c69838924da172479a4c4d72a5c2729; da5dad33d7d228e1e7ee1467fb198ec21d0934ca; c8ab727787a23b0b211caf27c2158300a38a8eab; P5-FBA-01 backend 088484b1855b5af6f0c67dfe1426204b9a720b13; UI 062e3a1e43e311a79687ae5645ae2934b8e5cb35 | PR #2; PR #36 / merge 6ee101bd398b745a0078bd0517b4e3797c571c2b; P5-FBA-01 backend PR #44 / a0234d94ef280a41a744ea6e8483f786a497d211; UI PR #12 / 5c45ab41ee3cb4466fac822c04c771f5de0ba119 | PARTIALLY IMPLEMENTED |
 | E02 | S2-01, S2-02; population execution contributes through S3-01 | V017-V018 | Inherited Sprint 2 range through 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
 | E03 | S2-03; P5-A2 general catalogue and named bases | V019; V032 | Sprint 2 foundation plus `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` | PR #3; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` | PARTIALLY IMPLEMENTED |
 | E04 | S2-04 | V020 | Inherited Sprint 2 entry head 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
@@ -175,3 +175,17 @@ V034 is committed and immutable. Active P5-JRF-01 path ownership and the
 temporary three-path dependency-security exception authority are released by
 the post-merge status closure. V035 remains unreserved pending separate
 capability activation.
+
+## P5-FBA-01 cross-repository publication lineage
+
+- Capability: P5-FBA-01 — Foundation Banking & Authority.
+- Original mapping: P5-A3 bank/signatory slice.
+- Migration: V035.
+- Backend publication head: `088484b1855b5af6f0c67dfe1426204b9a720b13`.
+- Backend product PR/merge: #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`.
+- UI product head: `062e3a1e43e311a79687ae5645ae2934b8e5cb35`.
+- UI product PR/merge: #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`.
+- Status closure: PR #__P5_FBA_CLOSURE_PR__.
+- Canonical story delta: PLN-E01-008 and PLN-E01-009 -> IMPLEMENTED;
+  PLN-E01-011 and PLN-E01-012 remain PARTIALLY IMPLEMENTED.
+- V035 is immutable after merge; V036 is unreserved.

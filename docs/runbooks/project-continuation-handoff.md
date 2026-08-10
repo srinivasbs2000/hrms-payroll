@@ -1,19 +1,20 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 10 August 2026 P5-FBA-01 G05 green / G06 publication review
+**Updated:** 10 August 2026 P5-FBA-01 post-merge status closure
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
-**Product reconciliation baseline:** P5-JRF-01 product merge on `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Product reconciliation baseline:** P5-FBA-01 backend merge `a0234d94ef280a41a744ea6e8483f786a497d211`; UI merge `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-JRF-01 through PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Latest merged product increment:** P5-FBA-01 backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 **P5-JRF-01 product-status closure:** PR #39
+**P5-FBA-01 product-status closure:** PR #__P5_FBA_CLOSURE_PR__
 **Latest merged quality increment:** PR #33
-**Active capability:** `P5-FBA-01 — Foundation Banking & Authority`
-**Current state:** P5-FBA-01 G01-G05 GREEN; G06 product publication pending
-**Migrations:** V001–V034 committed and immutable; V035 implemented on the P5-FBA-01 feature branch and still reserved
-**Next migration:** V035 reserved exclusively to P5-FBA-01
+**Active capability:** None
+**Current state:** P5-FBA-01 MERGED / CLOSED after status-closure PR #__P5_FBA_CLOSURE_PR__
+**Migrations:** V001–V035 committed and immutable
+**Next migration:** V036 unreserved; separate capability activation required
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -31,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | `P5-FBA-01 — Foundation Banking & Authority` |
-| Active implementation branch | `feature/p5-fba-01-foundation-banking-authority` |
-| Active path ownership | Frozen P5-FBA-01 product paths plus R3-reconciled G04/G05 verification-support paths |
-| Migration state | V001–V034 immutable; V035 implemented/reserved to P5-FBA-01 until closure |
-| Next migration | V036 remains unreserved and unavailable for product work until P5-FBA-01 status closure |
+| Active write owner | None |
+| Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
+| Active path ownership | None |
+| Migration state | V001–V035 immutable |
+| Next migration | V036 unreserved; do not allocate without separate capability activation |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -43,9 +44,9 @@ live read-only GitHub evidence before starting write-capable work.
 
 The 450 detailed stories reconcile to:
 
-- 14 implemented;
+- 16 implemented;
 - 156 partially implemented;
-- 90 not evidenced;
+- 88 not evidenced;
 - 159 not started;
 - 31 requiring legal/domain revalidation.
 
@@ -57,9 +58,15 @@ it:
 - `PLN-E01-007` -> IMPLEMENTED;
 - `PLN-E01-012` -> PARTIALLY IMPLEMENTED.
 
+P5-FBA-01 post-merge reconciliation adds:
+
+- `PLN-E01-008` -> IMPLEMENTED;
+- `PLN-E01-009` -> IMPLEMENTED;
+- `PLN-E01-011` remains PARTIALLY IMPLEMENTED;
+- `PLN-E01-012` remains PARTIALLY IMPLEMENTED with bounded banking/signatory readiness.
+
 The execution-candidate IDs `P5-E01-005..010` are not one-for-one with the
-canonical PLN numbering. Canonical bank-account, signatory and snapshot rows
-remain unchanged because those were explicit exclusions.
+canonical PLN numbering. Canonical bank-account and signatory rows are now implemented through P5-FBA-01; the snapshot row remains unchanged and outside that capability.
 
 The complete machine-readable ledger is:
 
@@ -73,7 +80,7 @@ the same identifiers.
 - Current P5-A2 maps primarily to original P5-B1.
 - Current P5-A3 maps primarily to original P5-B4/P5-B5 and selected P5-B6.
 - Original P5-A2 jurisdiction/registration is complete through P5-JRF-01.
-- Original P5-A3 bank/authority/snapshots/complete-readiness remains incomplete.
+- Original P5-A3 remains partial: bank/authorised-signatory foundation is implemented through P5-FBA-01; snapshots and complete readiness remain open.
 
 Closed package:
 
@@ -86,27 +93,24 @@ Closed package:
 
 ## Authority state
 
-P5-FBA-01 is the active product write owner.
+No product capability is active.
 
-- scope authority:
-  `docs/planning/pln-01/p5-fba-01-foundation-banking-authority-scope.md`;
-- activation base:
-  `0cae307b0f5e7bcd05b47836e6e4df24c8701add`;
-- implementation branch:
-  `feature/p5-fba-01-foundation-banking-authority`;
-- V035 reserved exclusively to this capability;
-- primary story scope: PLN-E01-008 and PLN-E01-009;
-- PLN-E01-011/012 ownership is bounded to bank/signatory controls/readiness;
-- snapshots, employee bank accounts and payment execution remain excluded.
+P5-FBA-01 is merged/closed:
+- backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`;
+- UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`;
+- status-closure PR #__P5_FBA_CLOSURE_PR__;
+- V035 is committed and immutable;
+- V036 is unreserved;
+- active path ownership is None.
+
+PLN-E01-008 and PLN-E01-009 are implemented. PLN-E01-011 and PLN-E01-012
+remain partial. PLN-E01-010 remains open.
 
 ## Exact next controlled action
 
-Execute P5-FBA-01 G06: R3 product publication, hosted CI, both product merges,
-post-merge detailed-story reconciliation and the backend status-closure PR.
+Perform a fresh R3 capability reconciliation/selection against the canonical
+story ledger. `P5-FSR-01 — Foundation Snapshot & Readiness Closure` is the
+recommended next candidate only; it is NOT activated.
 
-Do not change canonical story statuses before both product repositories merge.
-Do not create V036 or activate the next capability during G06.
-
-
-No additional owner confirmation is required for bounded steps inside the frozen
-scope. Stop only for a material authority/design conflict or evidence mismatch.
+Do not create product code, reserve V036, or assign path ownership until the
+project owner separately authorizes the next capability.
