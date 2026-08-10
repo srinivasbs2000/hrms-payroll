@@ -410,6 +410,59 @@ class FoundationBankingAuthorityMigrationIT {
     }
   }
 
+
+@Test
+void futureDatedBankVersionCannotActivateBeforeItsEffectiveDate()
+    throws Exception {
+  try (Connection connection = app()) {
+    connection.setAutoCommit(false);
+    try (Statement statement = connection.createStatement()) {
+      setTenant(statement, TENANT_A);
+      seedBankDraft(
+          statement,
+          BANK_A,
+          BANK_A_VERSION,
+          "BANK_FUTURE",
+          "d".repeat(64),
+          false,
+          "2099-01-01");
+      advanceBankToApprovalPending(
+          statement,
+          BANK_A_VERSION,
+          "maker",
+          "verifier");
+
+      Savepoint futureActivation = connection.setSavepoint();
+      assertSqlState(
+          "23514",
+          () ->
+              statement.execute(
+                  """
+                  SELECT organisation.activate_employer_bank_account_version(
+                    '%s', '%s', 3, 'approver', 'BANK:APPROVE:FUTURE', '%s'
+                  )
+                  """
+                      .formatted(
+                          TENANT_A,
+                          BANK_A_VERSION,
+                          Instant.parse("2026-08-10T01:09:00Z"))));
+      connection.rollback(futureActivation);
+
+      assertThat(
+              scalarString(
+                  statement,
+                  """
+                  SELECT lifecycle_status
+                  FROM organisation.employer_bank_account_version
+                  WHERE id='%s'
+                  """
+                      .formatted(BANK_A_VERSION)))
+          .isEqualTo("APPROVAL_PENDING");
+    }
+    connection.rollback();
+  }
+}
+
   @Test
   void signatoryLifecycleRequiresScopeAndThreeIndependentActors()
       throws Exception {
@@ -580,67 +633,88 @@ class FoundationBankingAuthorityMigrationIT {
     }
   }
 
-  private static void seedBankDraft(
-      Statement statement,
-      UUID identityId,
-      UUID versionId,
-      String code,
-      String fingerprint,
-      boolean isDefault)
-      throws SQLException {
-    String maker =
-        identityId.equals(BANK_B) ? "maker2" : "maker";
 
-    statement.execute(
-        """
-        INSERT INTO organisation.employer_bank_account(
-          id, tenant_id, code, owner_kind, legal_entity_id,
-          created_by, updated_by
-        ) VALUES (
-          '%s', '%s', '%s', 'LEGAL_ENTITY', '%s',
-          '%s', '%s'
-        )
-        """
-            .formatted(
-                identityId,
-                TENANT_A,
-                code,
-                LEGAL_A,
-                maker,
-                maker));
+private static void seedBankDraft(
+    Statement statement,
+    UUID identityId,
+    UUID versionId,
+    String code,
+    String fingerprint,
+    boolean isDefault)
+    throws SQLException {
+  seedBankDraft(
+      statement,
+      identityId,
+      versionId,
+      code,
+      fingerprint,
+      isDefault,
+      "2026-01-01");
+}
 
-    statement.execute(
-        """
-        INSERT INTO organisation.employer_bank_account_version(
-          id, tenant_id, employer_bank_account_id, owner_key,
-          version_sequence, bank_name, branch_name, routing_code,
-          account_holder_name, currency_code,
-          account_number_ciphertext, account_number_iv,
-          encryption_key_version, account_number_fingerprint,
-          account_number_last4, is_default,
-          effective_from, effective_to,
-          created_by, updated_by
-        ) VALUES (
-          '%s', '%s', '%s', 'LEGAL_ENTITY:%s',
-          1, 'Synthetic Bank', 'Synthetic Branch', 'SYNTH0001',
-          'Synthetic Employer', 'INR',
-          decode('0102030405060708090a0b0c0d0e0f1011121314', 'hex'),
-          decode('0102030405060708090a0b0c', 'hex'),
-          'test-v1', '%s', '7890', %s,
-          '2026-01-01', NULL,
-          '%s', '%s'
-        )
-        """
-            .formatted(
-                versionId,
-                TENANT_A,
-                identityId,
-                LEGAL_A,
-                fingerprint,
-                isDefault,
-                maker,
-                maker));
-  }
+private static void seedBankDraft(
+    Statement statement,
+    UUID identityId,
+    UUID versionId,
+    String code,
+    String fingerprint,
+    boolean isDefault,
+    String effectiveFrom)
+    throws SQLException {
+  String maker =
+      identityId.equals(BANK_B) ? "maker2" : "maker";
+
+  statement.execute(
+      """
+      INSERT INTO organisation.employer_bank_account(
+        id, tenant_id, code, owner_kind, legal_entity_id,
+        created_by, updated_by
+      ) VALUES (
+        '%s', '%s', '%s', 'LEGAL_ENTITY', '%s',
+        '%s', '%s'
+      )
+      """
+          .formatted(
+              identityId,
+              TENANT_A,
+              code,
+              LEGAL_A,
+              maker,
+              maker));
+
+  statement.execute(
+      """
+      INSERT INTO organisation.employer_bank_account_version(
+        id, tenant_id, employer_bank_account_id, owner_key,
+        version_sequence, bank_name, branch_name, routing_code,
+        account_holder_name, currency_code,
+        account_number_ciphertext, account_number_iv,
+        encryption_key_version, account_number_fingerprint,
+        account_number_last4, is_default,
+        effective_from, effective_to,
+        created_by, updated_by
+      ) VALUES (
+        '%s', '%s', '%s', 'LEGAL_ENTITY:%s',
+        1, 'Synthetic Bank', 'Synthetic Branch', 'SYNTH0001',
+        'Synthetic Employer', 'INR',
+        decode('0102030405060708090a0b0c0d0e0f1011121314', 'hex'),
+        decode('0102030405060708090a0b0c', 'hex'),
+        'test-v1', '%s', '7890', %s,
+        '%s', NULL,
+        '%s', '%s'
+      )
+      """
+          .formatted(
+              versionId,
+              TENANT_A,
+              identityId,
+              LEGAL_A,
+              fingerprint,
+              isDefault,
+              effectiveFrom,
+              maker,
+              maker));
+}
 
   private static void advanceBankToApprovalPending(
       Statement statement,

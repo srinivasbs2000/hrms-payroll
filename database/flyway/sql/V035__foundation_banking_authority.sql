@@ -1075,6 +1075,8 @@ DECLARE
   legal_id uuid;
   psu_id uuid;
   owner_status varchar(24);
+  version_effective_from date;
+  version_effective_to date;
 BEGIN
   IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
     RAISE EXCEPTION 'tenant context mismatch'
@@ -1087,14 +1089,18 @@ BEGIN
     version.employer_bank_account_id,
     identity.owner_kind,
     identity.legal_entity_id,
-    identity.payroll_statutory_unit_id
+    identity.payroll_statutory_unit_id,
+    version.effective_from,
+    version.effective_to
     INTO
       maker,
       verifier,
       identity_id,
       owner_kind_value,
       legal_id,
-      psu_id
+      psu_id,
+      version_effective_from,
+      version_effective_to
     FROM organisation.employer_bank_account_version version
     JOIN organisation.employer_bank_account identity
       ON identity.tenant_id = version.tenant_id
@@ -1117,6 +1123,16 @@ BEGIN
      OR btrim(p_evidence_ref) = '' THEN
     RAISE EXCEPTION 'independent final bank-account approval evidence is required'
       USING ERRCODE = '42501';
+  END IF;
+
+  IF p_approved_at IS NULL
+     OR p_approved_at::date < version_effective_from
+     OR (
+       version_effective_to IS NOT NULL
+       AND p_approved_at::date >= version_effective_to
+     ) THEN
+    RAISE EXCEPTION 'bank-account version is not effective on the approval date'
+      USING ERRCODE = '23514';
   END IF;
 
   IF owner_kind_value = 'LEGAL_ENTITY' THEN
