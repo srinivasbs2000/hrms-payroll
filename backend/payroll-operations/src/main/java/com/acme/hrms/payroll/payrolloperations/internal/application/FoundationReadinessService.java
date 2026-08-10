@@ -17,6 +17,7 @@ import com.acme.hrms.payroll.statutory.RegistrationReadinessRequest;
 import com.acme.hrms.payroll.statutory.RegistrationReadinessView;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -114,27 +115,51 @@ public class FoundationReadinessService {
     for (FoundationReadinessRequest.RegistrationRequirement requirement :
         request.registrations()) {
       UUID registrationOwnerId = ownerId(context, requirement.ownerKind());
-      RegistrationReadinessView readiness =
+      RegistrationOwnerKind registrationOwnerKind =
+          RegistrationOwnerKind.valueOf(requirement.ownerKind().name());
+
+      RegistrationReadinessView periodStartReadiness =
           registrations.evaluate(
               new RegistrationReadinessRequest(
                   requirement.registrationTypeId(),
-                  RegistrationOwnerKind.valueOf(requirement.ownerKind().name()),
+                  registrationOwnerKind,
+                  registrationOwnerId,
+                  requirement.payrollJurisdictionId(),
+                  context.periodStart(),
+                  0));
+
+      RegistrationReadinessView periodEndReadiness =
+          registrations.evaluate(
+              new RegistrationReadinessRequest(
+                  requirement.registrationTypeId(),
+                  registrationOwnerKind,
                   registrationOwnerId,
                   requirement.payrollJurisdictionId(),
                   context.periodEnd(),
                   requirement.warningHorizonDays()));
 
-      registrationsReady &= readiness.ready();
+      boolean fullPeriodReady =
+          periodStartReadiness.ready()
+              && periodEndReadiness.ready()
+              && periodEndReadiness.registrationVersionId() != null
+              && Objects.equals(
+                  periodStartReadiness.registrationVersionId(),
+                  periodEndReadiness.registrationVersionId());
+
+      registrationsReady &= fullPeriodReady;
       registrationChecks.add(
           new RegistrationCheck(
-              readiness.registrationTypeId(),
-              readiness.ownerKind().name(),
-              readiness.ownerId(),
-              readiness.payrollJurisdictionId(),
-              readiness.asOf(),
-              readiness.ready(),
-              readiness.registrationVersionId()));
-      readiness.findings().stream()
+              periodEndReadiness.registrationTypeId(),
+              periodEndReadiness.ownerKind().name(),
+              periodEndReadiness.ownerId(),
+              periodEndReadiness.payrollJurisdictionId(),
+              periodEndReadiness.asOf(),
+              fullPeriodReady,
+              fullPeriodReady
+                  ? periodEndReadiness.registrationVersionId()
+                  : null));
+
+      periodEndReadiness.findings().stream()
           .map(
               finding ->
                   new Finding(
@@ -143,6 +168,14 @@ public class FoundationReadinessService {
                       finding.severity(),
                       finding.message()))
           .forEach(findings::add);
+
+      if (!fullPeriodReady) {
+        findings.add(
+            blocker(
+                "REGISTRATION_NOT_EFFECTIVE_FOR_FULL_PERIOD",
+                "JURISDICTION_REGISTRATION",
+                "The required registration must remain ready under the same effective version from payroll period start through period end"));
+      }
     }
 
     dimensions.add(
