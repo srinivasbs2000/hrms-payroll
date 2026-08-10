@@ -216,3 +216,60 @@ release.
 
 After a patch-provenance failure, prefer complete-file payloads guarded by exact
 source blob hashes rather than attempting another synthesized patch.
+
+## 12. Cross-repository main-bound CI requires ordered publication
+
+When a downstream repository's hosted integration job explicitly checks out an
+upstream repository at `main`, the downstream PR cannot be required to become
+green before the upstream product PR merges.
+
+Publication packages must:
+
+- identify cross-repository jobs bound to an upstream default branch;
+- merge the upstream product PR only after its own hosted gates are green;
+- rerun, rather than dummy-commit, the downstream integration workflow after
+  upstream `main` advances;
+- require the downstream integration job to prove it consumed the new upstream
+  main before downstream merge; and
+- never interpret the expected pre-upstream-merge failure as a downstream
+  product regression.
+
+P5-FBA-01 exposed this defect when the standalone UI PR correctly rejected an
+upstream backend `main` that still ended at V034 and lacked the FBA runtime.
+
+## 13. Secret-scan false positives require exact suppression
+
+When a secret scanner flags deterministic synthetic test data:
+
+- inspect the scanner rule, file, commit and exact finding before suppression;
+- confirm that the value is test-only and is not a credential, token, password,
+  encryption key or production secret;
+- prefer exact scanner fingerprints in the repository's existing ignore
+  mechanism;
+- never disable the scanner rule or broadly ignore the test path merely to make
+  CI green; and
+- preserve the original test semantics unless the test value itself is unsafe.
+
+P5-FBA-01 used exact Gitleaks fingerprints for ten synthetic
+`Idempotency-Key` literals after the hosted SARIF/job evidence proved they
+were false positives.
+
+## 14. Hosted CI registration and external dependency failures are not product defects
+
+Publication automation must treat hosted-check registration as eventually
+consistent. After a push, poll for check registration before invoking a
+fail-fast watcher; an immediate `no checks reported` response is not evidence
+that CI failed or did not trigger.
+
+When a hosted job fails before project tests execute because an external
+artifact repository returns a transport/rate-limit error such as HTTP 429:
+
+- classify the failure from the hosted job log before changing product code;
+- require evidence that the intended module/tests were not executed;
+- rerun only the failed hosted job/run when the other gates remain valid; and
+- never create a source-code or migration change solely to compensate for an
+  external package-repository rate limit.
+
+P5-FBA-01 exposed both conditions during G06 publication: GitHub check
+registration lag caused an early resume stop, and Maven Central HTTP 429 stopped
+the Flyway/RLS job before the database-migrations module ran.

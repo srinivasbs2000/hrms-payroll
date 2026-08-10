@@ -1,16 +1,16 @@
 # P5-FBA-01 — Foundation Banking & Authority
 
-**Status:** LOCAL IMPLEMENTATION VERIFIED — G06 PRODUCT PUBLICATION PENDING
+**Status:** MERGED / CLOSED — POST-MERGE AUTHORITY RELEASED
 **Execution capability:** `P5-FBA-01`
 **Original program mapping:** `P5-A3 — Foundation Bank, Authority, Snapshots and Readiness`
 **Primary canonical stories:** `PLN-E01-008`, `PLN-E01-009`
 **Cross-cutting partial stories:** `PLN-E01-011`, `PLN-E01-012`
 **Activation base:** `0cae307b0f5e7bcd05b47836e6e4df24c8701add`
 **Implementation branch:** `feature/p5-fba-01-foundation-banking-authority`
-**Migration reservation:** `V035` reserved exclusively to `P5-FBA-01`
+**Migration reservation:** V035 committed and immutable; V036 unreserved
 **UI repository baseline:** `dc8f17cfbabe0a3322f24a3dc0457509fe1e7d01`
-**G05 verified heads:** backend `0c3be43bc8268d60b97973e9faa4f98e716ec26f`; UI `062e3a1e43e311a79687ae5645ae2934b8e5cb35`
-**Reasoning transition:** R3 final critical review complete; publication/closure remains owner-executed
+**Publication evidence:** backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`; closure PR #45
+**Reasoning transition:** R3 publication and post-merge reconciliation complete; ownership released
 
 ## 1. Objective
 
@@ -426,3 +426,22 @@ activated.
 After product merge, reconcile `PLN-E01-008`, `009`, `011` and `012` against
 actual evidence. Only then update the canonical ledger and close capability
 authority.
+
+## 11. Closure result
+
+P5-FBA-01 is closed after backend PR #44, UI PR #12
+and status-closure PR #45.
+
+Canonical reconciliation:
+- PLN-E01-008 IMPLEMENTED;
+- PLN-E01-009 IMPLEMENTED;
+- PLN-E01-011 remains PARTIALLY IMPLEMENTED;
+- PLN-E01-012 remains PARTIALLY IMPLEMENTED;
+- PLN-E01-010 remains unchanged.
+
+G06 publication-security support changed `.gitleaksignore` only to suppress the
+ten reviewed synthetic idempotency-key fingerprints; product and test behavior
+were unchanged.
+
+V035 is immutable. V036 is unreserved. No next capability is activated by this
+closure.
