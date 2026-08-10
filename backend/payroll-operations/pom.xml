@@ -52,5 +52,5 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
-  </dependencies>
+  <dependency><groupId>com.acme.hrms</groupId><artifactId>organisation</artifactId><version>${project.version}</version></dependency><dependency><groupId>com.acme.hrms</groupId><artifactId>statutory-deductions</artifactId><version>${project.version}</version></dependency></dependencies>
 </project>
