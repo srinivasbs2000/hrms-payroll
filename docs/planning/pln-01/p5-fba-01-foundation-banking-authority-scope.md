@@ -1,6 +1,6 @@
 # P5-FBA-01 — Foundation Banking & Authority
 
-**Status:** ACTIVATED — IMPLEMENTATION NOT YET STARTED
+**Status:** LOCAL IMPLEMENTATION VERIFIED — G06 PRODUCT PUBLICATION PENDING
 **Execution capability:** `P5-FBA-01`
 **Original program mapping:** `P5-A3 — Foundation Bank, Authority, Snapshots and Readiness`
 **Primary canonical stories:** `PLN-E01-008`, `PLN-E01-009`
@@ -9,7 +9,8 @@
 **Implementation branch:** `feature/p5-fba-01-foundation-banking-authority`
 **Migration reservation:** `V035` reserved exclusively to `P5-FBA-01`
 **UI repository baseline:** `dc8f17cfbabe0a3322f24a3dc0457509fe1e7d01`
-**Reasoning transition:** R3 activation complete; implementation planning/execution proceeds at R2
+**G05 verified heads:** backend `0c3be43bc8268d60b97973e9faa4f98e716ec26f`; UI `062e3a1e43e311a79687ae5645ae2934b8e5cb35`
+**Reasoning transition:** R3 final critical review complete; publication/closure remains owner-executed
 
 ## 1. Objective
 
@@ -289,6 +290,21 @@ Owned later in the same capability:
 
 No dependency upgrade or package-manifest change is authorized merely by this
 scope.
+
+### R3-reconciled G04/G05 verification-support paths
+
+The final R3 review records five bounded support artifacts used by the explicitly
+authorized G04 contract/security integration and G05 cross-repository E2E work:
+
+- `.github/workflows/ci.yml`;
+- `deploy/local/smoke/auth-smoke.ps1`;
+- `scripts/verify-foundation-banking-contracts.mjs`;
+- `database/flyway/e2e/fixtures/S03_001__sprint_3_executable_payroll.sql`;
+- `database/flyway/e2e/verify_smoke_fixture.sql`.
+
+These paths enforce contract alignment, real-token/auth smoke behavior and
+runtime-fidelity fixture correctness. They do not add a new product module,
+expand payment/calculation scope, alter V001-V034, or reserve V036.
 
 ## 6. V035 reservation decision
 

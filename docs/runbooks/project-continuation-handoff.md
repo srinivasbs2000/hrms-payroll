@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 10 August 2026 P5-FBA-01 activation
+**Updated:** 10 August 2026 P5-FBA-01 G05 green / G06 publication review
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **Latest merged quality increment:** PR #33
 **Active capability:** `P5-FBA-01 — Foundation Banking & Authority`
-**Current state:** P5-FBA-01 ACTIVATED; P5-JRF-01 and HK-UI-SPLIT-01 CLOSED
-**Migrations:** V001–V034 committed and immutable
+**Current state:** P5-FBA-01 G01-G05 GREEN; G06 product publication pending
+**Migrations:** V001–V034 committed and immutable; V035 implemented on the P5-FBA-01 feature branch and still reserved
 **Next migration:** V035 reserved exclusively to P5-FBA-01
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
@@ -31,11 +31,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | None |
-| Historical implementation branch | `feature/p5-jrf-01-jurisdiction-registration-foundations` retained |
-| Active path ownership | None |
-| Migration state | V001–V034 immutable |
-| Next migration | V035 unreserved |
+| Active write owner | `P5-FBA-01 — Foundation Banking & Authority` |
+| Active implementation branch | `feature/p5-fba-01-foundation-banking-authority` |
+| Active path ownership | Frozen P5-FBA-01 product paths plus R3-reconciled G04/G05 verification-support paths |
+| Migration state | V001–V034 immutable; V035 implemented/reserved to P5-FBA-01 until closure |
+| Next migration | V036 remains unreserved and unavailable for product work until P5-FBA-01 status closure |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -101,8 +101,12 @@ P5-FBA-01 is the active product write owner.
 
 ## Exact next controlled action
 
-Proceed directly with P5-FBA-01 G01 at R2: V035 database/RLS/crypto foundation
-and migration tests. Do not begin G02 until G01 is green.
+Execute P5-FBA-01 G06: R3 product publication, hosted CI, both product merges,
+post-merge detailed-story reconciliation and the backend status-closure PR.
+
+Do not change canonical story statuses before both product repositories merge.
+Do not create V036 or activate the next capability during G06.
+
 
 No additional owner confirmation is required for bounded steps inside the frozen
 scope. Stop only for a material authority/design conflict or evidence mismatch.

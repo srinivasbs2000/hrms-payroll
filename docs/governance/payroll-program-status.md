@@ -12,8 +12,9 @@
 **Migration state:** V001–V034 committed and immutable
 **Next migration:** V035 reserved exclusively to `P5-FBA-01`; V001-V034 remain immutable
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 10 August 2026 after P5-FBA-01 capability activation
-**Current execution capability:** `P5-FBA-01` — ACTIVATED; implementation not yet started
+**Last reconciled:** 10 August 2026 after P5-FBA-01 G05 verification and G06 R3 pre-publication review
+**Current execution capability:** `P5-FBA-01` — ACTIVE; G01-G05 GREEN; G06 PRODUCT PUBLICATION PENDING
+**G05 verified heads:** backend `0c3be43bc8268d60b97973e9faa4f98e716ec26f`; UI `062e3a1e43e311a79687ae5645ae2934b8e5cb35`; evidence SHA-256 `0f06ffbf06c886740d309007cba20fd1f988f728d35d0bebfc75d29e2a003e4d`
 
 ## 1. Mandatory starting point
 
@@ -189,7 +190,7 @@ textual identifier.
 
 ## 7. Immediate next action
 
-Execute P5-FBA-01 in the frozen G01-G06 sequence defined by its scope authority.
+G01-G05 are green. Execute G06 R3 product publication, post-merge story reconciliation and status closure.
 
 1. G01 — V035 database/RLS/crypto foundation.
 2. G02 — employer bank-account backend with masked read and audited reveal.

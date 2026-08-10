@@ -21,6 +21,34 @@ BEGIN
 
   SELECT count(*)
     INTO actual
+    FROM (
+      SELECT id
+        FROM organisation.legal_entity
+       WHERE tenant_id = fixture_tenant_id
+         AND id = '41000000-0000-0000-0000-000000000001'
+         AND status = 'ACTIVE'
+      UNION ALL
+      SELECT id
+        FROM organisation.payroll_statutory_unit
+       WHERE tenant_id = fixture_tenant_id
+         AND id = '42000000-0000-0000-0000-000000000001'
+         AND status = 'ACTIVE'
+      UNION ALL
+      SELECT id
+        FROM organisation.establishment
+       WHERE tenant_id = fixture_tenant_id
+         AND id = '43000000-0000-0000-0000-000000000001'
+         AND status = 'ACTIVE'
+    ) active_organisation_identities;
+
+  IF actual <> 3 THEN
+    RAISE EXCEPTION
+      'Expected three ACTIVE E2E organisation identities, found %',
+      actual;
+  END IF;
+
+  SELECT count(*)
+    INTO actual
     FROM organisation.legal_entity_version
    WHERE tenant_id = fixture_tenant_id
      AND approval_status = 'APPROVED';
