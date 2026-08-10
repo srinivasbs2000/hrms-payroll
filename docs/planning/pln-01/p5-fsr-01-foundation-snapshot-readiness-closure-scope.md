@@ -133,6 +133,33 @@ banking/signatory rules or statutory registration readiness rules. No other
 organisation or statutory-deductions production path is added to P5-FSR-01
 ownership by this amendment.
 
+### R3 runtime-date consistency amendment — 11 August 2026
+
+Cross-repository browser verification exposed a latent Foundation Banking &
+Authority date-boundary inconsistency after local midnight. Application
+lifecycle approval uses the injected UTC `Clock`, while pgJDBC initializes the
+PostgreSQL session time zone from the JVM default. V035 and the current FBA read
+path compare `timestamptz` values through `::date`, so a non-UTC JVM can evaluate
+the same approval instant on a different calendar date from the application
+approval guard.
+
+To preserve one runtime date authority without editing immutable V035 or adding
+a migration, P5-FSR-01 may additionally write exactly:
+
+- `backend/payroll-boot/src/main/resources/application.yml`
+- `backend/payroll-boot/src/test/java/com/acme/hrms/payroll/RuntimeTimeAuthorityApiIT.java`
+
+The only authorised production change in `application.yml` is to initialize
+every application datasource connection with PostgreSQL session `TimeZone` UTC,
+aligning database date semantics with the existing `Clock.systemUTC()` authority.
+The test may prove both application-clock and database-session UTC authority even
+when the host/JVM default time zone is non-UTC.
+
+This amendment does not change FBA lifecycle rules, V035/V036 SQL, the half-open
+effective-date model, country statutory scope, payment execution scope or story
+status. The UI must not redefine backend approval-date semantics; the temporary
+browser-local FBA date experiment must not be published.
+
 No other path is owned by this capability without a new R3 authority update.
 The presence of a directory wildcard above is a maximum ownership boundary, not
 permission for a runner to change every file below it.
