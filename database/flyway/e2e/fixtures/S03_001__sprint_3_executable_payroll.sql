@@ -30,12 +30,15 @@ SELECT set_config(
   true
 );
 
+-- The overlay seeds an already-approved version, so mirror V031 approval
+-- semantics by making the stable identity ACTIVE explicitly.
 INSERT INTO organisation.legal_entity(
-  id,tenant_id,code,created_by,updated_by
+  id,tenant_id,code,status,created_by,updated_by
 ) VALUES (
   '41000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000001',
   'E2E_LE_IN',
+  'ACTIVE',
   'e2e-fixture',
   'e2e-fixture'
 );
@@ -62,11 +65,12 @@ INSERT INTO organisation.legal_entity_version(
 );
 
 INSERT INTO organisation.payroll_statutory_unit(
-  id,tenant_id,code,created_by,updated_by
+  id,tenant_id,code,status,created_by,updated_by
 ) VALUES (
   '42000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000001',
   'E2E_PSU_IN',
+  'ACTIVE',
   'e2e-fixture',
   'e2e-fixture'
 );
@@ -93,11 +97,12 @@ INSERT INTO organisation.payroll_statutory_unit_version(
 );
 
 INSERT INTO organisation.establishment(
-  id,tenant_id,code,created_by,updated_by
+  id,tenant_id,code,status,created_by,updated_by
 ) VALUES (
   '43000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000001',
   'E2E_BLR',
+  'ACTIVE',
   'e2e-fixture',
   'e2e-fixture'
 );
