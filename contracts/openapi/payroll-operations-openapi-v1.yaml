@@ -299,7 +299,205 @@ pathItems:
         '403': {$ref: '#/responses/Forbidden'}
         '404': {$ref: '#/responses/NotFound'}
 
+  PayrollCycleFoundationReadiness:
+    parameters:
+    - $ref: '#/parameters/CycleId'
+    - $ref: '#/parameters/CorrelationId'
+    post:
+      tags: [Payroll Operations]
+      summary: Evaluate bounded composed foundation readiness for one payroll cycle
+      description: >
+        Aggregates immutable configuration-snapshot, employer banking/signatory,
+        and caller-declared jurisdiction/registration readiness only. This does
+        not assert country-specific statutory rules/rates, employee-bank,
+        payment-execution, retro/off-cycle/final-settlement, accounting,
+        migration/cutover or production-operations readiness.
+      operationId: evaluateFoundationReadiness
+      x-permission: payroll-cycle.read
+      x-required-permissions:
+      - payroll-cycle.read
+      - organisation.banking-readiness.read
+      - statutory-registration.read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/FoundationReadinessRequest'}
+      responses:
+        '200':
+          description: Bounded composed foundation readiness
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/FoundationReadinessView'}
+        '400': {$ref: '#/responses/Problem'}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+
 schemas:
+  FoundationReadinessRequest:
+    type: object
+    additionalProperties: false
+    required: [banking, registrations]
+    properties:
+      banking:
+        $ref: '#/schemas/FoundationReadinessBankingRequirement'
+      registrations:
+        type: array
+        description: >
+          Explicit generic registration requirements supplied by the caller.
+          An empty array means no registration requirement is declared for this
+          bounded evaluation and is not a legal conclusion that none exists.
+        items:
+          $ref: '#/schemas/FoundationReadinessRegistrationRequirement'
+  FoundationReadinessBankingRequirement:
+    type: object
+    additionalProperties: false
+    required: [ownerKind, currencyCode, purposeCode]
+    properties:
+      ownerKind:
+        type: string
+        enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]
+      currencyCode:
+        type: string
+        pattern: '^[A-Z]{3}$'
+      purposeCode:
+        type: string
+        pattern: '^[A-Z][A-Z0-9_]{1,59}$'
+      amount:
+        type: [number, 'null']
+        exclusiveMinimum: 0
+  FoundationReadinessRegistrationRequirement:
+    type: object
+    additionalProperties: false
+    required:
+    - registrationTypeId
+    - ownerKind
+    - payrollJurisdictionId
+    - warningHorizonDays
+    properties:
+      registrationTypeId: {type: string, format: uuid}
+      ownerKind:
+        type: string
+        enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]
+      payrollJurisdictionId: {type: string, format: uuid}
+      warningHorizonDays:
+        type: integer
+        minimum: 0
+        maximum: 365
+  FoundationReadinessView:
+    type: object
+    additionalProperties: false
+    required:
+    - readinessScope
+    - payrollCycleId
+    - cycleStatus
+    - payGroupVersionId
+    - payrollStatutoryUnitVersionId
+    - payrollStatutoryUnitId
+    - legalEntityVersionId
+    - legalEntityId
+    - periodStart
+    - periodEnd
+    - paymentDate
+    - foundationReady
+    - readinessStatus
+    - dimensions
+    - registrationChecks
+    - findings
+    - excludedCapabilities
+    properties:
+      readinessScope:
+        type: string
+        const: FOUNDATION_ONLY
+      payrollCycleId: {type: string, format: uuid}
+      cycleStatus: {type: string}
+      payGroupVersionId: {type: string, format: uuid}
+      payrollStatutoryUnitVersionId: {type: string, format: uuid}
+      payrollStatutoryUnitId: {type: string, format: uuid}
+      legalEntityVersionId: {type: string, format: uuid}
+      legalEntityId: {type: string, format: uuid}
+      periodStart: {type: string, format: date}
+      periodEnd: {type: string, format: date}
+      paymentDate: {type: string, format: date}
+      foundationConfigurationSnapshotId:
+        type: [string, 'null']
+        format: uuid
+      foundationConfigurationSnapshotHash:
+        type: [string, 'null']
+        pattern: '^[0-9a-f]{64}$'
+      foundationConfigurationCount:
+        type: [integer, 'null']
+        minimum: 6
+      foundationConfigurationSealedAt:
+        type: [string, 'null']
+        format: date-time
+      foundationReady: {type: boolean}
+      readinessStatus:
+        type: string
+        enum: [READY, READY_WITH_WARNINGS, BLOCKED]
+      dimensions:
+        type: array
+        items: {$ref: '#/schemas/FoundationReadinessDimension'}
+      registrationChecks:
+        type: array
+        items: {$ref: '#/schemas/FoundationReadinessRegistrationCheck'}
+      findings:
+        type: array
+        items: {$ref: '#/schemas/FoundationReadinessFinding'}
+      excludedCapabilities:
+        type: array
+        items: {type: string}
+  FoundationReadinessDimension:
+    type: object
+    additionalProperties: false
+    required: [code, ready, status, blockerCount, warningCount, coverage]
+    properties:
+      code: {type: string}
+      ready: {type: boolean}
+      status:
+        type: string
+        enum: [READY, READY_WITH_WARNINGS, BLOCKED]
+      blockerCount: {type: integer, minimum: 0}
+      warningCount: {type: integer, minimum: 0}
+      coverage:
+        type: string
+        description: Jurisdiction/registration coverage is CALLER_DECLARED_REQUIREMENTS_ONLY; other dimensions identify their own bounded coverage.
+  FoundationReadinessRegistrationCheck:
+    type: object
+    additionalProperties: false
+    required:
+    - registrationTypeId
+    - ownerKind
+    - ownerId
+    - payrollJurisdictionId
+    - asOf
+    - ready
+    properties:
+      registrationTypeId: {type: string, format: uuid}
+      ownerKind:
+        type: string
+        enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]
+      ownerId: {type: string, format: uuid}
+      payrollJurisdictionId: {type: string, format: uuid}
+      asOf: {type: string, format: date}
+      ready: {type: boolean}
+      registrationVersionId:
+        type: [string, 'null']
+        format: uuid
+  FoundationReadinessFinding:
+    type: object
+    additionalProperties: false
+    required: [code, source, severity, detail]
+    properties:
+      code: {type: string}
+      source: {type: string}
+      severity:
+        type: string
+        enum: [BLOCKER, WARNING]
+      detail: {type: string}
+
   Problem:
     type: object
     additionalProperties: true

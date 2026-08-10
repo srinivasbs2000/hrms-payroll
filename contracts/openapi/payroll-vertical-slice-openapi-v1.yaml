@@ -1209,6 +1209,9 @@ paths:
         '400':
           $ref: '#/components/responses/Problem'
       summary: Get Draft Payslip
+  /payroll-cycles/{cycleId}/foundation-readiness:
+    $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleFoundationReadiness'
+
 components:
   securitySchemes:
     oidc:
