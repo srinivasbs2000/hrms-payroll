@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 10 August 2026 P5-FBA-01 post-merge status closure
+**Updated:** 10 August 2026 P5-FSR-01 R3 selection and activation-authority preparation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,10 +11,10 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** None
-**Current state:** P5-FBA-01 MERGED / CLOSED after status-closure PR #45
+**Active capability:** P5-FSR-01 — Foundation Snapshot & Readiness Closure after activation-authority merge
+**Current state:** P5-FBA-01 MERGED / CLOSED; P5-FSR-01 activation authority selected by fresh R3 reconciliation
 **Migrations:** V001–V035 committed and immutable
-**Next migration:** V036 unreserved; separate capability activation required
+**Next migration:** V036 reserved exclusively for P5-FSR-01 after activation-authority merge
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | None |
+| Active write owner | P5-FSR-01 implementation workstream after activation-authority merge |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | None |
+| Active path ownership | P5-FSR-01 exact maximum boundary in its scope authority |
 | Migration state | V001–V035 immutable |
-| Next migration | V036 unreserved; do not allocate without separate capability activation |
+| Next migration | V036 reserved exclusively for P5-FSR-01 after activation-authority merge |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -93,24 +93,29 @@ Closed package:
 
 ## Authority state
 
-No product capability is active.
+P5-FBA-01 is merged/closed and retains no ownership. PLN-E01-008 and
+PLN-E01-009 are implemented. PLN-E01-011 and PLN-E01-012 remain partial;
+PLN-E01-010 remains open.
 
-P5-FBA-01 is merged/closed:
-- backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`;
-- UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`;
-- status-closure PR #45;
-- V035 is committed and immutable;
-- V036 is unreserved;
-- active path ownership is None.
+Fresh R3 reconciliation selects and owner-authorizes:
 
-PLN-E01-008 and PLN-E01-009 are implemented. PLN-E01-011 and PLN-E01-012
-remain partial. PLN-E01-010 remains open.
+**P5-FSR-01 — Foundation Snapshot & Readiness Closure**
+
+After the activation-authority PR merges:
+
+- the capability is ACTIVE;
+- V036 is reserved exclusively for P5-FSR-01;
+- the exact scope authority is
+  `docs/planning/pln-01/p5-fsr-01-foundation-snapshot-readiness-closure-scope.md`;
+- the implementation branch is
+  `feature/p5-fsr-01-foundation-snapshot-readiness-closure`, created from the
+  activation-merged `main`;
+- product implementation is limited to the scope authority and must not promote
+  story status until merged evidence supports it.
 
 ## Exact next controlled action
 
-Perform a fresh R3 capability reconciliation/selection against the canonical
-story ledger. `P5-FSR-01 — Foundation Snapshot & Readiness Closure` is the
-recommended next candidate only; it is NOT activated.
-
-Do not create product code, reserve V036, or assign path ownership until the
-project owner separately authorizes the next capability.
+Merge the governance-only P5-FSR-01 activation authority. Then create the
+product implementation branch from updated `main` and build the first bounded
+implementation package under the recorded pre-mortem controls. Do not create or
+apply V036 before the activation authority is merged.

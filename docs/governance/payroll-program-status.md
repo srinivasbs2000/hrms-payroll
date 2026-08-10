@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** None
+**Active product write owner:** P5-FSR-01 implementation workstream after activation-authority merge
 **Migration state:** V001–V035 committed and immutable
-**Next migration:** V036 unreserved; allocate only through a separately activated capability
+**Next migration:** V036 reserved exclusively for P5-FSR-01 after activation-authority merge
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 10 August 2026 after P5-FBA-01 product merge and post-merge story reconciliation
-**Current execution capability:** None — P5-FBA-01 merged; status-closure PR #45 releases authority
+**Last reconciled:** 10 August 2026 after fresh R3 capability reconciliation and P5-FSR-01 activation-authority preparation
+**Current execution capability:** P5-FSR-01 — Foundation Snapshot & Readiness Closure (ACTIVE after activation-authority merge)
 **P5-FBA-01 product merges:** backend `a0234d94ef280a41a744ea6e8483f786a497d211`; UI `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 
 ## 1. Mandatory starting point
@@ -121,7 +121,8 @@ Closure state:
   `PAYROLL_BACKEND_REPOSITORY_PATH`;
 - backend CI no longer duplicates frontend-owned gates;
 - the embedded `frontend/payroll-web` source copy is removed by 01D;
-- V001-V034 remain immutable and V035 remains unreserved.
+- V001-V035 are now immutable; V036 is reserved only by the separately
+  activated P5-FSR-01 capability.
 
 ## 3. Reconciled detailed-story status
 
@@ -177,6 +178,7 @@ The machine-readable authority is:
 | Current P5-A3 — salary structure, CTC, eligibility and simulation | Primarily original P5-B4, P5-B5 and selected P5-B6 controls |
 | P5-JRF-01 — jurisdiction and registration foundations | Original P5-A2 |
 | P5-FBA-01 — employer banking and authorised-signatory authority | Original P5-A3 (bank/signatory slice) |
+| P5-FSR-01 — immutable foundation snapshot and composed readiness closure | Original P5-A3 (snapshot/readiness slice) |
 
 Execution labels and original PLN-01 package identifiers remain separate fields.
 Reuse of a label does not imply completion of the original package with the same
@@ -228,19 +230,29 @@ textual identifier.
 - **Stories remaining partial:** PLN-E01-011, PLN-E01-012
 - **Explicit remaining Original P5-A3 core:** PLN-E01-010 snapshots and complete readiness
 
-## 7. Immediate next action
+## 7. Active execution identity — P5-FSR-01
 
-No product capability is active after P5-FBA-01 status closure.
+**P5-FSR-01 — Foundation Snapshot & Readiness Closure**
 
-1. keep V001-V035 immutable;
-2. keep V036 unreserved;
-3. perform fresh capability reconciliation against the canonical story ledger;
-4. treat `P5-FSR-01 — Foundation Snapshot & Readiness Closure` only as the
-   recommended next candidate, not as an active capability;
-5. require separate owner authorization before assigning paths or reserving V036.
+- **Original program mapping:** Original P5-A3 snapshot/readiness slice
+- **State:** ACTIVE after activation-authority merge; no implementation evidence claimed by activation
+- **Scope authority:** `docs/planning/pln-01/p5-fsr-01-foundation-snapshot-readiness-closure-scope.md`
+- **Primary stories:** PLN-E01-010 and PLN-E01-012
+- **Cross-cutting story:** PLN-E01-011 remains PARTIALLY IMPLEMENTED unless separate implementation evidence closes its reusable application approver/delegation gap
+- **Activation branch:** `docs/p5-fsr-01-activation-authority`
+- **Product branch:** `feature/p5-fsr-01-foundation-snapshot-readiness-closure`, created only from activation-merged `main`
+- **Migration:** V036 reserved exclusively for P5-FSR-01 after activation-authority merge
+- **Backend/program owner:** P5-FSR-01 implementation workstream
+- **UI owner:** same capability only for the readiness workspace/API consumption and browser E2E bounded by the scope authority
 
-No product write, migration allocation or next-package activation is implied by
-this closure.
+Immediate controlled action after activation-authority merge:
+
+1. create the product branch from the new `main`;
+2. implement only the exact P5-FSR-01 scope and V036 reservation;
+3. bind payroll calculation to immutable foundation-configuration snapshot identity/hash;
+4. compose bounded foundation readiness without claiming later statutory/payment/global readiness;
+5. run local verification, independent R3 critical review, backend publication/merge, then web publication/merge in cross-repo hosted-CI order;
+6. perform post-merge story reconciliation/status closure before selecting another capability.
 
 ## 8. Remaining full-product scope
 

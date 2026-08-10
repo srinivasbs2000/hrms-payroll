@@ -2,14 +2,15 @@
 
 **Status:** Living approved-design and architecture authority
 **Repository:** `srinivasbs2000/hrms-payroll`
-**Product reconciliation baseline:** P5-JRF-01 product merge on `main` at `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Product reconciliation baseline:** P5-FBA-01 backend product merge on `main` at `a0234d94ef280a41a744ea6e8483f786a497d211`; UI merge `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
-**Current product capability:** None — P5-JRF-01 merged and post-merge authority closed
+**Current product capability:** P5-FSR-01 — Foundation Snapshot & Readiness Closure (ACTIVE after activation-authority merge)
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
-**Latest merged product increment:** P5-JRF-01 through PR #36 merge `6ee101bd398b745a0078bd0517b4e3797c571c2b`
+**Latest merged product increment:** P5-FBA-01 backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 **P5-JRF-01 product-status closure:** PR #39
+**P5-FBA-01 product-status closure:** PR #45
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
-**Last reconciled:** 9 August 2026 after HK-UI-SPLIT-01 repository separation closure
+**Last reconciled:** 10 August 2026 after R3 capability reconciliation and P5-FSR-01 activation-authority preparation
 **Maintainers:** Project owner and the currently authorised capability workstream
 **Full product scope authority:** `docs/product/payroll-product-scope-and-epic-catalog.md`
 **Companion state document:** `docs/runbooks/project-continuation-handoff.md`
@@ -154,9 +155,9 @@ creating a third contract repository:
 ## 8. Data and migration rules
 
 - `database/flyway/sql` is the ordered migration authority.
-- V001-V034 are committed and immutable.
-- V035 is unreserved and requires separate capability activation before allocation.
-- future migrations are forward-only and separately authorised from V035;
+- V001-V035 are committed and immutable.
+- V036 is reserved exclusively for P5-FSR-01 after activation-authority merge.
+- future migrations are forward-only and separately authorised from V036;
 - tenant-owned FKs include tenant ownership;
 - stable identity plus immutable effective-dated versions preserve lineage;
 - consumed evidence is never rewritten;
@@ -217,22 +218,26 @@ risk are committed.
 | P5-A2 | General pay-component catalogue and named payroll bases | V032 | PR #30 merged; authority released |
 | P5-A3 | Salary-structure design, CTC policy, typed eligibility and deterministic design-time simulation | V033 | PR #32 merged; PR #33 test-hygiene follow-up merged |
 | P5-JRF-01 | Work-location, jurisdiction-resolution and statutory-registration foundations | V034 | PR #36 merged; PR #39 post-merge authority closure; ownership released |
-| Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26, PR #29, PR #31 and PR #39 merged |
+| P5-FBA-01 | Employer banking, authorised signatories, delegated authority and bounded banking readiness | V035 | Backend PR #44 and UI PR #12 merged; PR #45 post-merge authority closure; ownership released |
+| P5-FSR-01 | Immutable foundation configuration snapshot and composed foundation readiness closure | V036 reserved | ACTIVE after activation-authority merge; implementation evidence not yet claimed |
+| Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26, PR #29, PR #31, PR #39 and PR #45 merged |
 | Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | PR #28 merged; Thread 7 closed and ownership released |
 
 ## 13. Current controlled debt and planning
 
 - Current P5-A3 is merged through PR #32; PR #33 merged the React test-hygiene follow-up.
-- P5-JRF-01 is merged through PR #36 and authority-closed through PR #39; no
-  active product owner or product-path ownership remains.
-- V001-V034 are committed and immutable; V035 is unreserved.
-- The 450 detailed stories reconcile to 14 implemented, 156 partially
-  implemented, 90 not evidenced, 159 not started and 31 requiring
+- P5-JRF-01 and P5-FBA-01 are merged and authority-closed; neither retains
+  product ownership.
+- V001-V035 are committed and immutable; V036 is reserved exclusively for
+  P5-FSR-01 after activation-authority merge.
+- The 450 detailed stories reconcile to 16 implemented, 156 partially
+  implemented, 88 not evidenced, 159 not started and 31 requiring
   legal/domain revalidation.
 - Current execution labels P5-A2 and P5-A3 must not be confused with the
   original PLN-01 packages with the same identifiers.
 - Original P5-A2 jurisdiction/registration is complete through P5-JRF-01.
-- No next product capability is implicitly activated by the P5-JRF-01 closure.
+- P5-FSR-01 is the active bounded capability for remaining Original P5-A3
+  immutable configuration snapshot and composed foundation readiness work.
 - S4-06B remains planned and not authorised.
 - E09 still requires current legal/domain revalidation.
 ## 14. Documentation model
@@ -265,7 +270,9 @@ risk are committed.
 | 5 Aug 2026 | Merged P5-A2 product implementation and final authority closure | PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946`; PR #31 merge `887347fb23b35ca72c479f377c0f6e3a1bf89722` |
 | 5 Aug 2026 | Activated P5-A3 preparation and exclusively reserved V033 | P5-A3 planning package `d704409e9fb4792f15ce05d5ade5cb4f04c80be04e0dc1d31d357402f12e5f77`; independent critical review; exact 69-path maximum boundary |
 | 5 Aug 2026 | Merged P5-A3 implementation and quality follow-up | PR #32; PR #33; V033 immutable |
-| 8 Aug 2026 | Merged P5-JRF-01 and completed post-merge authority closure | PR #36 product merge `6ee101bd398b745a0078bd0517b4e3797c571c2b`; PR #39 closure; V034 immutable; V035 unreserved |
+| 8 Aug 2026 | Merged P5-JRF-01 and completed post-merge authority closure | PR #36 product merge `6ee101bd398b745a0078bd0517b4e3797c571c2b`; PR #39 closure; V034 immutable; V035 was then unreserved |
+| 10 Aug 2026 | Merged P5-FBA-01 and completed post-merge authority closure | Backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`; PR #45 closure; V035 immutable |
+| 10 Aug 2026 | R3-selected and activated P5-FSR-01 governance authority | Primary PLN-E01-010 and PLN-E01-012; V036 reserved after activation-authority merge; no product evidence claimed by activation |
 
 ## 16. P5-A2 delivered architecture and authority closure
 
@@ -374,5 +381,48 @@ capability.
 P5-JRF-01 publication commit `c8ab727787a23b0b211caf27c2158300a38a8eab`
 merged through PR #36 as `6ee101bd398b745a0078bd0517b4e3797c571c2b`
 with all nine hosted checks GREEN. PR #39 completed the post-merge story-ledger
-and authority closure. V034 is committed and immutable, V035 is unreserved,
-and no next product capability is implicitly activated.
+and authority closure. V034 is committed and immutable. P5-FBA-01 subsequently
+consumed V035 and closed through PR #45; V035 is now committed and immutable.
+
+
+## 21. P5-FBA-01 implemented architecture
+
+P5-FBA-01 completes the employer bank-account and authorised-signatory slice of
+Original P5-A3. It adds stable tenant-safe identities, immutable effective-dated
+versions, legal-entity/PSU ownership, encrypted bank secret metadata, masked
+routine reads, audited restricted reveal, maker/verifier/final-approver
+segregation and purpose/currency/amount-scoped legal authority.
+
+Banking readiness is intentionally bounded to bank/signatory prerequisites and
+does not mark a PSU or pay group globally payroll-ready. Legal signatory
+authority remains separate from application access. Backend PR #44 and UI PR
+#12 merged the capability; PR #45 closed post-merge authority. V035 is committed
+and immutable. PLN-E01-008 and PLN-E01-009 are implemented; PLN-E01-011 and
+PLN-E01-012 remain partial and PLN-E01-010 remains open.
+
+## 22. P5-FSR-01 activated architecture
+
+P5-FSR-01 — Foundation Snapshot & Readiness Closure is the R3-selected bounded
+next capability. Its primary canonical stories are PLN-E01-010 immutable
+configuration snapshots and PLN-E01-012 composed foundation readiness.
+PLN-E01-011 remains partial unless implementation evidence separately proves the
+remaining reusable application approver/delegation controls.
+
+`payroll-operations` owns cycle-time foundation configuration sealing because it
+already owns payroll-cycle population and input sealing. Cross-domain capture
+will use controlled database-level version selection/sealing, consistent with
+the V024 immutable-input-snapshot pattern, rather than importing other modules'
+internal implementation types. The calculation path must bind to the exact
+foundation-configuration snapshot identity/hash and must not silently fall back
+to mutable current configuration.
+
+Composed foundation readiness may aggregate already-authoritative organisation,
+jurisdiction/registration, employer-bank/signatory, pay-group/calendar and
+configuration-snapshot evidence. It must distinguish blocking findings from
+warnings and must not claim payment, country-specific statutory-rule, retro,
+off-cycle, settlement, accounting or production-cutover readiness.
+
+V036 is reserved exclusively for P5-FSR-01 after activation-authority merge.
+The activation increment itself creates no V036 SQL or product implementation;
+implementation starts only from the activation-merged `main` under the exact
+scope authority.

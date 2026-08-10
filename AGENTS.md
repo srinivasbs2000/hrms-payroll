@@ -267,11 +267,14 @@ payroll payloads in browser storage.
 ## Database migrations
 
 `database/flyway/sql` is the single source of ordered versioned migrations.
-V001-V034 are committed and immutable. V033 is
+V001-V035 are committed and immutable. V033 is
 `V033__salary_structure_ctc_eligibility_simulation.sql`, merged through PR #32.
 V034 is `V034__jurisdiction_registration_foundations.sql`, merged through
-PR #36. V035 is unreserved. Later schema work is forward-only from V035 after
-explicit reservation by one active implementation owner. Versioned migrations
+PR #36. V035 is `V035__foundation_banking_authority.sql`, merged through
+P5-FBA-01 backend PR #44 and is immutable. V036 is reserved exclusively for
+P5-FSR-01 — Foundation Snapshot & Readiness Closure after its activation
+authority merges. Later schema work is forward-only from V036 and no other
+capability may allocate V036 while P5-FSR-01 owns it. Versioned migrations
 must fail loudly; do not add permissive `IF NOT EXISTS` clauses to them. The
 `backend/database-migrations` Maven module packages the canonical directory as
 `db/migration`. Administrator bootstrap, development seed and verification SQL
@@ -342,8 +345,9 @@ poison-message and replay policy is recorded in
   third contract repository.
 - Product/API/database semantics remain governed by `hrms-payroll`; the UI
   consumes those contracts rather than redefining them.
-- V035 remains unreserved until a separately activated product capability
-  requires it.
+- V035 is committed and immutable through P5-FBA-01 backend PR #44.
+- V036 is reserved exclusively for P5-FSR-01 after its activation authority
+  merges; product implementation must remain inside its committed scope.
 
 For non-business execution work, when the next bounded action is obvious and
 already authorised by the standing project rules, proceed without redundant
@@ -413,10 +417,16 @@ For every repository-aware Payroll thread:
 `docs/planning/pln-01/p5-jrf-01-jurisdiction-registration-foundations-scope.md`
 
 P5-JRF-01 merged through PR #36 and its post-merge product-status authority
-closed through PR #39. V034 is committed and immutable; V035 is unreserved.
-There is no active P5-JRF-01 product owner or path ownership.
+closed through PR #39. P5-FBA-01 subsequently merged through backend PR #44 and
+UI PR #12 and closed through status-closure PR #45. V034 and V035 are committed
+and immutable; neither historical capability retains product ownership.
 
-No next product capability is implied by this historical section. Resolve the
-current capability from `docs/governance/payroll-program-status.md` after live
-local/GitHub verification.
+The active capability is P5-FSR-01 — Foundation Snapshot & Readiness Closure.
+Its durable scope authority is:
+
+`docs/planning/pln-01/p5-fsr-01-foundation-snapshot-readiness-closure-scope.md`
+
+V036 is reserved exclusively for P5-FSR-01. Resolve the current state from
+`docs/governance/payroll-program-status.md` after live local/GitHub verification
+before creating or applying any implementation package.
 <!-- P5-JRF-CROSS-THREAD-AUTHORITY:END -->
