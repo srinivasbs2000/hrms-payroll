@@ -185,7 +185,7 @@ capability activation.
 - Backend product PR/merge: #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`.
 - UI product head: `062e3a1e43e311a79687ae5645ae2934b8e5cb35`.
 - UI product PR/merge: #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`.
-- Status closure: PR #__P5_FBA_CLOSURE_PR__.
+- Status closure: PR #45.
 - Canonical story delta: PLN-E01-008 and PLN-E01-009 -> IMPLEMENTED;
   PLN-E01-011 and PLN-E01-012 remain PARTIALLY IMPLEMENTED.
 - V035 is immutable after merge; V036 is unreserved.

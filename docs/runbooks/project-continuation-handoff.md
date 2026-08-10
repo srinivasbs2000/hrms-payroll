@@ -9,10 +9,10 @@
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-FBA-01 backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 **P5-JRF-01 product-status closure:** PR #39
-**P5-FBA-01 product-status closure:** PR #__P5_FBA_CLOSURE_PR__
+**P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
 **Active capability:** None
-**Current state:** P5-FBA-01 MERGED / CLOSED after status-closure PR #__P5_FBA_CLOSURE_PR__
+**Current state:** P5-FBA-01 MERGED / CLOSED after status-closure PR #45
 **Migrations:** V001–V035 committed and immutable
 **Next migration:** V036 unreserved; separate capability activation required
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -98,7 +98,7 @@ No product capability is active.
 P5-FBA-01 is merged/closed:
 - backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`;
 - UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`;
-- status-closure PR #__P5_FBA_CLOSURE_PR__;
+- status-closure PR #45;
 - V035 is committed and immutable;
 - V036 is unreserved;
 - active path ownership is None.

@@ -5,7 +5,7 @@
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-FBA-01 backend PR #44; UI PR #12
 **P5-JRF-01 product-status closure:** PR #39
-**P5-FBA-01 product-status closure:** PR #__P5_FBA_CLOSURE_PR__
+**P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
 **Active product write owner:** None
 **Migration authority:** V001–V035 immutable; V036 unreserved
@@ -36,7 +36,7 @@ migration number.
 | S4-06A | CLOSED | Secured statutory API integration quality | PR #28 merged; PR #29 closure | None | None |
 | P5-JRF-01 | CLOSED | Jurisdiction and registration foundations | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` | V034 immutable | None |
 | HK-UI-SPLIT-01 | CLOSED | History-preserving React UI repository split, independent UI CI and backend source cleanup | Backend PR #41 seam; web PR #1 independent CI; 01D closure | None | None |
-| P5-FBA-01 | CLOSED | Foundation employer banking, authorised signatories, delegated authority and bounded readiness | Backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`; closure PR #__P5_FBA_CLOSURE_PR__ | V035 immutable | None |
+| P5-FBA-01 | CLOSED | Foundation employer banking, authorised signatories, delegated authority and bounded readiness | Backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`; closure PR #45 | V035 immutable | None |
 
 ## Active capability workstream
 
@@ -46,7 +46,7 @@ P5-FBA-01 is historical/closed:
 
 - backend product PR #44 / merge `a0234d94ef280a41a744ea6e8483f786a497d211`;
 - UI product PR #12 / merge `5c45ab41ee3cb4466fac822c04c771f5de0ba119`;
-- status-closure PR #__P5_FBA_CLOSURE_PR__;
+- status-closure PR #45;
 - historical implementation branch `feature/p5-fba-01-foundation-banking-authority` is retained;
 - V035 is committed and immutable;
 - V036 is unreserved;

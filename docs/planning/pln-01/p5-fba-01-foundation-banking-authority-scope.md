@@ -9,7 +9,7 @@
 **Implementation branch:** `feature/p5-fba-01-foundation-banking-authority`
 **Migration reservation:** V035 committed and immutable; V036 unreserved
 **UI repository baseline:** `dc8f17cfbabe0a3322f24a3dc0457509fe1e7d01`
-**Publication evidence:** backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`; closure PR #__P5_FBA_CLOSURE_PR__
+**Publication evidence:** backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`; closure PR #45
 **Reasoning transition:** R3 publication and post-merge reconciliation complete; ownership released
 
 ## 1. Objective
@@ -430,7 +430,7 @@ authority.
 ## 11. Closure result
 
 P5-FBA-01 is closed after backend PR #44, UI PR #12
-and status-closure PR #__P5_FBA_CLOSURE_PR__.
+and status-closure PR #45.
 
 Canonical reconciliation:
 - PLN-E01-008 IMPLEMENTED;

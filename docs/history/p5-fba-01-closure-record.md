@@ -7,7 +7,7 @@
 **Backend publication head:** `088484b1855b5af6f0c67dfe1426204b9a720b13`
 **Web product PR:** #12
 **Web product merge:** `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
-**Status-closure PR:** #__P5_FBA_CLOSURE_PR__
+**Status-closure PR:** #45
 **G05 evidence SHA-256:** `0f06ffbf06c886740d309007cba20fd1f988f728d35d0bebfc75d29e2a003e4d`
 
 ## Delivered
@@ -70,7 +70,7 @@ Post-reconciliation 450-story totals:
 
 ## Authority release
 
-After status-closure PR #__P5_FBA_CLOSURE_PR__ merges:
+After status-closure PR #45 merges:
 
 - P5-FBA-01 is CLOSED;
 - active product write owner is NONE;

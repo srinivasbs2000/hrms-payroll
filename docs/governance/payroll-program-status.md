@@ -8,13 +8,13 @@
 **Latest merged product increment:** P5-FBA-01 backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`; UI PR #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
-**P5-FBA-01 product-status closure:** PR #__P5_FBA_CLOSURE_PR__; post-merge authority closure
+**P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
 **Active product write owner:** None
 **Migration state:** V001–V035 committed and immutable
 **Next migration:** V036 unreserved; allocate only through a separately activated capability
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
 **Last reconciled:** 10 August 2026 after P5-FBA-01 product merge and post-merge story reconciliation
-**Current execution capability:** None — P5-FBA-01 merged; status-closure PR #__P5_FBA_CLOSURE_PR__ releases authority
+**Current execution capability:** None — P5-FBA-01 merged; status-closure PR #45 releases authority
 **P5-FBA-01 product merges:** backend `a0234d94ef280a41a744ea6e8483f786a497d211`; UI `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 
 ## 1. Mandatory starting point
@@ -218,7 +218,7 @@ textual identifier.
 **P5-FBA-01 — Foundation Banking & Authority**
 
 - **Original program mapping:** Original P5-A3 bank/signatory slice
-- **State:** MERGED / CLOSED after status-closure PR #__P5_FBA_CLOSURE_PR__
+- **State:** MERGED / CLOSED after status-closure PR #45
 - **Backend product PR/merge:** #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`
 - **UI product PR/merge:** #12 / `5c45ab41ee3cb4466fac822c04c771f5de0ba119`
 - **Historical implementation branch:** `feature/p5-fba-01-foundation-banking-authority` retained
