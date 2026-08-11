@@ -9,6 +9,7 @@
 **Latest merged product increment:** P5-FSR-01 backend final merge `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI PR #13 / `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`; status closure PR #52 / `940c24d85a11dfaf293fc1d660ede4132fd53acb`
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
+**P5-FSR-01 product-status closure:** PR #52
 **Prior sprint baseline:** Sprint 4 merge `def3dd2e212f85c440eee5497e292be2f1f2bf64`
 **Last reconciled:** 11 August 2026 after P5-FSR-01 closure and P5-FAD-01 R3 selection
 **Maintainers:** Project owner and the currently authorised capability workstream
@@ -219,9 +220,9 @@ risk are committed.
 | P5-A3 | Salary-structure design, CTC policy, typed eligibility and deterministic design-time simulation | V033 | PR #32 merged; PR #33 test-hygiene follow-up merged |
 | P5-JRF-01 | Work-location, jurisdiction-resolution and statutory-registration foundations | V034 | PR #36 merged; PR #39 post-merge authority closure; ownership released |
 | P5-FBA-01 | Employer banking, authorised signatories, delegated authority and bounded banking readiness | V035 | Backend PR #44 and UI PR #12 merged; PR #45 post-merge authority closure; ownership released |
-| P5-FSR-01 | Immutable foundation configuration snapshot and composed foundation readiness closure | V036 reserved | ACTIVE after activation-authority merge; implementation evidence not yet claimed |
+| P5-FSR-01 | Immutable foundation configuration snapshot and composed foundation readiness closure | V036 | Backend PRs #47/#49/#51 and UI PR #13 merged; status closure PR #52 / `940c24d85a11dfaf293fc1d660ede4132fd53acb`; ownership released |
 | P5-FAD-01 | Shared entity/PSU-scoped application approval authority and effective-dated delegation | V037 reserved | ACTIVE after activation-authority merge; product evidence not yet claimed |
-| Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26, PR #29, PR #31, PR #39 and PR #45 merged |
+| Governance | Living design and reconciliation controls | None | PR #20, PR #21, PR #26, PR #29, PR #31, PR #39, PR #45 and PR #52 merged |
 | Sprint 4 quality | Secured statutory HTTP/PostgreSQL integration closure | None | PR #28 merged; Thread 7 closed and ownership released |
 
 ## 13. Current controlled debt and planning
