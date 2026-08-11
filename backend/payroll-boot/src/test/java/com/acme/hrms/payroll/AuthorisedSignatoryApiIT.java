@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -166,6 +168,7 @@ class AuthorisedSignatoryApiIT extends JrfApiITSupport {
                 .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"))
                 .andExpect(jsonPath("$.identityStatus").value("ACTIVE"))
                 .andReturn());
+    String activeAsOf = approvalDateUtc(active);
 
     mvc.perform(
             get("/api/v1/authorised-signatories/{identityId}", identityId)
@@ -177,26 +180,26 @@ class AuthorisedSignatoryApiIT extends JrfApiITSupport {
         .andExpect(status().isForbidden());
 
     JsonNode allowed =
-        evaluate("INR", "500000.00", "PAYROLL_FUNDING");
+        evaluate("INR", "500000.00", "PAYROLL_FUNDING", activeAsOf);
     assertThat(allowed.path("authorised").asBoolean()).isTrue();
     assertThat(allowed.path("reasonCode").asText()).isEqualTo("AUTHORIZED");
     assertThat(allowed.path("signatoryVersionId").asText())
         .isEqualTo(active.path("versionId").asText());
 
     JsonNode overLimit =
-        evaluate("INR", "1500000.00", "PAYROLL_FUNDING");
+        evaluate("INR", "1500000.00", "PAYROLL_FUNDING", activeAsOf);
     assertThat(overLimit.path("authorised").asBoolean()).isFalse();
     assertThat(overLimit.path("reasonCode").asText())
         .isEqualTo("AMOUNT_EXCEEDS_LIMIT");
 
     JsonNode wrongCurrency =
-        evaluate("USD", "100.00", "PAYROLL_FUNDING");
+        evaluate("USD", "100.00", "PAYROLL_FUNDING", activeAsOf);
     assertThat(wrongCurrency.path("authorised").asBoolean()).isFalse();
     assertThat(wrongCurrency.path("reasonCode").asText())
         .isEqualTo("CURRENCY_MISMATCH");
 
     JsonNode wrongPurpose =
-        evaluate("INR", "100.00", "STATUTORY_REMITTANCE");
+        evaluate("INR", "100.00", "STATUTORY_REMITTANCE", activeAsOf);
     assertThat(wrongPurpose.path("authorised").asBoolean()).isFalse();
     assertThat(wrongPurpose.path("reasonCode").asText())
         .isEqualTo("PURPOSE_NOT_AUTHORIZED");
@@ -228,7 +231,7 @@ class AuthorisedSignatoryApiIT extends JrfApiITSupport {
         .andExpect(jsonPath("$.lifecycleStatus").value("SUSPENDED"));
 
     JsonNode afterSuspension =
-        evaluate("INR", "100.00", "PAYROLL_FUNDING");
+        evaluate("INR", "100.00", "PAYROLL_FUNDING", activeAsOf);
     assertThat(afterSuspension.path("authorised").asBoolean()).isFalse();
     assertThat(afterSuspension.path("reasonCode").asText())
         .isEqualTo("NO_ACTIVE_SIGNATORY");
@@ -307,10 +310,18 @@ class AuthorisedSignatoryApiIT extends JrfApiITSupport {
         .andExpect(status().isConflict());
   }
 
+  private static String approvalDateUtc(JsonNode active) {
+    return Instant.parse(active.path("approvedAt").asText())
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
+        .toString();
+  }
+
   private JsonNode evaluate(
       String currency,
       String amount,
-      String purpose) throws Exception {
+      String purpose,
+      String asOf) throws Exception {
     String body =
         """
         {
@@ -319,9 +330,9 @@ class AuthorisedSignatoryApiIT extends JrfApiITSupport {
           "purposeCode":"%s",
           "currencyCode":"%s",
           "amount":%s,
-          "asOf":"2026-08-10"
+          "asOf":"%s"
         }
-        """.formatted(LEGAL_ID, purpose, currency, amount);
+        """.formatted(LEGAL_ID, purpose, currency, amount, asOf);
     return json(
         mvc.perform(
                 post("/api/v1/authorised-signatories/authority-evaluations")
