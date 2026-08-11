@@ -340,3 +340,55 @@ P5-FAD-01 G02 v1.0 exposed this class of defect when one standalone API test
 declared `JwtDecoder` locally while several related JRF API tests inherited that
 fixture from `JrfApiITSupport`. The runner correctly failed before mutation, but
 the package should have proven the heterogeneous baselines before release.
+
+## 19. PowerShell 7 runner contracts must be syntax-safe before release
+
+Windows runner generation must target the project owner's actual shell contract,
+not generic Windows PowerShell behavior.
+
+For PowerShell 7+ packages:
+
+- invoke with `pwsh`, not `powershell.exe`;
+- assume downloaded artifacts are under `$HOME\Downloads` unless the owner says otherwise;
+- never interpolate a simple variable directly before `:`; use `${name}` or a
+  format expression;
+- do not parse `git status --porcelain` by fixed character positions;
+- prefer Git commands that return paths only when validating allow-lists; and
+- self-report PowerShell version, resolved Downloads path and repository root
+  before mutation.
+
+P5-FAD-01 critical-review runners exposed the simple-variable-before-colon parser defect and
+fixed-column native-output parsing defect before closure.
+
+## 20. Security test fixtures must represent the runtime authentication state
+
+A unit fixture for an authenticated security principal must exercise the same
+authentication object/state that production middleware supplies.
+
+For JWT resource-server authorization:
+
+- distinguish the token from a generic principal representation;
+- make authenticated/unauthenticated state explicit in the fixture;
+- inspect runtime claims from the actual JWT token object used by the framework;
+- retain separate integration coverage through the real security filter chain.
+
+P5-FAD-01 exposed this when the first service-account classifier unit fixture
+constructed a `JwtAuthenticationToken` that did not represent the authenticated
+runtime state.
+
+## 21. Cleanup failure must not invalidate already-green product evidence
+
+Disposable worktree cleanup is operational hygiene, not product correctness.
+
+If compile, targeted tests, full verification, integrity gates and the repair
+commit have already passed:
+
+- record the validated commit before cleanup;
+- make cleanup best-effort and separately visible;
+- use Windows extended-path deletion where normal deletion hits path-length
+  limits;
+- prune stale Git worktree metadata; and
+- resume from the validated commit instead of rerunning expensive verification.
+
+P5-FAD-01 exposed this after all Maven/runtime gates and the repair commit were
+green but normal Windows recursive deletion failed on a long disposable path.

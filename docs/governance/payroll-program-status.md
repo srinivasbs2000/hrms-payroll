@@ -3,18 +3,19 @@
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
-**Product reconciliation baseline:** P5-FSR-01 backend final merge `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI merge `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Product reconciliation baseline:** P5-FAD-01 backend product merge PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`; UI baseline remains `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
-**Latest merged product increment:** P5-FSR-01 backend PR #51 / `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI PR #13 / `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Latest merged product increment:** P5-FAD-01 backend PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`; no FAD UI product write
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** P5-FAD-01 implementation workstream after activation-authority merge
-**Migration state:** V001–V036 committed and immutable
-**Next migration:** V037 reserved exclusively for P5-FAD-01 after activation-authority merge
+**Active product write owner:** None after this P5-FAD-01 status closure
+**Migration state:** V001–V037 committed and immutable
+**Next migration:** V038 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 11 August 2026 after P5-FSR-01 closure and fresh R3 selection of P5-FAD-01
-**Current execution capability:** P5-FAD-01 — Foundation Approval & Delegation (ACTIVE after activation-authority merge)
+**Last reconciled:** 12 August 2026 for P5-FAD-01 post-merge semantic closure
+**Current execution capability:** None after this closure; P5-FAD-01 is MERGED / CLOSED
+**P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
 ## 1. Mandatory starting point
@@ -37,6 +38,25 @@ Conversation history and thread names are locators only. They are not the
 project-status authority.
 
 ## 2. Latest completed milestone
+
+P5-FAD-01 delivered the remaining reusable Foundation application-approval
+authority and effective-dated delegation controls for PLN-E01-011:
+
+- tenant-owned, effective-dated LE/PSU-scoped VERIFIER/FINAL_APPROVER authority;
+- bounded source-authority delegation with no scope widening;
+- endpoint permission AND shared authority required;
+- maker/final-approver separation retained in domain lifecycle rules;
+- authenticated Keycloak service accounts denied interactive final approval;
+- immutable consumed authority/delegation decision evidence;
+- narrowly bounded pending-owner bootstrap for initial organisation approval;
+- no E02 expansion and no legal-signatory/application-access conflation.
+
+Evidence: product PR #55 / merge
+`a80e7b4da121665a8b1548acada6b96fac4dfa01`, exact product head
+`2db3845785b8c178c9660f712056f79e5e5409ed`, local full Maven verification,
+independent R3 review and hosted payroll-baseline run `31537285947` GREEN.
+
+### Previous completed milestone — P5-FSR-01
 
 P5-FSR-01 delivered the bounded immutable foundation-snapshot and readiness
 closure of Original P5-A3:
@@ -141,8 +161,8 @@ The approved program contains 450 detailed source-linked stories:
 
 | Status | Stories | Percentage |
 |---|---:|---:|
-| Implemented | 18 | 4.00% |
-| Partially implemented | 154 | 34.22% |
+| Implemented | 19 | 4.22% |
+| Partially implemented | 153 | 34.00% |
 | Not evidenced | 88 | 19.56% |
 | Not started | 159 | 35.33% |
 | Legal/domain revalidation | 31 | 6.89% |
@@ -187,6 +207,15 @@ P5-FSR-01 post-merge reconciliation adds:
 - `PLN-E01-011`: remains PARTIALLY IMPLEMENTED; reusable entity/PSU-scoped
   application approver authorization and effective-dated delegation remain open.
 
+P5-FAD-01 post-merge reconciliation then closes the remaining Foundation
+approval/delegation gap:
+
+- `PLN-E01-011`: PARTIALLY IMPLEMENTED -> IMPLEMENTED through PR #55 /
+  `a80e7b4da121665a8b1548acada6b96fac4dfa01`.
+
+Post-FAD totals are 19 implemented / 153 partially implemented / 88 not
+evidenced / 159 not started / 31 legal-domain revalidation = 450.
+
 Country-specific registration obligation inference is not silently counted as
 foundation readiness: generic registration requirements remain caller-declared
 and an empty requirement list is explicitly not a legal conclusion.
@@ -202,6 +231,7 @@ and an empty requirement list is explicitly not a legal conclusion.
 | P5-JRF-01 — jurisdiction and registration foundations | Original P5-A2 |
 | P5-FBA-01 — employer banking and authorised-signatory authority | Original P5-A3 (bank/signatory slice) |
 | P5-FSR-01 — immutable foundation snapshot and composed readiness closure | Original P5-A3 (snapshot/readiness slice) |
+| P5-FAD-01 — shared application approval authority and delegation | Original P5-A3 (approval/delegation slice) |
 
 Execution labels and original PLN-01 package identifiers remain separate fields.
 Reuse of a label does not imply completion of the original package with the same
@@ -213,7 +243,10 @@ textual identifier.
 - Original P5-A2 — jurisdiction and registration foundations: complete through
   P5-JRF-01 / PR #36.
 - Original P5-A3 — foundation bank, authority, snapshots and readiness:
-  the bank/signatory/snapshot/readiness core is implemented through P5-FBA-01 and P5-FSR-01; the package remains partially implemented only because PLN-E01-011 reusable application approver/delegation controls remain open.
+  complete through P5-FBA-01, P5-FSR-01 and P5-FAD-01; employer banking,
+  legal signatory authority, immutable snapshots/readiness and reusable
+  application approver/delegation controls are all implemented within their
+  bounded generic Foundation contracts.
 - Original P5-A4 — pay groups, period generation and milestone rules:
   partially implemented and dependency-ready.
 - Original P5-A5: partially implemented and dependent on P5-A4.
@@ -275,30 +308,37 @@ textual identifier.
 After this closure merges, perform a fresh R3 reconciliation before assigning
 any new product ownership or migration number.
 
-## 7A. Active execution identity — P5-FAD-01
+## 7A. Closed execution identity — P5-FAD-01
 
 **P5-FAD-01 — Foundation Approval & Delegation**
 
-- **Selection baseline:** P5-FSR-01 closure merge `940c24d85a11dfaf293fc1d660ede4132fd53acb`
+- **Original program mapping:** Original P5-A3 approval/delegation slice
 - **Primary canonical story:** PLN-E01-011
-- **State:** ACTIVE after this activation-authority merge; activation changes no story status
+- **State:** MERGED / CLOSED after this status-closure PR
 - **Scope authority:** `docs/planning/pln-01/p5-fad-01-foundation-approval-delegation-scope.md`
-- **Activation branch:** `docs/p5-fad-01-activation-authority`
-- **Product branch:** `feature/p5-fad-01-foundation-approval-delegation`
-- **Migration:** V037 reserved exclusively after activation merge
-- **Backend owner:** shared application-approval authority in `security`, with exact domain integrations determined by pre-implementation audit
-- **UI owner:** bounded approval-authority administration/E2E only if required by the product increment
-- **Story totals:** unchanged at 18 implemented / 154 partial / 88 not evidenced / 159 not started / 31 legal-domain revalidation
+- **Activation merge:** PR #53 / `b4267168892eb602764d194eb0f303f8d8233323`
+- **Product head:** `2db3845785b8c178c9660f712056f79e5e5409ed`
+- **Product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
+- **Historical product branch:** `feature/p5-fad-01-foundation-approval-delegation` retained
+- **Migration:** V037 committed and immutable
+- **Product write owner:** None after this status closure
+- **Story implemented:** PLN-E01-011
+- **Story totals:** 19 implemented / 153 partial / 88 not evidenced / 159 not started / 31 legal-domain revalidation
+- **Next migration:** V038 unreserved
+- **Next capability:** not selected by this closure
 
-P5-FAD-01 closes only the reusable entity/PSU-scoped application approver and
-effective-dated delegation gap. It does not expand E02 calendars/pay groups and
-does not redesign legal authorised-signatory authority.
+P5-FAD-01 did not expand E02 calendars/pay groups, legal-signatory authority,
+country legal rules/rates, payment execution, retro/off-cycle/final settlement,
+accounting, migration/cutover or production operations.
+
+After this closure merges, perform a fresh R3 reconciliation before assigning
+new product ownership or reserving V038.
 
 ## 8. Remaining full-product scope
 
 The payroll product continues through:
 
-- remaining P5 foundation/configuration/readiness gaps;
+- remaining P5 calendar/pay-group and later configuration gaps;
 - P6 calculation engine and payroll operations;
 - P7 India statutory rule packs after legal/domain revalidation;
 - P8 balances, retro, off-cycle and final settlement;

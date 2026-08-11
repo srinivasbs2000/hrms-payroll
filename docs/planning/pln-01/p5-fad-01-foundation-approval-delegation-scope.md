@@ -1,14 +1,15 @@
 # P5-FAD-01 — Foundation Approval & Delegation Scope Authority
 
-**Status:** ACTIVE only after this activation-authority PR merges
+**Status:** CLOSED after product merge and post-merge semantic reconciliation
 **Reasoning level:** R3 — cross-foundation authorization architecture and migration ownership
 **Repository authority:** `srinivasbs2000/hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Activation branch:** `docs/p5-fad-01-activation-authority`
-**Product branch after activation:** `feature/p5-fad-01-foundation-approval-delegation`
-**Migration reservation:** V037 exclusively reserved after activation-authority merge
+**Product branch:** `feature/p5-fad-01-foundation-approval-delegation` retained as historical product branch
+**Migration reservation:** V037 committed/immutable; V038 unreserved after closure
 **Primary canonical story:** PLN-E01-011
 **Activation effect on story status:** none
+**Closure effect on story status:** PLN-E01-011 -> IMPLEMENTED
 
 ## 1. Required product outcome
 
@@ -177,3 +178,22 @@ Before product publication prove:
 17. post-merge PLN-E01-011 reconciliation/status closure.
 
 Activation alone changes no story status.
+
+## 10. Closure result
+
+P5-FAD-01 product evidence is merged and independently reviewed:
+
+- activation authority: PR #53 /
+  `b4267168892eb602764d194eb0f303f8d8233323`;
+- G01 shared authority core: `64a34a3b4a58d3de8ccfd185a7da21102ec78b71`;
+- G02 owner-scoped domain integration:
+  `f581d582d6bfce8239370e2230a612df28e0024a`;
+- R3 repair/product head:
+  `2db3845785b8c178c9660f712056f79e5e5409ed`;
+- product PR #55 / merge
+  `a80e7b4da121665a8b1548acada6b96fac4dfa01`;
+- hosted payroll-baseline run `31537285947`: GREEN.
+
+Post-merge reconciliation marks PLN-E01-011 IMPLEMENTED. V037 is immutable;
+V038 is unreserved. No next capability is activated and no product path remains
+owned by P5-FAD-01 after this closure merges.

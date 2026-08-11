@@ -1,14 +1,14 @@
 # Payroll Feature Delivery Lineage
 
-**Product reconciliation baseline:** `74bbd65449adad7b7058d8afd96097b1e08d2a0a` (P5-FSR-01 backend final merge); UI merge `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
-**Product implementation baseline:** P5-FSR-01 G01 merge `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`; G02 merge `954ed05d11dcb367f6de6e1f3e78aafc17c8beab`; UTC runtime merge `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI head `a6433007a1552ab34f9e5086e2448f6a532e387a`, merged as `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Product reconciliation baseline:** `a80e7b4da121665a8b1548acada6b96fac4dfa01` (P5-FAD-01 product merge); UI baseline remains `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Product implementation baseline:** P5-FAD-01 G01 `64a34a3b4a58d3de8ccfd185a7da21102ec78b71`; G02 `f581d582d6bfce8239370e2230a612df28e0024a`; R3 repair/product head `2db3845785b8c178c9660f712056f79e5e5409ed`; product merge `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **Purpose:** Trace original epic -> original backlog row -> current story -> migration -> commit -> PR/merge -> evidence -> remaining scope.
 
 ## 1. Epic-level lineage
 
 | Epic | Current Stories | Migrations | Commit Evidence | PR/Merge | Classification |
 |---|---|---|---|---|---|
-| E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06; P5-JRF-01; P5-FBA-01; P5-FSR-01 | V014-V016; V034-V036 (plus foundational V001-V013) | P5-JRF-01 c8ab727787a23b0b211caf27c2158300a38a8eab; P5-FBA-01 backend 088484b1855b5af6f0c67dfe1426204b9a720b13 / UI 062e3a1e43e311a79687ae5645ae2934b8e5cb35; P5-FSR-01 G01 7a399bb58dddac485c460b9f6fc2985304eaf886, G02 640f3a354a5c607375c484e4f995205c613efac2, UTC runtime 9731d74f99fb7b458751c7b18da5cb1cc24fbc29, UI a6433007a1552ab34f9e5086e2448f6a532e387a | PR #36 / 6ee101bd398b745a0078bd0517b4e3797c571c2b; PR #44 / a0234d94ef280a41a744ea6e8483f786a497d211; UI #12 / 5c45ab41ee3cb4466fac822c04c771f5de0ba119; P5-FSR backend #47 / 16d2488252b8a5c3aecd64c0f43fe18b6743d6e8, #49 / 954ed05d11dcb367f6de6e1f3e78aafc17c8beab, #51 / 74bbd65449adad7b7058d8afd96097b1e08d2a0a; UI #13 / 8e8b47c829ac33aa2495ef07fba0ae2afd51e770 | PARTIALLY IMPLEMENTED |
+| E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06; P5-JRF-01; P5-FBA-01; P5-FSR-01; P5-FAD-01 | V014-V016; V034-V037 (plus foundational V001-V013) | P5-JRF-01 c8ab727787a23b0b211caf27c2158300a38a8eab; P5-FBA-01 backend 088484b1855b5af6f0c67dfe1426204b9a720b13 / UI 062e3a1e43e311a79687ae5645ae2934b8e5cb35; P5-FSR-01 G01 7a399bb58dddac485c460b9f6fc2985304eaf886, G02 640f3a354a5c607375c484e4f995205c613efac2, UTC runtime 9731d74f99fb7b458751c7b18da5cb1cc24fbc29, UI a6433007a1552ab34f9e5086e2448f6a532e387a; P5-FAD-01 G01 64a34a3b4a58d3de8ccfd185a7da21102ec78b71, G02 f581d582d6bfce8239370e2230a612df28e0024a, R3 repair 2db3845785b8c178c9660f712056f79e5e5409ed | PR #36 / 6ee101bd398b745a0078bd0517b4e3797c571c2b; PR #44 / a0234d94ef280a41a744ea6e8483f786a497d211; UI #12 / 5c45ab41ee3cb4466fac822c04c771f5de0ba119; P5-FSR backend #47 / 16d2488252b8a5c3aecd64c0f43fe18b6743d6e8, #49 / 954ed05d11dcb367f6de6e1f3e78aafc17c8beab, #51 / 74bbd65449adad7b7058d8afd96097b1e08d2a0a; UI #13 / 8e8b47c829ac33aa2495ef07fba0ae2afd51e770; P5-FAD backend #55 / a80e7b4da121665a8b1548acada6b96fac4dfa01 | IMPLEMENTED |
 | E02 | S2-01, S2-02; population execution contributes through S3-01 | V017-V018 | Inherited Sprint 2 range through 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
 | E03 | S2-03; P5-A2 general catalogue and named bases | V019; V032 | Sprint 2 foundation plus `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` | PR #3; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` | PARTIALLY IMPLEMENTED |
 | E04 | S2-04 | V020 | Inherited Sprint 2 entry head 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
@@ -215,3 +215,25 @@ are caller-declared; an empty declaration is not a legal conclusion. Country
 rules/rates, employee banks, payment execution, retro/off-cycle/final
 settlement, accounting, migration/cutover and production operations remain
 separately governed.
+
+## P5-FAD-01 closure lineage
+
+P5-FAD-01 closes the remaining reusable Foundation application-approval and
+effective-dated delegation gap tracked by PLN-E01-011.
+
+- activation authority: PR #53 / merge `b4267168892eb602764d194eb0f303f8d8233323`;
+- product G01: `64a34a3b4a58d3de8ccfd185a7da21102ec78b71`;
+- product G02: `f581d582d6bfce8239370e2230a612df28e0024a`;
+- independent R3 repair/product head:
+  `2db3845785b8c178c9660f712056f79e5e5409ed`;
+- product PR #55 / merge `a80e7b4da121665a8b1548acada6b96fac4dfa01`;
+- hosted payroll-baseline run `31537285947`: GREEN;
+- migration V037 committed and immutable;
+- canonical story PLN-E01-011: IMPLEMENTED.
+
+The shared authority is security-owned, requires endpoint permission plus
+LE/PSU-scoped approval authority, preserves effective-dated bounded delegation
+and consumed decision lineage, and does not confer application access from legal
+authorised-signatory status. E02 calendar/pay-group approval workflows remain
+outside this capability and should reuse the shared authority when separately
+activated.
