@@ -12,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -212,6 +214,7 @@ class EmployerBankAccountApiIT extends JrfApiITSupport {
                 .andReturn());
 
     assertNoSecretFields(active);
+    String activeAsOf = approvalDateUtc(active);
 
     JsonNode listed =
         json(
@@ -225,7 +228,7 @@ class EmployerBankAccountApiIT extends JrfApiITSupport {
                         .param("ownerKind", "LEGAL_ENTITY")
                         .param("ownerId", LEGAL_ID)
                         .param("currencyCode", "INR")
-                        .param("asOf", "2026-08-10"))
+                        .param("asOf", activeAsOf))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(
@@ -282,7 +285,7 @@ class EmployerBankAccountApiIT extends JrfApiITSupport {
                         TENANT_B,
                         "tenant-b-reader",
                         "organisation.bank-account.read"))
-                .param("asOf", "2026-08-10"))
+                .param("asOf", activeAsOf))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
 
@@ -326,7 +329,7 @@ class EmployerBankAccountApiIT extends JrfApiITSupport {
                         TENANT_A,
                         "bank-reader",
                         "organisation.bank-account.read"))
-                .param("asOf", "2026-08-10"))
+                .param("asOf", activeAsOf))
         .andExpect(status().isNotFound());
   }
 
@@ -340,6 +343,7 @@ class EmployerBankAccountApiIT extends JrfApiITSupport {
             false,
             "2026-01-01");
     JsonNode active = activate(draft, "versioned-1");
+    String activeAsOf = approvalDateUtc(active);
 
     String identityId = active.path("identityId").asText();
 
@@ -385,7 +389,7 @@ class EmployerBankAccountApiIT extends JrfApiITSupport {
                         TENANT_A,
                         "bank-reader",
                         "organisation.bank-account.read"))
-                .param("asOf", "2026-08-10"))
+                .param("asOf", activeAsOf))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.versionId")
@@ -616,6 +620,13 @@ class EmployerBankAccountApiIT extends JrfApiITSupport {
             .andExpect(status().is(expectedStatus))
             .andReturn();
     return json(result);
+  }
+
+  private static String approvalDateUtc(JsonNode active) {
+    return Instant.parse(active.path("approvedAt").asText())
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
+        .toString();
   }
 
   private void assertNoSecretFields(JsonNode node) {
