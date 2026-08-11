@@ -16,8 +16,10 @@ backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`. V035 is committed a
 immutable. V036 is `V036__foundation_snapshot_readiness_closure.sql`, delivered
 through P5-FSR-01 G01 backend PR #47 / `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`
 and retained unchanged through later FSR hardening. V036 is committed and
-immutable. V001-V036 are now immutable. V037 is unreserved and may not be
-claimed without a separately merged capability activation authority.
+immutable. V001-V036 are now immutable. V037 is reserved exclusively for
+P5-FAD-01 — Foundation Approval & Delegation after this activation-authority
+merge. Activation creates no V037 SQL; product implementation must create V037
+only from activation-merged `main` and within the committed P5-FAD-01 scope.
 
 V033 implements the P5-A3 configuration-design foundation: schema-1 salary
 structures, versioned CTC policies, typed eligibility rules and deterministic
