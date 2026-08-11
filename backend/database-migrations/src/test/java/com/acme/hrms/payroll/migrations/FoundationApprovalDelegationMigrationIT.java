@@ -19,6 +19,7 @@ class FoundationApprovalDelegationMigrationIT {
   private static final UUID TENANT_B = UUID.fromString("00000000-0000-0000-0000-00000000000b");
   private static final UUID LEGAL_A = UUID.fromString("97000000-0000-0000-0000-000000000001");
   private static final UUID LEGAL_B = UUID.fromString("97000000-0000-0000-0000-000000000002");
+  private static final UUID LEGAL_PENDING = UUID.fromString("97000000-0000-0000-0000-000000000003");
   private static final UUID AUTHORITY_A = UUID.fromString("97100000-0000-0000-0000-000000000001");
   private static final UUID DELEGATION_A = UUID.fromString("97200000-0000-0000-0000-000000000001");
 
@@ -59,8 +60,9 @@ class FoundationApprovalDelegationMigrationIT {
             id, tenant_id, code, status, created_by, updated_by
           ) VALUES
             ('%s','%s','LEGAL_A','ACTIVE','test','test'),
-            ('%s','%s','LEGAL_B','ACTIVE','test','test')
-          """.formatted(LEGAL_A, TENANT_A, LEGAL_B, TENANT_B));
+            ('%s','%s','LEGAL_B','ACTIVE','test','test'),
+            ('%s','%s','LEGAL_PENDING','PENDING_APPROVAL','test','test')
+          """.formatted(LEGAL_A, TENANT_A, LEGAL_B, TENANT_B, LEGAL_PENDING, TENANT_A));
     }
   }
 
@@ -159,6 +161,46 @@ class FoundationApprovalDelegationMigrationIT {
             """.formatted(TENANT_A, AUTHORITY_A,
                 Instant.parse("2026-06-16T00:00:00Z")))).isEqualTo(1);
         assertThat(resolutionCount(s, "issuer|delegate", "2026-06-16")).isZero();
+      }
+    }
+  }
+
+
+  @Test
+  void pendingOrganisationOwnerAllowsOnlyInitialFinalApprovalBootstrap() throws Exception {
+    try (Connection c = app()) {
+      c.setAutoCommit(false);
+      try (Statement s = c.createStatement()) {
+        setTenant(s, TENANT_A);
+        s.execute("""
+            INSERT INTO security.approval_authority_assignment(
+              id,tenant_id,owner_kind,owner_id,approval_role,domain_code,action_code,
+              actor_id,effective_from,effective_to,created_by,updated_by
+            ) VALUES (
+              gen_random_uuid(),'%s','LEGAL_ENTITY','%s','FINAL_APPROVER',
+              'ORGANISATION_CONFIG','APPROVE','issuer|bootstrap-approver',
+              DATE '2026-01-01',NULL,'issuer|admin','issuer|admin'
+            )
+            """.formatted(TENANT_A, LEGAL_PENDING));
+        assertThat(scalarLong(s, """
+            SELECT count(*) FROM security.resolve_approval_authority(
+              '%s','issuer|bootstrap-approver','LEGAL_ENTITY','%s','FINAL_APPROVER',
+              'ORGANISATION_CONFIG','APPROVE',DATE '2026-08-11'
+            )
+            """.formatted(TENANT_A, LEGAL_PENDING))).isEqualTo(1);
+
+        Savepoint unrelated = c.setSavepoint();
+        assertSqlState("23514", () -> s.execute("""
+            INSERT INTO security.approval_authority_assignment(
+              id,tenant_id,owner_kind,owner_id,approval_role,domain_code,action_code,
+              actor_id,effective_from,effective_to,created_by,updated_by
+            ) VALUES (
+              gen_random_uuid(),'%s','LEGAL_ENTITY','%s','VERIFIER',
+              'EMPLOYER_BANK_ACCOUNT','VERIFY','issuer|bootstrap-verifier',
+              DATE '2026-01-01',NULL,'issuer|admin','issuer|admin'
+            )
+            """.formatted(TENANT_A, LEGAL_PENDING)));
+        c.rollback(unrelated);
       }
     }
   }

@@ -153,8 +153,19 @@ BEGIN
   IF owner_status IS NULL THEN
     RAISE EXCEPTION 'approval-authority owner does not exist' USING ERRCODE = '23503';
   END IF;
-  IF owner_status <> 'ACTIVE' THEN
-    RAISE EXCEPTION 'approval-authority owner must be active' USING ERRCODE = '23514';
+  IF owner_status NOT IN ('ACTIVE', 'PENDING_APPROVAL') THEN
+    RAISE EXCEPTION 'approval-authority owner must be active or pending initial approval'
+      USING ERRCODE = '23514';
+  END IF;
+  IF owner_status = 'PENDING_APPROVAL'
+     AND NOT (
+       NEW.approval_role = 'FINAL_APPROVER'
+       AND NEW.domain_code = 'ORGANISATION_CONFIG'
+       AND NEW.action_code = 'APPROVE'
+     ) THEN
+    RAISE EXCEPTION
+      'pending organisation owner may receive only initial organisation final-approval authority'
+      USING ERRCODE = '23514';
   END IF;
   IF NEW.approval_role = 'FINAL_APPROVER' AND NEW.actor_id LIKE 'service:%' THEN
     RAISE EXCEPTION 'service identity cannot receive interactive final-approval authority'
@@ -320,13 +331,31 @@ BEGIN
     p_owner_kind='LEGAL_ENTITY'
     AND EXISTS (
       SELECT 1 FROM organisation.legal_entity owner
-       WHERE owner.tenant_id=p_tenant_id AND owner.id=p_owner_id AND owner.status='ACTIVE'
+       WHERE owner.tenant_id=p_tenant_id AND owner.id=p_owner_id
+         AND (
+           owner.status='ACTIVE'
+           OR (
+             owner.status='PENDING_APPROVAL'
+             AND p_approval_role='FINAL_APPROVER'
+             AND p_domain_code='ORGANISATION_CONFIG'
+             AND p_action_code='APPROVE'
+           )
+         )
     )
   ) OR (
     p_owner_kind='PAYROLL_STATUTORY_UNIT'
     AND EXISTS (
       SELECT 1 FROM organisation.payroll_statutory_unit owner
-       WHERE owner.tenant_id=p_tenant_id AND owner.id=p_owner_id AND owner.status='ACTIVE'
+       WHERE owner.tenant_id=p_tenant_id AND owner.id=p_owner_id
+         AND (
+           owner.status='ACTIVE'
+           OR (
+             owner.status='PENDING_APPROVAL'
+             AND p_approval_role='FINAL_APPROVER'
+             AND p_domain_code='ORGANISATION_CONFIG'
+             AND p_action_code='APPROVE'
+           )
+         )
     )
   )
   ORDER BY candidate.priority, candidate.authority_id
