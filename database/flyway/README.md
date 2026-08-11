@@ -1,6 +1,6 @@
 # Payroll vertical-slice Flyway package
 
-`sql/` is the canonical source for the ordered V001-V036 migrations. The Maven
+`sql/` is the canonical source for the ordered V001-V037 migrations. The Maven
 `backend/database-migrations` module packages these files at `db/migration` and
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
@@ -16,11 +16,10 @@ backend PR #44 / `a0234d94ef280a41a744ea6e8483f786a497d211`. V035 is committed a
 immutable. V036 is `V036__foundation_snapshot_readiness_closure.sql`, delivered
 through P5-FSR-01 G01 backend PR #47 / `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`
 and retained unchanged through later FSR hardening. V036 is committed and
-immutable. V001-V036 are now immutable. V037 is reserved exclusively for
-P5-FAD-01 — Foundation Approval & Delegation. The active product branch adds
-`V037__foundation_approval_delegation.sql` as the forward-only shared application
-approval-authority/delegation candidate; it is not mainline authority until the
-P5-FAD-01 product PR merges.
+immutable. V037 is `V037__foundation_approval_delegation.sql`, delivered through
+P5-FAD-01 product PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`.
+V037 is committed and immutable. V001-V037 are now immutable. V038 is unreserved
+and may not be claimed without a separately merged capability activation authority.
 
 V033 implements the P5-A3 configuration-design foundation: schema-1 salary
 structures, versioned CTC policies, typed eligibility rules and deterministic
