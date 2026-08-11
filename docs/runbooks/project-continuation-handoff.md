@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 11 August 2026 P5-FSR-01 post-merge status reconciliation
+**Updated:** 11 August 2026 after P5-FSR-01 closure and P5-FAD-01 R3 activation selection
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,10 +11,10 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** None after P5-FSR-01 status closure; fresh R3 selection required
-**Current state:** P5-FSR-01 MERGED; this status-closure PR releases ownership and V036 reservation
+**Active capability:** P5-FAD-01 — Foundation Approval & Delegation after activation-authority merge
+**Current state:** P5-FSR-01 CLOSED; P5-FAD-01 selected for activation with no story-status change
 **Migrations:** V001–V036 committed and immutable
-**Next migration:** V037 unreserved after this closure; no capability owns it
+**Next migration:** V037 reserved exclusively for P5-FAD-01 after activation-authority merge
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -103,22 +103,29 @@ Closed package:
 
 ## Authority state
 
-P5-FSR-01 is merged and is closed by this status-closure PR.
+P5-FSR-01 is merged and CLOSED at `940c24d85a11dfaf293fc1d660ede4132fd53acb`.
 
-- backend final merged main: `74bbd65449adad7b7058d8afd96097b1e08d2a0a`;
-- web merged main: `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`;
-- V036 is committed and immutable;
-- PLN-E01-010 and PLN-E01-012 are implemented;
-- PLN-E01-011 remains partially implemented;
-- active product ownership is NONE after this closure;
-- V037 is unreserved;
-- no next capability is selected or activated here.
+Fresh R3 reconciliation selects:
+
+**P5-FAD-01 — Foundation Approval & Delegation**
+
+After this activation-authority PR merges:
+
+- P5-FAD-01 is ACTIVE;
+- V037 is reserved exclusively for P5-FAD-01;
+- primary canonical story is PLN-E01-011;
+- story status remains PARTIALLY IMPLEMENTED until merged product evidence and
+  post-merge reconciliation justify promotion;
+- shared application-approval authority is owned by `security`;
+- business modules consume only its public facade;
+- legal signatory authority remains separate from application access;
+- E02 calendars/pay groups are not selected by this activation.
 
 ## Exact next controlled action
 
-Merge the P5-FSR-01 post-merge status-closure PR after hosted CI and independent
-closure review are green. After that merge, perform a fresh R3 reconciliation
-against the canonical story ledger to select the next bounded capability.
+Merge the governance-only P5-FAD-01 activation authority. Then create the
+product branch from activation-merged `main`, perform the mandatory approval
+endpoint inventory, freeze an exact implementation allow-list and implement
+V037/shared approval authority without expanding E02.
 
-Do not create product changes, claim V037, or reuse P5-FSR-01 ownership before a
-separate activation authority for the next capability is merged.
+Do not create V037 or product code before the activation authority is merged.

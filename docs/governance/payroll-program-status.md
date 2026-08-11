@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** None after this P5-FSR-01 status-closure PR merges
+**Active product write owner:** P5-FAD-01 implementation workstream after activation-authority merge
 **Migration state:** V001–V036 committed and immutable
-**Next migration:** V037 unreserved after this closure; separate activation authority required
+**Next migration:** V037 reserved exclusively for P5-FAD-01 after activation-authority merge
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 11 August 2026 after P5-FSR-01 backend/web product merges and semantic story reconciliation
-**Current execution capability:** None after P5-FSR-01 status closure; next capability requires fresh R3 selection
+**Last reconciled:** 11 August 2026 after P5-FSR-01 closure and fresh R3 selection of P5-FAD-01
+**Current execution capability:** P5-FAD-01 — Foundation Approval & Delegation (ACTIVE after activation-authority merge)
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
 ## 1. Mandatory starting point
@@ -274,6 +274,25 @@ textual identifier.
 
 After this closure merges, perform a fresh R3 reconciliation before assigning
 any new product ownership or migration number.
+
+## 7A. Active execution identity — P5-FAD-01
+
+**P5-FAD-01 — Foundation Approval & Delegation**
+
+- **Selection baseline:** P5-FSR-01 closure merge `940c24d85a11dfaf293fc1d660ede4132fd53acb`
+- **Primary canonical story:** PLN-E01-011
+- **State:** ACTIVE after this activation-authority merge; activation changes no story status
+- **Scope authority:** `docs/planning/pln-01/p5-fad-01-foundation-approval-delegation-scope.md`
+- **Activation branch:** `docs/p5-fad-01-activation-authority`
+- **Product branch:** `feature/p5-fad-01-foundation-approval-delegation`
+- **Migration:** V037 reserved exclusively after activation merge
+- **Backend owner:** shared application-approval authority in `security`, with exact domain integrations determined by pre-implementation audit
+- **UI owner:** bounded approval-authority administration/E2E only if required by the product increment
+- **Story totals:** unchanged at 18 implemented / 154 partial / 88 not evidenced / 159 not started / 31 legal-domain revalidation
+
+P5-FAD-01 closes only the reusable entity/PSU-scoped application approver and
+effective-dated delegation gap. It does not expand E02 calendars/pay groups and
+does not redesign legal authorised-signatory authority.
 
 ## 8. Remaining full-product scope
 

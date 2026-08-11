@@ -267,7 +267,7 @@ payroll payloads in browser storage.
 ## Database migrations
 
 `database/flyway/sql` is the single source of ordered versioned migrations.
-V001-V035 are committed and immutable. V033 is
+V001-V036 are committed and immutable. V033 is
 `V033__salary_structure_ctc_eligibility_simulation.sql`, merged through PR #32.
 V034 is `V034__jurisdiction_registration_foundations.sql`, merged through
 PR #36. V035 is `V035__foundation_banking_authority.sql`, merged through
@@ -346,7 +346,8 @@ poison-message and replay policy is recorded in
 - Product/API/database semantics remain governed by `hrms-payroll`; the UI
   consumes those contracts rather than redefining them.
 - V035 is committed and immutable through P5-FBA-01 backend PR #44.
-- V036 is reserved exclusively for P5-FSR-01 after its activation authority
+- V036 is committed and immutable through P5-FSR-01.
+- V037 is reserved exclusively for P5-FAD-01 after its activation authority
   merges; product implementation must remain inside its committed scope.
 
 For non-business execution work, when the next bounded action is obvious and
@@ -421,12 +422,11 @@ closed through PR #39. P5-FBA-01 subsequently merged through backend PR #44 and
 UI PR #12 and closed through status-closure PR #45. V034 and V035 are committed
 and immutable; neither historical capability retains product ownership.
 
-The active capability is P5-FSR-01 — Foundation Snapshot & Readiness Closure.
-Its durable scope authority is:
+P5-FSR-01 is merged and status-closed. The active capability is P5-FAD-01 — Foundation Approval & Delegation after activation-authority merge. Its durable scope authority is:
 
-`docs/planning/pln-01/p5-fsr-01-foundation-snapshot-readiness-closure-scope.md`
+`docs/planning/pln-01/p5-fad-01-foundation-approval-delegation-scope.md`
 
-V036 is reserved exclusively for P5-FSR-01. Resolve the current state from
+V036 is immutable. V037 is reserved exclusively for P5-FAD-01. Resolve the current state from
 `docs/governance/payroll-program-status.md` after live local/GitHub verification
 before creating or applying any implementation package.
 <!-- P5-JRF-CROSS-THREAD-AUTHORITY:END -->
