@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrganisationService {
   private final OrganisationRepository repository;
+  private final OrganisationApprovalAuthorityGate approvalGate;
   private final TenantTransactionExecutor transactions;
   private final AuthenticatedActor actor;
   private final Clock clock;
@@ -46,6 +47,7 @@ public class OrganisationService {
 
   public OrganisationService(
       OrganisationRepository repository,
+      OrganisationApprovalAuthorityGate approvalGate,
       TenantTransactionExecutor transactions,
       AuthenticatedActor actor,
       Clock clock,
@@ -57,6 +59,7 @@ public class OrganisationService {
       CanonicalJsonHasher canonical,
       ObjectMapper objectMapper) {
     this.repository = repository;
+    this.approvalGate = approvalGate;
     this.transactions = transactions;
     this.actor = actor;
     this.clock = clock;
@@ -149,6 +152,8 @@ public class OrganisationService {
         () -> {
           OrganisationView before = repository.version(kind, versionId);
           requireIdentity(before, identityId);
+          approvalGate.requireOrganisationApproval(
+              kind, before.identityId(), before.versionId());
           OrganisationView approved =
               repository.approve(
                   kind, versionId, actor.require(), clock.instant());

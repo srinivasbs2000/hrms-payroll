@@ -48,6 +48,16 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.acme.hrms</groupId>
+      <artifactId>security</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.acme.hrms</groupId>
+      <artifactId>organisation</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>

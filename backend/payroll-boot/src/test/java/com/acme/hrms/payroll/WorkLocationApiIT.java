@@ -216,6 +216,7 @@ abstract class JrfApiITSupport {
   @Autowired MockMvc mvc;
   @Autowired ObjectMapper objectMapper;
   @MockBean JwtDecoder jwtDecoder;
+  @MockBean com.acme.hrms.payroll.security.ApprovalAuthorityFacade approvalAuthorityFacade;
 
   @BeforeEach
   void seedFoundationDependencies() throws Exception {

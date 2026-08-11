@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmployerBankAccountService {
   private final EmployerBankAccountRepository repository;
+  private final OrganisationApprovalAuthorityGate approvalGate;
   private final BankAccountCryptoProvider cryptoProvider;
   private final TenantTransactionExecutor transactions;
   private final AuthenticatedActor actor;
@@ -49,6 +50,7 @@ public class EmployerBankAccountService {
 
   public EmployerBankAccountService(
       EmployerBankAccountRepository repository,
+      OrganisationApprovalAuthorityGate approvalGate,
       BankAccountCryptoProvider cryptoProvider,
       TenantTransactionExecutor transactions,
       AuthenticatedActor actor,
@@ -60,6 +62,7 @@ public class EmployerBankAccountService {
       CanonicalJsonHasher canonical,
       ObjectMapper objectMapper) {
     this.repository = repository;
+    this.approvalGate = approvalGate;
     this.cryptoProvider = cryptoProvider;
     this.transactions = transactions;
     this.actor = actor;
@@ -364,6 +367,8 @@ public class EmployerBankAccountService {
       EmployerBankAccountEvidenceRequest request) {
     EmployerBankAccountView before = repository.version(versionId);
     requireIdentity(before.identityId(), identityId);
+    approvalGate.requireBankApproval(
+        before.ownerKind(), before.legalEntityId(), before.payrollStatutoryUnitId());
     LocalDate today = LocalDate.now(clock);
     if (today.isBefore(before.effectiveFrom())
         || (before.effectiveTo() != null
@@ -392,6 +397,11 @@ public class EmployerBankAccountService {
       boolean publishEvent) {
     EmployerBankAccountView before = repository.version(versionId);
     requireIdentity(before.identityId(), identityId);
+    approvalGate.requireBankTransition(
+        before.ownerKind(),
+        before.legalEntityId(),
+        before.payrollStatutoryUnitId(),
+        action);
     EmployerBankAccountView after = work.get();
     audit(action, after, before);
     if (publishEvent) {

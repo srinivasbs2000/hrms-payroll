@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class JurisdictionResolutionService {
   private final JurisdictionResolutionRepository repository;
+  private final OrganisationApprovalAuthorityGate approvalGate;
   private final TenantTransactionExecutor transactions;
   private final AuthenticatedActor actor;
   private final Clock clock;
@@ -45,6 +46,7 @@ public class JurisdictionResolutionService {
 
   public JurisdictionResolutionService(
       JurisdictionResolutionRepository repository,
+      OrganisationApprovalAuthorityGate approvalGate,
       TenantTransactionExecutor transactions,
       AuthenticatedActor actor,
       Clock clock,
@@ -55,6 +57,7 @@ public class JurisdictionResolutionService {
       CanonicalJsonHasher canonical,
       ObjectMapper objectMapper) {
     this.repository = repository;
+    this.approvalGate = approvalGate;
     this.transactions = transactions;
     this.actor = actor;
     this.clock = clock;
@@ -95,6 +98,8 @@ public class JurisdictionResolutionService {
         () -> {
           JurisdictionOverrideView before =
               repository.override(overrideId);
+          approvalGate.requireJurisdictionOverrideApproval(
+              before.establishmentVersionId(), before.workLocationVersionId());
           JurisdictionOverrideView approved =
               repository.approveOverride(
                   overrideId,
