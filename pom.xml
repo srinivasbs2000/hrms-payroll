@@ -18,7 +18,7 @@
     <postgresql.version>42.7.12</postgresql.version>
     <log4j2.version>2.25.5</log4j2.version>
     <jackson.version>2.21.5</jackson.version>
-    <tomcat.version>10.1.57</tomcat.version>
+    <tomcat.version>11.0.24</tomcat.version>
     <testcontainers.version>2.0.5</testcontainers.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
