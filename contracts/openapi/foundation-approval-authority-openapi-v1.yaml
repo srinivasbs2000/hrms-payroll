@@ -1,0 +1,203 @@
+openapi: 3.1.0
+info:
+  title: HRMS Payroll Foundation Approval Authority API
+  version: 1.0.0
+  description: Tenant-safe application approval-authority assignment and bounded delegation.
+paths: {}
+components:
+  pathItems:
+    ApprovalAuthorityCollection:
+      post:
+        tags: [Approval Authority]
+        summary: Create an effective-dated application approval authority
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ApprovalAuthorityAssignmentCreate'}
+        responses:
+          '201':
+            description: Approval authority created.
+            content:
+              application/json:
+                schema: {$ref: '#/components/schemas/ApprovalAuthorityAssignment'}
+      get:
+        tags: [Approval Authority]
+        summary: List approval authorities for the current tenant
+        responses:
+          '200':
+            description: Tenant-scoped approval authorities.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/ApprovalAuthorityAssignment'}
+    ApprovalAuthoritySuspension:
+      post:
+        tags: [Approval Authority]
+        summary: Suspend an approval authority
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        - $ref: '#/components/parameters/AuthorityId'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/StateReason'}
+        responses:
+          '200':
+            description: Approval authority suspended.
+            content:
+              application/json:
+                schema: {$ref: '#/components/schemas/ApprovalAuthorityAssignment'}
+    ApprovalAuthorityRetirement:
+      post:
+        tags: [Approval Authority]
+        summary: Retire an approval authority
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        - $ref: '#/components/parameters/AuthorityId'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/StateReason'}
+        responses:
+          '200':
+            description: Approval authority retired.
+            content:
+              application/json:
+                schema: {$ref: '#/components/schemas/ApprovalAuthorityAssignment'}
+    ApprovalDelegationCollection:
+      post:
+        tags: [Approval Authority]
+        summary: Delegate an existing approval authority for an explicit period
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ApprovalDelegationCreate'}
+        responses:
+          '201':
+            description: Approval delegation created.
+            content:
+              application/json:
+                schema: {$ref: '#/components/schemas/ApprovalDelegation'}
+      get:
+        tags: [Approval Authority]
+        summary: List approval delegations for the current tenant
+        responses:
+          '200':
+            description: Tenant-scoped approval delegations.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items: {$ref: '#/components/schemas/ApprovalDelegation'}
+    ApprovalDelegationRevocation:
+      post:
+        tags: [Approval Authority]
+        summary: Revoke an approval delegation
+        parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        - $ref: '#/components/parameters/DelegationId'
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/StateReason'}
+        responses:
+          '200':
+            description: Approval delegation revoked.
+            content:
+              application/json:
+                schema: {$ref: '#/components/schemas/ApprovalDelegation'}
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, minLength: 1}
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema: {type: string, minLength: 1}
+    AuthorityId:
+      name: authorityId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    DelegationId:
+      name: delegationId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+  schemas:
+    ApprovalAuthorityAssignmentCreate:
+      type: object
+      additionalProperties: false
+      required: [ownerKind, ownerId, approvalRole, domainCode, actionCode, actorId, effectiveFrom]
+      properties:
+        ownerKind: {type: string, enum: [LEGAL_ENTITY, PAYROLL_STATUTORY_UNIT]}
+        ownerId: {type: string, format: uuid}
+        approvalRole: {type: string, enum: [VERIFIER, FINAL_APPROVER]}
+        domainCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,79}$'}
+        actionCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,79}$'}
+        actorId: {type: string, minLength: 1, maxLength: 160}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    ApprovalAuthorityAssignment:
+      allOf:
+      - $ref: '#/components/schemas/ApprovalAuthorityAssignmentCreate'
+      - type: object
+        required: [id, status, createdAt, createdBy, versionNo]
+        properties:
+          id: {type: string, format: uuid}
+          status: {type: string, enum: [ACTIVE, SUSPENDED, RETIRED]}
+          createdAt: {type: string, format: date-time}
+          createdBy: {type: string}
+          suspendedAt: {type: [string, 'null'], format: date-time}
+          suspendedBy: {type: [string, 'null']}
+          suspensionReason: {type: [string, 'null']}
+          retiredAt: {type: [string, 'null'], format: date-time}
+          retiredBy: {type: [string, 'null']}
+          retirementReason: {type: [string, 'null']}
+          versionNo: {type: integer, format: int64, minimum: 0}
+    ApprovalDelegationCreate:
+      type: object
+      additionalProperties: false
+      required: [sourceAuthorityId, delegateActorId, effectiveFrom, effectiveTo]
+      properties:
+        sourceAuthorityId: {type: string, format: uuid}
+        delegateActorId: {type: string, minLength: 1, maxLength: 160}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: string, format: date}
+    ApprovalDelegation:
+      allOf:
+      - $ref: '#/components/schemas/ApprovalDelegationCreate'
+      - type: object
+        required: [id, delegatorActorId, status, createdAt, createdBy, versionNo]
+        properties:
+          id: {type: string, format: uuid}
+          delegatorActorId: {type: string}
+          status: {type: string, enum: [ACTIVE, REVOKED]}
+          createdAt: {type: string, format: date-time}
+          createdBy: {type: string}
+          revokedAt: {type: [string, 'null'], format: date-time}
+          revokedBy: {type: [string, 'null']}
+          revocationReason: {type: [string, 'null']}
+          versionNo: {type: integer, format: int64, minimum: 0}
+    StateReason:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason: {type: string, minLength: 1, maxLength: 500}

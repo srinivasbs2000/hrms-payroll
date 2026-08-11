@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 11 August 2026 after P5-FSR-01 closure and P5-FAD-01 R3 activation selection
+**Updated:** 11 August 2026 after P5-FAD-01 activation merge and local G01 core implementation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -12,7 +12,7 @@
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
 **Active capability:** P5-FAD-01 — Foundation Approval & Delegation after activation-authority merge
-**Current state:** P5-FSR-01 CLOSED; P5-FAD-01 selected for activation with no story-status change
+**Current state:** P5-FAD-01 ACTIVE; G01 shared V037/security authority core locally implemented; G02 domain integration pending
 **Migrations:** V001–V036 committed and immutable
 **Next migration:** V037 reserved exclusively for P5-FAD-01 after activation-authority merge
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -32,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | None after P5-FSR-01 status closure |
+| Active write owner | P5-FAD-01 implementation workstream |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | None; fresh activation authority required for the next capability |
+| Active path ownership | P5-FAD-01 scope authority; G01 security/V037 core then bounded G02 owner-scoped integrations |
 | Migration state | V001–V036 immutable |
-| Next migration | V037 unreserved after closure |
+| Next migration | V037 reserved exclusively for P5-FAD-01; local G01 candidate not yet published |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -103,29 +103,23 @@ Closed package:
 
 ## Authority state
 
-P5-FSR-01 is merged and CLOSED at `940c24d85a11dfaf293fc1d660ede4132fd53acb`.
-
-Fresh R3 reconciliation selects:
-
-**P5-FAD-01 — Foundation Approval & Delegation**
-
-After this activation-authority PR merges:
+P5-FSR-01 is CLOSED. P5-FAD-01 activation PR #53 merged at
+`b4267168892eb602764d194eb0f303f8d8233323`.
 
 - P5-FAD-01 is ACTIVE;
 - V037 is reserved exclusively for P5-FAD-01;
-- primary canonical story is PLN-E01-011;
-- story status remains PARTIALLY IMPLEMENTED until merged product evidence and
-  post-merge reconciliation justify promotion;
+- primary canonical story PLN-E01-011 remains PARTIALLY IMPLEMENTED;
 - shared application-approval authority is owned by `security`;
-- business modules consume only its public facade;
+- business-domain lifecycle transitions remain domain-owned;
 - legal signatory authority remains separate from application access;
-- E02 calendars/pay groups are not selected by this activation.
+- G01 adds the local V037/security authority core without story-status change;
+- G02 owner-scoped integration and independent critical review remain pending.
 
 ## Exact next controlled action
 
-Merge the governance-only P5-FAD-01 activation authority. Then create the
-product branch from activation-merged `main`, perform the mandatory approval
-endpoint inventory, freeze an exact implementation allow-list and implement
-V037/shared approval authority without expanding E02.
+Verify the local P5-FAD-01 G01 core evidence, then integrate the shared public
+security facade only into the owner-scoped approval surfaces frozen in
+`docs/history/p5-fad-01-approval-endpoint-inventory.md`.
 
-Do not create V037 or product code before the activation authority is merged.
+Do not publish the product branch until G02 integration, full verification,
+OpenAPI validation and independent critical review are complete.

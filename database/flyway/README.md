@@ -17,9 +17,10 @@ immutable. V036 is `V036__foundation_snapshot_readiness_closure.sql`, delivered
 through P5-FSR-01 G01 backend PR #47 / `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8`
 and retained unchanged through later FSR hardening. V036 is committed and
 immutable. V001-V036 are now immutable. V037 is reserved exclusively for
-P5-FAD-01 — Foundation Approval & Delegation after this activation-authority
-merge. Activation creates no V037 SQL; product implementation must create V037
-only from activation-merged `main` and within the committed P5-FAD-01 scope.
+P5-FAD-01 — Foundation Approval & Delegation. The active product branch adds
+`V037__foundation_approval_delegation.sql` as the forward-only shared application
+approval-authority/delegation candidate; it is not mainline authority until the
+P5-FAD-01 product PR merges.
 
 V033 implements the P5-A3 configuration-design foundation: schema-1 salary
 structures, versioned CTC policies, typed eligibility rules and deterministic
@@ -81,6 +82,7 @@ Migration order:
 34. P5-JRF-01 work-location identity/version, payroll-jurisdiction hierarchy/resolution evidence, generic statutory-registration lifecycle and bounded readiness
 35. P5-FBA-01 employer bank-account/signatory identity/version, encrypted bank secret metadata, delegated-authority scope and bounded banking readiness
 36. P5-FSR-01 immutable foundation-configuration snapshot, exact input/calculation binding and history-preserving V035 upgrade
+37. P5-FAD-01 entity/PSU-scoped application approval authority, bounded delegation and tenant-safe resolution
 
 This remains a greenfield product with no evidenced production deployment.
 Forward-only migrations and populated-upgrade tests protect reproducible local,

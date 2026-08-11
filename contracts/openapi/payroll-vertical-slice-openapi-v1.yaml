@@ -14,6 +14,8 @@ security:
 tags:
 - name: Organisation
   description: Employer hierarchy and establishment setup.
+- name: Approval Authority
+  description: Entity/PSU-scoped application approver assignments and bounded delegation.
 - name: Calendar
   description: Monthly calendars, periods and pay groups.
 - name: Compensation
@@ -29,6 +31,16 @@ tags:
 - name: Documents
   description: Draft payslip generation and retrieval.
 paths:
+  /foundation-approval-authorities:
+    $ref: './foundation-approval-authority-openapi-v1.yaml#/components/pathItems/ApprovalAuthorityCollection'
+  /foundation-approval-authorities/{authorityId}/suspension:
+    $ref: './foundation-approval-authority-openapi-v1.yaml#/components/pathItems/ApprovalAuthoritySuspension'
+  /foundation-approval-authorities/{authorityId}/retirement:
+    $ref: './foundation-approval-authority-openapi-v1.yaml#/components/pathItems/ApprovalAuthorityRetirement'
+  /foundation-approval-delegations:
+    $ref: './foundation-approval-authority-openapi-v1.yaml#/components/pathItems/ApprovalDelegationCollection'
+  /foundation-approval-delegations/{delegationId}/revocation:
+    $ref: './foundation-approval-authority-openapi-v1.yaml#/components/pathItems/ApprovalDelegationRevocation'
   /legal-entities:
     $ref: '#/components/pathItems/OrganisationCollection'
   /payroll-statutory-units:
