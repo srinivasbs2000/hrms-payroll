@@ -321,3 +321,22 @@ Runtime design and tests must:
 
 P5-FSR-01 kept the existing UTC application `Clock` and aligned Hikari
 PostgreSQL sessions to UTC after browser E2E exposed the mismatch.
+## 18. Heterogeneous target baselines require per-target proof
+
+A bulk updater must never infer that related files share the same textual anchor,
+field layout or test fixture merely because they belong to the same capability.
+
+Before release:
+
+- pin every existing mutation target to its exact committed Git blob;
+- build the complete transformation for every target before writing the first file;
+- distinguish local test fixtures from inherited/shared test support explicitly;
+- run non-trivial product mutation and verification in a disposable Git worktree;
+- keep the owner branch untouched until compile, targeted tests, full verification
+  and exact path-integrity gates all pass; and
+- fast-forward the owner branch only to the already validated disposable commit.
+
+P5-FAD-01 G02 v1.0 exposed this class of defect when one standalone API test
+declared `JwtDecoder` locally while several related JRF API tests inherited that
+fixture from `JrfApiITSupport`. The runner correctly failed before mutation, but
+the package should have proven the heterogeneous baselines before release.

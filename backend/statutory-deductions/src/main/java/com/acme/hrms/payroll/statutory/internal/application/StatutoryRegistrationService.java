@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class StatutoryRegistrationService {
   private final StatutoryRegistrationRepository repository;
+  private final StatutoryApprovalAuthorityGate approvalGate;
   private final TenantTransactionExecutor transactions;
   private final AuthenticatedActor actor;
   private final Clock clock;
@@ -45,6 +46,7 @@ public class StatutoryRegistrationService {
 
   public StatutoryRegistrationService(
       StatutoryRegistrationRepository repository,
+      StatutoryApprovalAuthorityGate approvalGate,
       TenantTransactionExecutor transactions,
       AuthenticatedActor actor,
       Clock clock,
@@ -55,6 +57,7 @@ public class StatutoryRegistrationService {
       CanonicalJsonHasher canonical,
       ObjectMapper objectMapper) {
     this.repository = repository;
+    this.approvalGate = approvalGate;
     this.transactions = transactions;
     this.actor = actor;
     this.clock = clock;
@@ -329,6 +332,11 @@ public class StatutoryRegistrationService {
           StatutoryRegistrationView before =
               repository.version(versionId);
           requireIdentity(before.identityId(), identityId);
+          approvalGate.requireRegistrationTransition(
+              before.ownerKind(),
+              before.ownerId(),
+              before.effectiveFrom(),
+              operationSuffix);
           StatutoryRegistrationView after = work.get();
           record(auditAction, after, before);
           if (eventType != null) {

@@ -110,6 +110,7 @@ class OrganisationApiIT {
   @Autowired MockMvc mvc;
   @Autowired ObjectMapper objectMapper;
   @MockBean JwtDecoder jwtDecoder;
+  @MockBean com.acme.hrms.payroll.security.ApprovalAuthorityFacade approvalAuthorityFacade;
 
   @BeforeEach
   void seedTenants() throws Exception {

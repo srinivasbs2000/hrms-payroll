@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthorisedSignatoryService {
   private final AuthorisedSignatoryRepository repository;
+  private final OrganisationApprovalAuthorityGate approvalGate;
   private final TenantTransactionExecutor transactions;
   private final AuthenticatedActor actor;
   private final Clock clock;
@@ -47,6 +48,7 @@ public class AuthorisedSignatoryService {
 
   public AuthorisedSignatoryService(
       AuthorisedSignatoryRepository repository,
+      OrganisationApprovalAuthorityGate approvalGate,
       TenantTransactionExecutor transactions,
       AuthenticatedActor actor,
       Clock clock,
@@ -57,6 +59,7 @@ public class AuthorisedSignatoryService {
       CanonicalJsonHasher canonical,
       ObjectMapper objectMapper) {
     this.repository = repository;
+    this.approvalGate = approvalGate;
     this.transactions = transactions;
     this.actor = actor;
     this.clock = clock;
@@ -423,6 +426,8 @@ public class AuthorisedSignatoryService {
       AuthorisedSignatoryEvidenceRequest request) {
     AuthorisedSignatoryView before = repository.version(versionId);
     requireIdentity(before.identityId(), identityId);
+    approvalGate.requireSignatoryApproval(
+        before.ownerKind(), before.legalEntityId(), before.payrollStatutoryUnitId());
     LocalDate today = LocalDate.now(clock);
     if (today.isBefore(before.effectiveFrom())
         || (before.effectiveTo() != null
@@ -451,6 +456,11 @@ public class AuthorisedSignatoryService {
       boolean publishEvent) {
     AuthorisedSignatoryView before = repository.version(versionId);
     requireIdentity(before.identityId(), identityId);
+    approvalGate.requireSignatoryTransition(
+        before.ownerKind(),
+        before.legalEntityId(),
+        before.payrollStatutoryUnitId(),
+        action);
     AuthorisedSignatoryView after = work.get();
     audit(action, after, before);
     if (publishEvent) {

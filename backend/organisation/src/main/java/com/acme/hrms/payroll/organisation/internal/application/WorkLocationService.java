@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class WorkLocationService {
   private final WorkLocationRepository repository;
+  private final OrganisationApprovalAuthorityGate approvalGate;
   private final TenantTransactionExecutor transactions;
   private final AuthenticatedActor actor;
   private final Clock clock;
@@ -40,6 +41,7 @@ public class WorkLocationService {
 
   public WorkLocationService(
       WorkLocationRepository repository,
+      OrganisationApprovalAuthorityGate approvalGate,
       TenantTransactionExecutor transactions,
       AuthenticatedActor actor,
       Clock clock,
@@ -50,6 +52,7 @@ public class WorkLocationService {
       CanonicalJsonHasher canonical,
       ObjectMapper objectMapper) {
     this.repository = repository;
+    this.approvalGate = approvalGate;
     this.transactions = transactions;
     this.actor = actor;
     this.clock = clock;
@@ -105,6 +108,7 @@ public class WorkLocationService {
         () -> {
           WorkLocationView before = repository.version(versionId);
           requireIdentity(before.identityId(), identityId);
+          approvalGate.requireWorkLocationApproval(before.versionId());
           WorkLocationView approved =
               repository.approve(
                   versionId, expectedVersion, actor.require(), clock.instant());

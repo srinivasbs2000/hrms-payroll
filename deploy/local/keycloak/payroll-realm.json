@@ -86,6 +86,9 @@
         ],
         "permissions": [
           "audit.read",
+          "foundation-approval-authority.read",
+          "foundation-approval-authority.write",
+          "foundation-approval-delegation.write",
           "calendar.create",
           "calendar.period.generate",
           "calendar.read",
