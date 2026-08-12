@@ -1,7 +1,6 @@
 package com.acme.hrms.payroll.compensation;
 
-import com.acme.hrms.payroll.compensation.internal.application
-    .PayrollCalendarService;
+import com.acme.hrms.payroll.compensation.internal.application.PayrollCalendarService;
 import com.acme.hrms.payroll.platform.AuditReader;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -25,23 +24,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class PayrollCalendarController {
   private final PayrollCalendarService service;
 
-  public PayrollCalendarController(
-      PayrollCalendarService service) {
+  public PayrollCalendarController(PayrollCalendarService service) {
     this.service = service;
   }
 
   @PostMapping
   @PreAuthorize("hasAuthority('calendar.create')")
   public ResponseEntity<PayrollCalendarView> create(
-      @RequestHeader("Idempotency-Key")
-      String idempotencyKey,
-      @Valid @RequestBody
-      PayrollCalendarWriteRequest request) {
-    PayrollCalendarView result =
-        service.create(idempotencyKey, request);
-    return ResponseEntity
-        .created(URI.create(
-            "/api/v1/payroll-calendars/" + result.id()))
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody PayrollCalendarWriteRequest request) {
+    PayrollCalendarView result = service.create(idempotencyKey, request);
+    return ResponseEntity.created(
+            URI.create("/api/v1/payroll-calendars/" + result.id()))
         .body(result);
   }
 
@@ -52,24 +46,15 @@ public class PayrollCalendarController {
   }
 
   @PostMapping("/{calendarId}/periods")
-  @PreAuthorize(
-      "hasAuthority('calendar.period.generate')")
+  @PreAuthorize("hasAuthority('calendar.period.generate')")
   public ResponseEntity<List<PayPeriodView>> generate(
       @PathVariable UUID calendarId,
-      @RequestHeader("Idempotency-Key")
-      String idempotencyKey,
-      @Valid @RequestBody
-      GeneratePeriodsRequest request) {
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody GeneratePeriodsRequest request) {
     List<PayPeriodView> result = service.generate(
-        calendarId,
-        idempotencyKey,
-        request);
+        calendarId, idempotencyKey, request);
     return ResponseEntity.created(
-            URI.create(
-                "/api/v1/payroll-calendars/"
-                    + calendarId
-                    + "/periods?year="
-                    + request.year()))
+            URI.create("/api/v1/payroll-calendars/" + calendarId + "/periods"))
         .body(result);
   }
 
@@ -77,9 +62,53 @@ public class PayrollCalendarController {
   @PreAuthorize("hasAuthority('calendar.read')")
   public List<PayPeriodView> periods(
       @PathVariable UUID calendarId,
-      @RequestParam(required = false)
-      Integer year) {
+      @RequestParam(required = false) Integer year) {
     return service.periods(calendarId, year);
+  }
+
+  @PostMapping("/{calendarId}/publication")
+  @PreAuthorize("hasAuthority('calendar.create')")
+  public PayrollCalendarOperationalView publish(
+      @PathVariable UUID calendarId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody PayrollCalendarLifecycleRequest request) {
+    return service.publish(calendarId, idempotencyKey, request);
+  }
+
+  @PostMapping("/{calendarId}/amendments")
+  @PreAuthorize("hasAuthority('calendar.create')")
+  public ResponseEntity<PayrollCalendarView> amend(
+      @PathVariable UUID calendarId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey) {
+    PayrollCalendarView result = service.amend(calendarId, idempotencyKey);
+    return ResponseEntity.created(
+            URI.create("/api/v1/payroll-calendars/" + result.id()))
+        .body(result);
+  }
+
+  @PostMapping("/{calendarId}/retirement")
+  @PreAuthorize("hasAuthority('calendar.create')")
+  public PayrollCalendarOperationalView retire(
+      @PathVariable UUID calendarId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody PayrollCalendarLifecycleRequest request) {
+    request.requireReason();
+    return service.retire(calendarId, idempotencyKey, request);
+  }
+
+  @GetMapping("/{calendarId}/operations")
+  @PreAuthorize("hasAuthority('calendar.read')")
+  public PayrollCalendarOperationalView operations(
+      @PathVariable UUID calendarId) {
+    return service.operations(calendarId);
+  }
+
+  @GetMapping("/{calendarId}/period-operations")
+  @PreAuthorize("hasAuthority('calendar.read')")
+  public List<PayPeriodOperationalView> periodOperations(
+      @PathVariable UUID calendarId,
+      @RequestParam(required = false) Integer year) {
+    return service.periodOperations(calendarId, year);
   }
 
   @GetMapping("/{calendarId}/audit")

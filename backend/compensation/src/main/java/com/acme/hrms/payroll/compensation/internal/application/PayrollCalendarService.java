@@ -1,14 +1,13 @@
 package com.acme.hrms.payroll.compensation.internal.application;
 
-import com.acme.hrms.payroll.compensation
-    .GeneratePeriodsRequest;
+import com.acme.hrms.payroll.compensation.GeneratePeriodsRequest;
+import com.acme.hrms.payroll.compensation.PayPeriodOperationalView;
 import com.acme.hrms.payroll.compensation.PayPeriodView;
-import com.acme.hrms.payroll.compensation
-    .PayrollCalendarView;
-import com.acme.hrms.payroll.compensation
-    .PayrollCalendarWriteRequest;
-import com.acme.hrms.payroll.compensation.internal
-    .infrastructure.PayrollCalendarRepository;
+import com.acme.hrms.payroll.compensation.PayrollCalendarLifecycleRequest;
+import com.acme.hrms.payroll.compensation.PayrollCalendarOperationalView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarWriteRequest;
+import com.acme.hrms.payroll.compensation.internal.infrastructure.PayrollCalendarRepository;
 import com.acme.hrms.payroll.integrations.CanonicalJsonHasher;
 import com.acme.hrms.payroll.integrations.IdempotencyStore;
 import com.acme.hrms.payroll.integrations.OutboxWriter;
@@ -18,8 +17,7 @@ import com.acme.hrms.payroll.platform.AuthenticatedActor;
 import com.acme.hrms.payroll.platform.ConflictException;
 import com.acme.hrms.payroll.platform.DomainEventFactory;
 import com.acme.hrms.payroll.platform.TenantContext;
-import com.acme.hrms.payroll.platform
-    .TenantTransactionExecutor;
+import com.acme.hrms.payroll.platform.TenantTransactionExecutor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,8 +32,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PayrollCalendarService {
-  private static final String OBJECT_TYPE =
-      "PAYROLL_CALENDAR";
+  private static final String OBJECT_TYPE = "PAYROLL_CALENDAR";
 
   private final PayrollCalendarRepository repository;
   private final TenantTransactionExecutor transactions;
@@ -74,22 +71,13 @@ public class PayrollCalendarService {
     this.objectMapper = objectMapper;
   }
 
-  public PayrollCalendarView create(
-      String key, PayrollCalendarWriteRequest request) {
+  public PayrollCalendarView create(String key, PayrollCalendarWriteRequest request) {
     request.validate();
-    return idempotentCalendar(
-        "calendar:create",
-        key,
-        request,
-        () -> {
-          PayrollCalendarView created =
-              repository.create(
-                  request,
-                  actor.require(),
-                  clock.instant());
-          recordCreated(created);
-          return created;
-        });
+    return idempotentCalendar("calendar:create", key, request, () -> {
+      PayrollCalendarView created = repository.create(request, actor.require(), clock.instant());
+      recordCreated(created);
+      return created;
+    });
   }
 
   public List<PayrollCalendarView> list() {
@@ -97,122 +85,122 @@ public class PayrollCalendarService {
   }
 
   public List<PayPeriodView> generate(
-      UUID calendarId,
-      String key,
-      GeneratePeriodsRequest request) {
-    request.validate();
+      UUID calendarId, String key, GeneratePeriodsRequest request) {
+    PayrollCalendarView calendar = transactions.read(() -> repository.calendar(calendarId));
+    request.validateFor(calendar.frequency());
     Map<String, Object> command = new LinkedHashMap<>();
     command.put("calendarId", calendarId);
     command.put("year", request.year());
-    command.put(
-        "paymentDay",
-        request.resolvedPaymentDay());
+    command.put("paymentDay", request.paymentDay());
+    command.put("startDate", request.startDate());
+    command.put("periodCount", request.periodCount());
 
-    return idempotentPeriods(
-        "calendar:period-generate:" + calendarId,
-        key,
-        command,
-        () -> {
-          PayrollCalendarView calendar =
-              repository.calendar(calendarId);
-          List<PayPeriodView> generated =
-              repository.generate(
-                  calendarId,
-                  request.year(),
-                  request.resolvedPaymentDay(),
-                  actor.require(),
-                  clock.instant());
-          recordGenerated(
-              calendar,
-              request,
-              generated);
-          return generated;
-        });
+    return idempotentPeriods("calendar:period-generate:" + calendarId, key, command, () -> {
+      List<PayPeriodView> generated = repository.generate(
+          calendarId, request, actor.require(), clock.instant());
+      recordGenerated(calendar, request, generated);
+      return generated;
+    });
   }
 
-  public List<PayPeriodView> periods(
-      UUID calendarId, Integer year) {
+  public List<PayPeriodView> periods(UUID calendarId, Integer year) {
+    validateYear(year);
+    return transactions.read(() -> repository.periods(calendarId, year));
+  }
+
+  public PayrollCalendarOperationalView publish(
+      UUID calendarId, String key, PayrollCalendarLifecycleRequest request) {
+    return idempotentOperational("calendar:publish:" + calendarId, key, request, () -> {
+      String principal = actor.require();
+      repository.publish(calendarId, request.reason(), principal, clock.instant());
+      PayrollCalendarOperationalView view = repository.operations(calendarId);
+      recordLifecycle("PUBLISHED", calendarId, view, principal);
+      return view;
+    });
+  }
+
+  public PayrollCalendarView amend(UUID calendarId, String key) {
+    return idempotentCalendar("calendar:amend:" + calendarId, key, Map.of("calendarId", calendarId), () -> {
+      String principal = actor.require();
+      PayrollCalendarView created = repository.amend(calendarId, principal, clock.instant());
+      recordLifecycle("AMENDMENT_DRAFT_CREATED", calendarId, created.id(), principal);
+      return created;
+    });
+  }
+
+  public PayrollCalendarOperationalView retire(
+      UUID calendarId, String key, PayrollCalendarLifecycleRequest request) {
+    request.requireReason();
+    return idempotentOperational("calendar:retire:" + calendarId, key, request, () -> {
+      String principal = actor.require();
+      repository.retire(calendarId, request.reason(), principal, clock.instant());
+      PayrollCalendarOperationalView view = repository.operations(calendarId);
+      recordLifecycle("RETIRED", calendarId, view, principal);
+      return view;
+    });
+  }
+
+  public PayrollCalendarOperationalView operations(UUID calendarId) {
+    return transactions.read(() -> repository.operations(calendarId));
+  }
+
+  public List<PayPeriodOperationalView> periodOperations(UUID calendarId, Integer year) {
+    validateYear(year);
+    return transactions.read(() -> repository.periodOperations(calendarId, year));
+  }
+
+  public List<AuditReader.AuditEventView> audit(UUID calendarId) {
+    return transactions.read(() -> auditReader.forObject(OBJECT_TYPE, calendarId));
+  }
+
+  private void validateYear(Integer year) {
     if (year != null && (year < 2020 || year > 2100)) {
-      throw new IllegalArgumentException(
-          "year must be between 2020 and 2100");
+      throw new IllegalArgumentException("year must be between 2020 and 2100");
     }
-    return transactions.read(
-        () -> repository.periods(calendarId, year));
   }
 
-  public List<AuditReader.AuditEventView> audit(
-      UUID calendarId) {
-    return transactions.read(
-        () -> auditReader.forObject(
-            OBJECT_TYPE,
-            calendarId));
-  }
-
-  private void recordCreated(
-      PayrollCalendarView created) {
+  private void recordCreated(PayrollCalendarView created) {
     String principal = actor.require();
     Map<String, Object> after = calendarState(created);
-    audit.append(
-        "CREATED",
-        OBJECT_TYPE,
-        created.id(),
-        null,
-        after,
-        Map.of(),
-        principal);
+    audit.append("CREATED", OBJECT_TYPE, created.id(), null, after, Map.of(), principal);
     outbox.append(events.create(
-        "PayrollCalendarCreated",
-        1,
-        TenantContext.require(),
-        null,
-        OBJECT_TYPE,
-        created.id(),
-        1,
-        after));
+        "PayrollCalendarCreated", 1, TenantContext.require(), null, OBJECT_TYPE,
+        created.id(), created.calendarVersion(), after));
   }
 
   private void recordGenerated(
-      PayrollCalendarView calendar,
-      GeneratePeriodsRequest request,
-      List<PayPeriodView> periods) {
+      PayrollCalendarView calendar, GeneratePeriodsRequest request, List<PayPeriodView> periods) {
     String principal = actor.require();
     Map<String, Object> after = new LinkedHashMap<>();
     after.put("calendar", calendarState(calendar));
-    after.put("year", request.year());
-    after.put(
-        "paymentDay",
-        request.resolvedPaymentDay());
     after.put("periodCount", periods.size());
-    after.put(
-        "firstPeriodCode",
-        periods.getFirst().periodCode());
-    after.put(
-        "lastPeriodCode",
-        periods.getLast().periodCode());
-
-    audit.append(
-        "PERIODS_GENERATED",
-        OBJECT_TYPE,
-        calendar.id(),
-        null,
-        after,
-        Map.of("year", request.year()),
-        principal);
+    after.put("firstPeriodCode", periods.getFirst().periodCode());
+    after.put("lastPeriodCode", periods.getLast().periodCode());
+    after.put("year", request.year());
+    after.put("startDate", request.startDate());
+    audit.append("PERIODS_GENERATED", OBJECT_TYPE, calendar.id(), null, after, Map.of(), principal);
     outbox.append(events.create(
-        "PayrollCalendarPeriodsGenerated",
-        1,
-        TenantContext.require(),
-        null,
-        OBJECT_TYPE,
-        calendar.id(),
-        request.year(),
-        after));
+        "PayrollCalendarPeriodsGenerated", 1, TenantContext.require(), null, OBJECT_TYPE,
+        calendar.id(), calendar.calendarVersion(), after));
   }
 
-  private Map<String, Object> calendarState(
-      PayrollCalendarView view) {
+  private void recordLifecycle(
+      String action, UUID sourceCalendarId, Object afterValue, String principal) {
+    Map<String, Object> after = Map.of(
+        "sourceCalendarId", sourceCalendarId,
+        "result", afterValue);
+    audit.append(action, OBJECT_TYPE, sourceCalendarId, null, after, Map.of(), principal);
+    outbox.append(events.create(
+        "PayrollCalendar" + action, 1, TenantContext.require(), null, OBJECT_TYPE,
+        sourceCalendarId, 1, after));
+  }
+
+  private Map<String, Object> calendarState(PayrollCalendarView view) {
     Map<String, Object> state = new LinkedHashMap<>();
     state.put("id", view.id());
+    state.put("calendarSeriesId", view.calendarSeriesId());
+    state.put("calendarVersion", view.calendarVersion());
+    state.put("supersedesCalendarId", view.supersedesCalendarId());
     state.put("code", view.code());
     state.put("name", view.name());
     state.put("frequency", view.frequency());
@@ -221,40 +209,42 @@ public class PayrollCalendarService {
   }
 
   private PayrollCalendarView idempotentCalendar(
-      String operation,
-      String key,
-      Object request,
-      Supplier<PayrollCalendarView> work) {
+      String operation, String key, Object request, Supplier<PayrollCalendarView> work) {
     requireKey(key);
     return transactions.write(() -> {
       String requestHash = canonical.hash(request);
       var saved = idempotency.find(operation, key);
       if (saved.isPresent()) {
         verifyReplay(saved.get(), requestHash);
-        try {
-          return objectMapper.readValue(
-              saved.get().body(),
-              PayrollCalendarView.class);
-        } catch (JsonProcessingException exception) {
-          throw new IllegalStateException(
-              "Stored calendar response is invalid",
-              exception);
-        }
+        return readSaved(saved.get(), PayrollCalendarView.class, "Stored calendar response is invalid");
       }
-
       reserve(operation, key, requestHash);
       PayrollCalendarView response = work.get();
-      idempotency.complete(
-          operation, key, 201, response);
+      idempotency.complete(operation, key, 201, response);
+      return response;
+    });
+  }
+
+  private PayrollCalendarOperationalView idempotentOperational(
+      String operation, String key, Object request, Supplier<PayrollCalendarOperationalView> work) {
+    requireKey(key);
+    return transactions.write(() -> {
+      String requestHash = canonical.hash(request);
+      var saved = idempotency.find(operation, key);
+      if (saved.isPresent()) {
+        verifyReplay(saved.get(), requestHash);
+        return readSaved(saved.get(), PayrollCalendarOperationalView.class,
+            "Stored calendar operational response is invalid");
+      }
+      reserve(operation, key, requestHash);
+      PayrollCalendarOperationalView response = work.get();
+      idempotency.complete(operation, key, 200, response);
       return response;
     });
   }
 
   private List<PayPeriodView> idempotentPeriods(
-      String operation,
-      String key,
-      Object request,
-      Supplier<List<PayPeriodView>> work) {
+      String operation, String key, Object request, Supplier<List<PayPeriodView>> work) {
     requireKey(key);
     return transactions.write(() -> {
       String requestHash = canonical.hash(request);
@@ -263,59 +253,46 @@ public class PayrollCalendarService {
         verifyReplay(saved.get(), requestHash);
         try {
           return objectMapper.readValue(
-              saved.get().body(),
-              new TypeReference<List<PayPeriodView>>() {});
+              saved.get().body(), new TypeReference<List<PayPeriodView>>() {});
         } catch (JsonProcessingException exception) {
-          throw new IllegalStateException(
-              "Stored period response is invalid",
-              exception);
+          throw new IllegalStateException("Stored period response is invalid", exception);
         }
       }
-
       reserve(operation, key, requestHash);
       List<PayPeriodView> response = work.get();
-      idempotency.complete(
-          operation, key, 201, response);
+      idempotency.complete(operation, key, 201, response);
       return response;
     });
   }
 
-  private void reserve(
-      String operation,
-      String key,
-      String requestHash) {
+  private <T> T readSaved(IdempotencyStore.SavedResponse saved, Class<T> type, String message) {
     try {
-      idempotency.reserve(
-          operation,
-          key,
-          requestHash,
-          clock.instant().plus(
-              Duration.ofHours(24)));
-    } catch (IllegalStateException exception) {
-      throw new ConflictException(
-          "Idempotency-Key is already in use",
-          exception);
+      return objectMapper.readValue(saved.body(), type);
+    } catch (JsonProcessingException exception) {
+      throw new IllegalStateException(message, exception);
     }
   }
 
-  private void verifyReplay(
-      IdempotencyStore.SavedResponse saved,
-      String requestHash) {
+  private void reserve(String operation, String key, String requestHash) {
+    try {
+      idempotency.reserve(operation, key, requestHash, clock.instant().plus(Duration.ofHours(24)));
+    } catch (IllegalStateException exception) {
+      throw new ConflictException("Idempotency-Key is already in use", exception);
+    }
+  }
+
+  private void verifyReplay(IdempotencyStore.SavedResponse saved, String requestHash) {
     if (!saved.requestHash().equals(requestHash)) {
-      throw new ConflictException(
-          "Idempotency-Key was already used "
-              + "with a different request");
+      throw new ConflictException("Idempotency-Key was already used with a different request");
     }
     if (!saved.completed()) {
-      throw new ConflictException(
-          "Idempotent operation is still in progress");
+      throw new ConflictException("Idempotent operation is still in progress");
     }
   }
 
   private void requireKey(String key) {
     if (key == null || key.isBlank()) {
-      throw new IllegalArgumentException(
-          "Idempotency-Key is required");
+      throw new IllegalArgumentException("Idempotency-Key is required");
     }
   }
 }

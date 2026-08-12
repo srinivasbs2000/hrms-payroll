@@ -17,7 +17,7 @@ tags:
 - name: Approval Authority
   description: Entity/PSU-scoped application approver assignments and bounded delegation.
 - name: Calendar
-  description: Monthly calendars, periods and pay groups.
+  description: Payroll calendars, frequencies, periods, lifecycle and pay groups.
 - name: Compensation
   description: Pay components and salary structures.
 - name: Employee Payroll
@@ -848,128 +848,21 @@ paths:
         '403': {$ref: '#/components/responses/Forbidden'}
         '422': {$ref: '#/components/responses/UnprocessableEntity'}
   /payroll-calendars:
-    parameters:
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags: [Calendar]
-      summary: Create monthly payroll calendar
-      operationId: createPayrollCalendar
-      x-permission: calendar.create
-      parameters:
-      - $ref: '#/components/parameters/IdempotencyKey'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PayrollCalendarCreate'
-      responses:
-        '201':
-          description: Calendar created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PayrollCalendar'
-        '400': {$ref: '#/components/responses/Problem'}
-        '401': {$ref: '#/components/responses/Unauthorized'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Problem'}
-        '422': {$ref: '#/components/responses/UnprocessableEntity'}
-    get:
-      tags: [Calendar]
-      summary: List payroll calendars
-      operationId: listPayrollCalendars
-      x-permission: calendar.read
-      responses:
-        '200':
-          description: Tenant payroll calendars
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PayrollCalendar'
-        '401': {$ref: '#/components/responses/Unauthorized'}
-        '403': {$ref: '#/components/responses/Forbidden'}
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarCollection'
   /payroll-calendars/{calendarId}/periods:
-    parameters:
-    - $ref: '#/components/parameters/CalendarId'
-    - $ref: '#/components/parameters/CorrelationId'
-    post:
-      tags: [Calendar]
-      summary: Generate deterministic monthly periods
-      operationId: generatePayPeriods
-      x-permission: calendar.period.generate
-      parameters:
-      - $ref: '#/components/parameters/IdempotencyKey'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GeneratePeriodsRequest'
-      responses:
-        '201':
-          description: Twelve generated or replayed monthly periods
-          content:
-            application/json:
-              schema:
-                type: array
-                minItems: 12
-                maxItems: 12
-                items:
-                  $ref: '#/components/schemas/PayPeriod'
-        '400': {$ref: '#/components/responses/Problem'}
-        '401': {$ref: '#/components/responses/Unauthorized'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '409': {$ref: '#/components/responses/Problem'}
-        '422': {$ref: '#/components/responses/UnprocessableEntity'}
-    get:
-      tags: [Calendar]
-      summary: List payroll periods
-      operationId: listPayPeriods
-      x-permission: calendar.read
-      parameters:
-      - name: year
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 2020
-          maximum: 2100
-      responses:
-        '200':
-          description: Calendar periods ordered by start date
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PayPeriod'
-        '401': {$ref: '#/components/responses/Unauthorized'}
-        '403': {$ref: '#/components/responses/Forbidden'}
-        '404': {$ref: '#/components/responses/Problem'}
-        '422': {$ref: '#/components/responses/UnprocessableEntity'}
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarPeriods'
+  /payroll-calendars/{calendarId}/publication:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarPublication'
+  /payroll-calendars/{calendarId}/amendments:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarAmendments'
+  /payroll-calendars/{calendarId}/retirement:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarRetirement'
+  /payroll-calendars/{calendarId}/operations:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarOperations'
+  /payroll-calendars/{calendarId}/period-operations:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/PeriodOperations'
   /payroll-calendars/{calendarId}/audit:
-    parameters:
-    - $ref: '#/components/parameters/CalendarId'
-    - $ref: '#/components/parameters/CorrelationId'
-    get:
-      tags: [Calendar]
-      summary: Read payroll-calendar audit history
-      operationId: getPayrollCalendarAudit
-      x-permission: audit.read
-      responses:
-        '200':
-          description: Calendar audit events
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AuditEvent'
-        '401': {$ref: '#/components/responses/Unauthorized'}
-        '403': {$ref: '#/components/responses/Forbidden'}
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarAudit'
   /pay-groups:
     $ref: '#/components/pathItems/PayGroupCollection'
   /pay-groups/{identityId}:

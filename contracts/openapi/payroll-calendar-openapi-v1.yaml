@@ -1,0 +1,259 @@
+openapi: 3.1.0
+info:
+  title: HRMS Payroll Calendar API
+  version: 1.0.0
+  description: P5-A4 payroll calendar frequency, period, lifecycle and operational contract.
+pathItems:
+  CalendarCollection:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags: [Calendar]
+      summary: Create payroll calendar
+      operationId: createPayrollCalendar
+      x-permission: calendar.create
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/PayrollCalendarCreate'}
+      responses:
+        '201': {description: Calendar created, content: {application/json: {schema: {$ref: '#/components/schemas/PayrollCalendar'}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+    get:
+      tags: [Calendar]
+      summary: List payroll calendar versions
+      operationId: listPayrollCalendars
+      x-permission: calendar.read
+      responses:
+        '200': {description: Tenant payroll calendars, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/PayrollCalendar'}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+  CalendarPeriods:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags: [Calendar]
+      summary: Generate deterministic payroll periods
+      operationId: generatePayPeriods
+      x-permission: calendar.period.generate
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/GeneratePeriodsRequest'}}}}
+      responses:
+        '201': {description: Generated or idempotently replayed periods, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/PayPeriod'}}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+    get:
+      tags: [Calendar]
+      summary: List payroll periods
+      operationId: listPayPeriods
+      x-permission: calendar.read
+      parameters:
+      - {name: year, in: query, required: false, schema: {type: integer, minimum: 2020, maximum: 2100}}
+      responses:
+        '200': {description: Calendar periods, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/PayPeriod'}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+  CalendarPublication:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags: [Calendar]
+      summary: Publish complete calendar schedule
+      operationId: publishPayrollCalendar
+      x-permission: calendar.create
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/LifecycleRequest'}}}}
+      responses:
+        '200': {description: Published operational state, content: {application/json: {schema: {$ref: '#/components/schemas/CalendarOperational'}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  CalendarAmendments:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags: [Calendar]
+      summary: Create draft successor calendar version
+      operationId: amendPayrollCalendar
+      x-permission: calendar.create
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      responses:
+        '201': {description: Draft successor, content: {application/json: {schema: {$ref: '#/components/schemas/PayrollCalendar'}}}}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  CalendarRetirement:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags: [Calendar]
+      summary: Retire published calendar by appending lifecycle evidence
+      operationId: retirePayrollCalendar
+      x-permission: calendar.create
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RetirementRequest'}}}}
+      responses:
+        '200': {description: Retired operational state, content: {application/json: {schema: {$ref: '#/components/schemas/CalendarOperational'}}}}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  CalendarOperations:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Calendar]
+      summary: Read calendar lifecycle and generation readiness
+      operationId: getPayrollCalendarOperations
+      x-permission: calendar.read
+      responses:
+        '200': {description: Calendar operational state, content: {application/json: {schema: {$ref: '#/components/schemas/CalendarOperational'}}}}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+  PeriodOperations:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Calendar]
+      summary: Read original and adjusted milestone evidence
+      operationId: listPayPeriodOperations
+      x-permission: calendar.read
+      parameters:
+      - {name: year, in: query, required: false, schema: {type: integer, minimum: 2020, maximum: 2100}}
+      responses:
+        '200': {description: Period operational evidence, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/PayPeriodOperational'}}}}}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+  CalendarAudit:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Calendar]
+      summary: Read payroll-calendar audit history
+      operationId: getPayrollCalendarAudit
+      x-permission: audit.read
+      responses:
+        '200': {description: Calendar audit events}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+components:
+  parameters:
+    CalendarId: {name: calendarId, in: path, required: true, schema: {type: string, format: uuid}}
+    CorrelationId: {name: X-Correlation-ID, in: header, required: false, schema: {type: string}}
+    IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 200}}
+  responses:
+    Problem: {description: Problem response}
+  schemas:
+    PayrollCalendarCreate:
+      type: object
+      additionalProperties: false
+      required: [code, name]
+      properties:
+        code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,39}$'}
+        name: {type: string, minLength: 1, maxLength: 160}
+        frequency: {type: string, enum: [MONTHLY, FORTNIGHTLY, WEEKLY, DAILY, CUSTOM], default: MONTHLY}
+        timezone: {type: string, default: Asia/Kolkata}
+        customPeriodDays: {type: [integer, 'null'], minimum: 1, maximum: 366}
+        customFrequencyAuthorised: {type: boolean, default: false}
+        weekendIsoDays: {type: array, uniqueItems: true, maxItems: 7, items: {type: integer, minimum: 1, maximum: 7}, default: [6, 7]}
+    PayrollCalendar:
+      type: object
+      required: [id, calendarSeriesId, calendarVersion, code, name, frequency, timezone]
+      properties:
+        id: {type: string, format: uuid}
+        calendarSeriesId: {type: string, format: uuid}
+        calendarVersion: {type: integer, minimum: 1}
+        supersedesCalendarId: {type: [string, 'null'], format: uuid}
+        code: {type: string}
+        name: {type: string}
+        frequency: {type: string, enum: [MONTHLY, FORTNIGHTLY, WEEKLY, DAILY, CUSTOM]}
+        timezone: {type: string}
+    GeneratePeriodsRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        year: {type: [integer, 'null'], minimum: 2020, maximum: 2100}
+        paymentDay: {type: [integer, 'null'], minimum: 1, maximum: 31}
+        startDate: {type: [string, 'null'], format: date}
+        periodCount: {type: [integer, 'null'], minimum: 1, maximum: 1000}
+      description: Use year/paymentDay only for backward-compatible monthly generation. Publishable P5-A4 schedules use startDate/periodCount after exactly five milestone rules are configured.
+    LifecycleRequest:
+      type: object
+      additionalProperties: false
+      properties: {reason: {type: [string, 'null'], maxLength: 500}}
+    RetirementRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason: {type: string, minLength: 1, maxLength: 500}
+    PayPeriod:
+      type: object
+      required: [id, calendarId, periodCode, periodStart, periodEnd, paymentDate, status]
+      properties:
+        id: {type: string, format: uuid}
+        calendarId: {type: string, format: uuid}
+        periodCode: {type: string}
+        periodStart: {type: string, format: date}
+        periodEnd: {type: string, format: date}
+        paymentDate: {type: string, format: date}
+        status: {type: string}
+    CalendarOperational:
+      type: object
+      required: [id, calendarSeriesId, calendarVersion, code, name, frequency, timezone, customFrequencyAuthorised, publicationRequired, lifecycleStatus, milestoneRuleCount, holidayCount, periodCount]
+      properties:
+        id: {type: string, format: uuid}
+        calendarSeriesId: {type: string, format: uuid}
+        calendarVersion: {type: integer}
+        supersedesCalendarId: {type: [string, 'null'], format: uuid}
+        code: {type: string}
+        name: {type: string}
+        frequency: {type: string}
+        timezone: {type: string}
+        customPeriodDays: {type: [integer, 'null']}
+        customFrequencyAuthorised: {type: boolean}
+        publicationRequired: {type: boolean}
+        lifecycleStatus: {type: string, enum: [DRAFT, PUBLISHED, RETIRED]}
+        latestLifecycleEventId: {type: [string, 'null'], format: uuid}
+        lifecycleChangedAt: {type: [string, 'null'], format: date-time}
+        lifecycleChangedBy: {type: [string, 'null']}
+        lifecycleReason: {type: [string, 'null']}
+        milestoneRuleCount: {type: integer, minimum: 0}
+        holidayCount: {type: integer, minimum: 0}
+        periodCount: {type: integer, minimum: 0}
+        firstPeriodStart: {type: [string, 'null'], format: date}
+        lastPeriodEnd: {type: [string, 'null'], format: date}
+    PayPeriodOperational:
+      allOf:
+      - $ref: '#/components/schemas/PayPeriod'
+      - type: object
+        properties:
+          inputCutoffOriginalDate: {type: [string, 'null'], format: date}
+          inputCutoffAdjustedDate: {type: [string, 'null'], format: date}
+          calculationOriginalDate: {type: [string, 'null'], format: date}
+          calculationAdjustedDate: {type: [string, 'null'], format: date}
+          approvalOriginalDate: {type: [string, 'null'], format: date}
+          approvalAdjustedDate: {type: [string, 'null'], format: date}
+          releaseOriginalDate: {type: [string, 'null'], format: date}
+          releaseAdjustedDate: {type: [string, 'null'], format: date}
+          paymentOriginalDate: {type: [string, 'null'], format: date}
+          paymentAdjustedDate: {type: [string, 'null'], format: date}
