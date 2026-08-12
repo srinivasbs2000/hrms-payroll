@@ -2283,3 +2283,986 @@ COMMENT ON FUNCTION organisation.generate_pay_periods(
   timestamptz
 ) IS
   'Idempotently generates contiguous periods and five milestone evidence rows for MONTHLY, FORTNIGHTLY, WEEKLY, DAILY or explicitly authorised CUSTOM calendars.';
+
+
+-- P5-A4 G03: append-only publication lifecycle, compatibility blocking and
+-- operational read evidence. G01/G02 definitions above remain authoritative.
+
+ALTER TABLE organisation.payroll_calendar
+  ADD COLUMN calendar_series_id uuid,
+  ADD COLUMN calendar_version integer NOT NULL DEFAULT 1,
+  ADD COLUMN supersedes_calendar_id uuid,
+  ADD COLUMN publication_required boolean NOT NULL DEFAULT false;
+
+-- Existing calendars can predate P5-A4. Temporarily suspend RLS only inside
+-- this atomic migration transaction so every tenant's legacy row receives the
+-- deterministic version-series backfill before NOT NULL is asserted.
+ALTER TABLE organisation.payroll_calendar DISABLE ROW LEVEL SECURITY;
+
+UPDATE organisation.payroll_calendar
+SET calendar_series_id = id
+WHERE calendar_series_id IS NULL;
+
+ALTER TABLE organisation.payroll_calendar
+  ALTER COLUMN calendar_series_id SET NOT NULL,
+  DROP CONSTRAINT payroll_calendar_tenant_id_code_key,
+  ADD CONSTRAINT payroll_calendar_version_positive_ck
+    CHECK (calendar_version > 0),
+  ADD CONSTRAINT payroll_calendar_series_fk
+    FOREIGN KEY (tenant_id, calendar_series_id)
+    REFERENCES organisation.payroll_calendar(tenant_id, id),
+  ADD CONSTRAINT payroll_calendar_supersedes_fk
+    FOREIGN KEY (tenant_id, supersedes_calendar_id)
+    REFERENCES organisation.payroll_calendar(tenant_id, id),
+  ADD CONSTRAINT payroll_calendar_supersedes_self_ck
+    CHECK (
+      supersedes_calendar_id IS NULL
+      OR supersedes_calendar_id <> id
+    ),
+  ADD CONSTRAINT payroll_calendar_code_version_uk
+    UNIQUE (tenant_id, code, calendar_version),
+  ADD CONSTRAINT payroll_calendar_series_version_uk
+    UNIQUE (tenant_id, calendar_series_id, calendar_version);
+
+ALTER TABLE organisation.payroll_calendar ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organisation.payroll_calendar FORCE ROW LEVEL SECURITY;
+
+CREATE UNIQUE INDEX payroll_calendar_one_successor_uk
+  ON organisation.payroll_calendar(tenant_id, supersedes_calendar_id)
+  WHERE supersedes_calendar_id IS NOT NULL;
+
+CREATE INDEX payroll_calendar_series_lookup_ix
+  ON organisation.payroll_calendar(
+    tenant_id,
+    calendar_series_id,
+    calendar_version DESC
+  );
+
+CREATE FUNCTION organisation.initialise_payroll_calendar_version_identity()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, organisation AS $$
+BEGIN
+  IF NEW.calendar_series_id IS NULL THEN
+    NEW.calendar_series_id := NEW.id;
+  END IF;
+  IF NEW.calendar_version IS NULL THEN
+    NEW.calendar_version := 1;
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER payroll_calendar_version_identity
+  BEFORE INSERT ON organisation.payroll_calendar
+  FOR EACH ROW
+  EXECUTE FUNCTION organisation.initialise_payroll_calendar_version_identity();
+
+CREATE FUNCTION organisation.create_governed_payroll_calendar(
+  p_tenant_id uuid,
+  p_code varchar,
+  p_name varchar,
+  p_frequency varchar,
+  p_timezone varchar,
+  p_custom_period_days integer,
+  p_custom_frequency_authorised boolean,
+  p_weekend_iso_days smallint[],
+  p_actor varchar,
+  p_created_at timestamptz
+) RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, organisation, platform AS $$
+DECLARE
+  v_calendar_id uuid;
+BEGIN
+  v_calendar_id := organisation.create_payroll_calendar(
+    p_tenant_id,
+    p_code,
+    p_name,
+    p_frequency,
+    p_timezone,
+    p_custom_period_days,
+    p_custom_frequency_authorised,
+    p_weekend_iso_days,
+    p_actor,
+    p_created_at
+  );
+
+  UPDATE organisation.payroll_calendar calendar
+  SET publication_required = true,
+      updated_at = p_created_at,
+      updated_by = p_actor
+  WHERE calendar.tenant_id = p_tenant_id
+    AND calendar.id = v_calendar_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'governed payroll calendar creation did not persist the calendar'
+      USING ERRCODE = '23503';
+  END IF;
+
+  RETURN v_calendar_id;
+END $$;
+
+CREATE TABLE organisation.payroll_calendar_lifecycle_event (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  calendar_id uuid NOT NULL,
+  sequence_no integer NOT NULL,
+  event_type varchar(20) NOT NULL,
+  supersedes_event_id uuid,
+  reason varchar(500),
+  occurred_at timestamptz NOT NULL,
+  occurred_by varchar(160) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  created_by varchar(160) NOT NULL,
+  UNIQUE (tenant_id, id),
+  UNIQUE (tenant_id, calendar_id, sequence_no),
+  CHECK (sequence_no > 0),
+  CHECK (event_type IN ('PUBLISHED', 'RETIRED')),
+  CHECK (btrim(occurred_by) <> ''),
+  CHECK (reason IS NULL OR btrim(reason) <> ''),
+  FOREIGN KEY (tenant_id) REFERENCES platform.tenant(id),
+  FOREIGN KEY (tenant_id, calendar_id)
+    REFERENCES organisation.payroll_calendar(tenant_id, id),
+  FOREIGN KEY (tenant_id, supersedes_event_id)
+    REFERENCES organisation.payroll_calendar_lifecycle_event(tenant_id, id)
+);
+
+CREATE UNIQUE INDEX payroll_calendar_one_retirement_event_uk
+  ON organisation.payroll_calendar_lifecycle_event(tenant_id, calendar_id)
+  WHERE event_type = 'RETIRED';
+
+CREATE INDEX payroll_calendar_lifecycle_latest_ix
+  ON organisation.payroll_calendar_lifecycle_event(
+    tenant_id,
+    calendar_id,
+    sequence_no DESC
+  );
+
+ALTER TABLE organisation.payroll_calendar_lifecycle_event
+  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE organisation.payroll_calendar_lifecycle_event
+  FORCE ROW LEVEL SECURITY;
+CREATE POLICY tenant_isolation
+  ON organisation.payroll_calendar_lifecycle_event
+  USING (tenant_id = platform.current_tenant_id())
+  WITH CHECK (tenant_id = platform.current_tenant_id());
+
+CREATE TRIGGER payroll_calendar_lifecycle_event_immutable
+  BEFORE UPDATE OR DELETE
+  ON organisation.payroll_calendar_lifecycle_event
+  FOR EACH ROW
+  EXECUTE FUNCTION platform.reject_mutation();
+
+CREATE FUNCTION organisation.payroll_calendar_current_state(
+  p_tenant_id uuid,
+  p_calendar_id uuid
+) RETURNS varchar
+LANGUAGE sql
+STABLE
+SET search_path = pg_catalog, organisation, platform AS $$
+  SELECT coalesce(
+    (
+      SELECT event.event_type
+      FROM organisation.payroll_calendar_lifecycle_event event
+      WHERE event.tenant_id = p_tenant_id
+        AND event.calendar_id = p_calendar_id
+      ORDER BY event.sequence_no DESC
+      LIMIT 1
+    ),
+    'DRAFT'::varchar
+  )
+$$;
+
+CREATE FUNCTION organisation.payroll_calendar_was_published(
+  p_tenant_id uuid,
+  p_calendar_id uuid
+) RETURNS boolean
+LANGUAGE sql
+STABLE
+SET search_path = pg_catalog, organisation AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM organisation.payroll_calendar_lifecycle_event event
+    WHERE event.tenant_id = p_tenant_id
+      AND event.calendar_id = p_calendar_id
+      AND event.event_type = 'PUBLISHED'
+  )
+$$;
+
+CREATE FUNCTION organisation.assert_payroll_calendar_schedule_immutable()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, organisation AS $$
+BEGIN
+  IF organisation.payroll_calendar_was_published(OLD.tenant_id, OLD.id) THEN
+    IF TG_OP = 'DELETE' THEN
+      RAISE EXCEPTION 'published payroll calendar versions are immutable'
+        USING ERRCODE = '23514';
+    END IF;
+
+    IF NEW.tenant_id IS DISTINCT FROM OLD.tenant_id
+       OR NEW.code IS DISTINCT FROM OLD.code
+       OR NEW.name IS DISTINCT FROM OLD.name
+       OR NEW.frequency IS DISTINCT FROM OLD.frequency
+       OR NEW.timezone IS DISTINCT FROM OLD.timezone
+       OR NEW.custom_period_days IS DISTINCT FROM OLD.custom_period_days
+       OR NEW.custom_frequency_authorised
+          IS DISTINCT FROM OLD.custom_frequency_authorised
+       OR NEW.weekend_iso_days IS DISTINCT FROM OLD.weekend_iso_days
+       OR NEW.publication_required IS DISTINCT FROM OLD.publication_required
+       OR NEW.calendar_series_id IS DISTINCT FROM OLD.calendar_series_id
+       OR NEW.calendar_version IS DISTINCT FROM OLD.calendar_version
+       OR NEW.supersedes_calendar_id IS DISTINCT FROM OLD.supersedes_calendar_id THEN
+      RAISE EXCEPTION 'published payroll calendar schedule attributes are immutable'
+        USING ERRCODE = '23514';
+    END IF;
+  END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER payroll_calendar_schedule_immutable
+  BEFORE UPDATE OR DELETE
+  ON organisation.payroll_calendar
+  FOR EACH ROW
+  EXECUTE FUNCTION organisation.assert_payroll_calendar_schedule_immutable();
+
+CREATE FUNCTION organisation.assert_payroll_calendar_child_mutable()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, organisation AS $$
+DECLARE
+  v_tenant_id uuid;
+  v_calendar_id uuid;
+BEGIN
+  v_tenant_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.tenant_id ELSE NEW.tenant_id END;
+  v_calendar_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.calendar_id ELSE NEW.calendar_id END;
+
+  IF organisation.payroll_calendar_was_published(v_tenant_id, v_calendar_id) THEN
+    RAISE EXCEPTION 'published payroll calendar configuration is immutable'
+      USING ERRCODE = '23514';
+  END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER payroll_calendar_milestone_rule_publication_immutable
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON organisation.payroll_calendar_milestone_rule
+  FOR EACH ROW
+  EXECUTE FUNCTION organisation.assert_payroll_calendar_child_mutable();
+
+CREATE TRIGGER payroll_calendar_holiday_publication_immutable
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON organisation.payroll_calendar_holiday
+  FOR EACH ROW
+  EXECUTE FUNCTION organisation.assert_payroll_calendar_child_mutable();
+
+CREATE FUNCTION organisation.assert_pay_period_schedule_mutable()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, organisation AS $$
+DECLARE
+  v_tenant_id uuid;
+  v_calendar_id uuid;
+BEGIN
+  v_tenant_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.tenant_id ELSE NEW.tenant_id END;
+  v_calendar_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.calendar_id ELSE NEW.calendar_id END;
+
+  IF organisation.payroll_calendar_was_published(v_tenant_id, v_calendar_id) THEN
+    IF TG_OP IN ('INSERT', 'DELETE') THEN
+      RAISE EXCEPTION 'published payroll period schedule is immutable'
+        USING ERRCODE = '23514';
+    END IF;
+
+    IF NEW.tenant_id IS DISTINCT FROM OLD.tenant_id
+       OR NEW.calendar_id IS DISTINCT FROM OLD.calendar_id
+       OR NEW.period_code IS DISTINCT FROM OLD.period_code
+       OR NEW.period_start IS DISTINCT FROM OLD.period_start
+       OR NEW.period_end IS DISTINCT FROM OLD.period_end
+       OR NEW.payment_date IS DISTINCT FROM OLD.payment_date THEN
+      RAISE EXCEPTION 'published payroll period schedule is immutable'
+        USING ERRCODE = '23514';
+    END IF;
+  END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER pay_period_publication_immutable
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON organisation.pay_period
+  FOR EACH ROW
+  EXECUTE FUNCTION organisation.assert_pay_period_schedule_mutable();
+
+CREATE FUNCTION organisation.assert_pay_period_milestone_mutable()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, organisation AS $$
+DECLARE
+  v_tenant_id uuid;
+  v_period_id uuid;
+  v_calendar_id uuid;
+BEGIN
+  v_tenant_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.tenant_id ELSE NEW.tenant_id END;
+  v_period_id := CASE WHEN TG_OP = 'DELETE' THEN OLD.pay_period_id ELSE NEW.pay_period_id END;
+
+  SELECT period.calendar_id
+  INTO v_calendar_id
+  FROM organisation.pay_period period
+  WHERE period.tenant_id = v_tenant_id
+    AND period.id = v_period_id;
+
+  IF v_calendar_id IS NULL THEN
+    RAISE EXCEPTION 'pay period does not exist in the current tenant'
+      USING ERRCODE = '23503';
+  END IF;
+
+  IF organisation.payroll_calendar_was_published(v_tenant_id, v_calendar_id) THEN
+    RAISE EXCEPTION 'published pay-period milestone evidence is immutable'
+      USING ERRCODE = '23514';
+  END IF;
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER pay_period_milestone_publication_immutable
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON organisation.pay_period_milestone
+  FOR EACH ROW
+  EXECUTE FUNCTION organisation.assert_pay_period_milestone_mutable();
+
+CREATE FUNCTION organisation.publish_payroll_calendar(
+  p_tenant_id uuid,
+  p_calendar_id uuid,
+  p_reason varchar,
+  p_actor varchar,
+  p_occurred_at timestamptz
+) RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, organisation, platform AS $$
+DECLARE
+  v_event_id uuid := gen_random_uuid();
+  v_period_count integer;
+  v_bad_period_count integer;
+  v_rule_count integer;
+  v_supersedes_calendar_id uuid;
+  v_source_event_id uuid;
+  v_source_event_sequence integer;
+  v_source_state varchar;
+BEGIN
+  IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
+    RAISE EXCEPTION 'tenant context mismatch' USING ERRCODE = '42501';
+  END IF;
+  IF p_actor IS NULL OR btrim(p_actor) = '' OR p_occurred_at IS NULL THEN
+    RAISE EXCEPTION 'actor and occurrence timestamp are required' USING ERRCODE = '23514';
+  END IF;
+
+  PERFORM pg_advisory_xact_lock(hashtextextended(p_tenant_id::text || ':' || p_calendar_id::text || ':publish', 0));
+
+  SELECT calendar.supersedes_calendar_id
+  INTO v_supersedes_calendar_id
+  FROM organisation.payroll_calendar calendar
+  WHERE calendar.tenant_id = p_tenant_id
+    AND calendar.id = p_calendar_id;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'payroll calendar does not exist in the current tenant' USING ERRCODE = '23503';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM organisation.payroll_calendar_lifecycle_event event
+    WHERE event.tenant_id = p_tenant_id AND event.calendar_id = p_calendar_id
+  ) THEN
+    RAISE EXCEPTION 'calendar version has already entered publication lifecycle' USING ERRCODE = '23514';
+  END IF;
+
+  SELECT count(*) INTO v_rule_count
+  FROM organisation.payroll_calendar_milestone_rule rule
+  WHERE rule.tenant_id = p_tenant_id AND rule.calendar_id = p_calendar_id;
+  IF v_rule_count <> 5 THEN
+    RAISE EXCEPTION 'publication requires exactly five milestone rules' USING ERRCODE = '23514';
+  END IF;
+
+  SELECT count(*) INTO v_period_count
+  FROM organisation.pay_period period
+  WHERE period.tenant_id = p_tenant_id AND period.calendar_id = p_calendar_id;
+  IF v_period_count < 1 THEN
+    RAISE EXCEPTION 'publication requires at least one generated pay period' USING ERRCODE = '23514';
+  END IF;
+
+  SELECT count(*) INTO v_bad_period_count
+  FROM organisation.pay_period period
+  WHERE period.tenant_id = p_tenant_id
+    AND period.calendar_id = p_calendar_id
+    AND (
+      SELECT count(*)
+      FROM organisation.pay_period_milestone milestone
+      WHERE milestone.tenant_id = period.tenant_id
+        AND milestone.pay_period_id = period.id
+    ) <> 5;
+  IF v_bad_period_count <> 0 THEN
+    RAISE EXCEPTION 'every published period requires exactly five milestone evidence rows' USING ERRCODE = '23514';
+  END IF;
+
+  IF v_supersedes_calendar_id IS NOT NULL THEN
+    SELECT event.id, event.sequence_no, event.event_type
+    INTO v_source_event_id, v_source_event_sequence, v_source_state
+    FROM organisation.payroll_calendar_lifecycle_event event
+    WHERE event.tenant_id = p_tenant_id
+      AND event.calendar_id = v_supersedes_calendar_id
+    ORDER BY event.sequence_no DESC
+    LIMIT 1;
+
+    IF v_source_state IS DISTINCT FROM 'PUBLISHED' THEN
+      RAISE EXCEPTION 'an amendment may publish only while its source version is currently published' USING ERRCODE = '23514';
+    END IF;
+
+    INSERT INTO organisation.payroll_calendar_lifecycle_event(
+      tenant_id, calendar_id, sequence_no, event_type, supersedes_event_id,
+      reason, occurred_at, occurred_by, created_at, created_by
+    ) VALUES (
+      p_tenant_id, v_supersedes_calendar_id, v_source_event_sequence + 1,
+      'RETIRED', v_source_event_id,
+      format('Superseded by calendar version %s', p_calendar_id),
+      p_occurred_at, p_actor, p_occurred_at, p_actor
+    );
+  END IF;
+
+  INSERT INTO organisation.payroll_calendar_lifecycle_event(
+    id, tenant_id, calendar_id, sequence_no, event_type, supersedes_event_id,
+    reason, occurred_at, occurred_by, created_at, created_by
+  ) VALUES (
+    v_event_id, p_tenant_id, p_calendar_id, 1, 'PUBLISHED', NULL,
+    nullif(btrim(p_reason), ''), p_occurred_at, p_actor, p_occurred_at, p_actor
+  );
+
+  RETURN v_event_id;
+END $$;
+
+CREATE FUNCTION organisation.amend_payroll_calendar(
+  p_tenant_id uuid,
+  p_calendar_id uuid,
+  p_actor varchar,
+  p_created_at timestamptz
+) RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, organisation, platform AS $$
+DECLARE
+  v_new_calendar_id uuid := gen_random_uuid();
+  v_source organisation.payroll_calendar%ROWTYPE;
+  v_new_version integer;
+BEGIN
+  IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
+    RAISE EXCEPTION 'tenant context mismatch' USING ERRCODE = '42501';
+  END IF;
+  IF p_actor IS NULL OR btrim(p_actor) = '' OR p_created_at IS NULL THEN
+    RAISE EXCEPTION 'actor and creation timestamp are required' USING ERRCODE = '23514';
+  END IF;
+
+  PERFORM pg_advisory_xact_lock(hashtextextended(p_tenant_id::text || ':' || p_calendar_id::text || ':amend', 0));
+
+  SELECT * INTO v_source
+  FROM organisation.payroll_calendar calendar
+  WHERE calendar.tenant_id = p_tenant_id AND calendar.id = p_calendar_id;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'payroll calendar does not exist in the current tenant' USING ERRCODE = '23503';
+  END IF;
+  IF organisation.payroll_calendar_current_state(p_tenant_id, p_calendar_id) <> 'PUBLISHED' THEN
+    RAISE EXCEPTION 'only a currently published calendar can be amended' USING ERRCODE = '23514';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM organisation.payroll_calendar successor
+    WHERE successor.tenant_id = p_tenant_id
+      AND successor.supersedes_calendar_id = p_calendar_id
+  ) THEN
+    RAISE EXCEPTION 'calendar version already has a successor amendment' USING ERRCODE = '23514';
+  END IF;
+
+  SELECT max(calendar.calendar_version) + 1 INTO v_new_version
+  FROM organisation.payroll_calendar calendar
+  WHERE calendar.tenant_id = p_tenant_id
+    AND calendar.calendar_series_id = v_source.calendar_series_id;
+
+  INSERT INTO organisation.payroll_calendar(
+    id, tenant_id, code, name, frequency, timezone,
+    custom_period_days, custom_frequency_authorised, weekend_iso_days,
+    publication_required, calendar_series_id, calendar_version,
+    supersedes_calendar_id, created_at, created_by, updated_at, updated_by
+  ) VALUES (
+    v_new_calendar_id, p_tenant_id, v_source.code, v_source.name,
+    v_source.frequency, v_source.timezone,
+    v_source.custom_period_days, v_source.custom_frequency_authorised,
+    v_source.weekend_iso_days, true, v_source.calendar_series_id, v_new_version,
+    p_calendar_id, p_created_at, p_actor, p_created_at, p_actor
+  );
+
+  INSERT INTO organisation.payroll_calendar_milestone_rule(
+    id, tenant_id, calendar_id, milestone_type, anchor_type,
+    offset_days, adjustment_policy, created_at, created_by, updated_at, updated_by
+  )
+  SELECT gen_random_uuid(), p_tenant_id, v_new_calendar_id,
+         rule.milestone_type, rule.anchor_type, rule.offset_days,
+         rule.adjustment_policy, p_created_at, p_actor, p_created_at, p_actor
+  FROM organisation.payroll_calendar_milestone_rule rule
+  WHERE rule.tenant_id = p_tenant_id AND rule.calendar_id = p_calendar_id;
+
+  INSERT INTO organisation.payroll_calendar_holiday(
+    id, tenant_id, calendar_id, holiday_date, holiday_name,
+    created_at, created_by, updated_at, updated_by
+  )
+  SELECT gen_random_uuid(), p_tenant_id, v_new_calendar_id,
+         holiday.holiday_date, holiday.holiday_name,
+         p_created_at, p_actor, p_created_at, p_actor
+  FROM organisation.payroll_calendar_holiday holiday
+  WHERE holiday.tenant_id = p_tenant_id AND holiday.calendar_id = p_calendar_id;
+
+  RETURN v_new_calendar_id;
+END $$;
+
+CREATE FUNCTION organisation.retire_payroll_calendar(
+  p_tenant_id uuid,
+  p_calendar_id uuid,
+  p_reason varchar,
+  p_actor varchar,
+  p_occurred_at timestamptz
+) RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, organisation, platform AS $$
+DECLARE
+  v_event_id uuid := gen_random_uuid();
+  v_previous_event_id uuid;
+  v_previous_sequence integer;
+  v_previous_state varchar;
+BEGIN
+  IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
+    RAISE EXCEPTION 'tenant context mismatch' USING ERRCODE = '42501';
+  END IF;
+  IF p_actor IS NULL OR btrim(p_actor) = '' OR p_occurred_at IS NULL THEN
+    RAISE EXCEPTION 'actor and occurrence timestamp are required' USING ERRCODE = '23514';
+  END IF;
+  IF p_reason IS NULL OR btrim(p_reason) = '' THEN
+    RAISE EXCEPTION 'retirement reason is required' USING ERRCODE = '23514';
+  END IF;
+
+  PERFORM pg_advisory_xact_lock(hashtextextended(p_tenant_id::text || ':' || p_calendar_id::text || ':retire', 0));
+
+  SELECT event.id, event.sequence_no, event.event_type
+  INTO v_previous_event_id, v_previous_sequence, v_previous_state
+  FROM organisation.payroll_calendar_lifecycle_event event
+  WHERE event.tenant_id = p_tenant_id AND event.calendar_id = p_calendar_id
+  ORDER BY event.sequence_no DESC
+  LIMIT 1;
+
+  IF v_previous_state IS DISTINCT FROM 'PUBLISHED' THEN
+    RAISE EXCEPTION 'only a currently published calendar can be retired' USING ERRCODE = '23514';
+  END IF;
+
+  INSERT INTO organisation.payroll_calendar_lifecycle_event(
+    id, tenant_id, calendar_id, sequence_no, event_type, supersedes_event_id,
+    reason, occurred_at, occurred_by, created_at, created_by
+  ) VALUES (
+    v_event_id, p_tenant_id, p_calendar_id, v_previous_sequence + 1,
+    'RETIRED', v_previous_event_id, btrim(p_reason),
+    p_occurred_at, p_actor, p_occurred_at, p_actor
+  );
+
+  RETURN v_event_id;
+END $$;
+
+CREATE FUNCTION employee_payroll.assert_p5_a4_pay_group_assignment_compatibility()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, employee_payroll, organisation AS $$
+DECLARE
+  v_tenant_context text;
+  v_issues text;
+BEGIN
+  IF NEW.approval_status <> 'APPROVED' THEN
+    RETURN NEW;
+  END IF;
+
+  v_tenant_context := current_setting('app.tenant_id', true);
+  IF v_tenant_context IS NULL OR btrim(v_tenant_context) = '' THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT string_agg(
+           issue.issue_code || ': ' || issue.issue_detail,
+           '; ' ORDER BY issue.issue_code
+         )
+  INTO v_issues
+  FROM organisation.pay_group_assignment_compatibility_issues(
+    NEW.tenant_id,
+    NEW.payroll_assignment_version_id,
+    NEW.pay_group_version_id,
+    NEW.effective_from,
+    NEW.effective_to
+  ) issue;
+
+  IF v_issues IS NOT NULL THEN
+    RAISE EXCEPTION 'P5-A4 pay-group assignment compatibility failed: %', v_issues
+      USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER pay_group_assignment_p5_a4_compatibility
+  BEFORE INSERT OR UPDATE OF
+    tenant_id,
+    payroll_assignment_version_id,
+    pay_group_version_id,
+    effective_from,
+    effective_to,
+    approval_status
+  ON employee_payroll.pay_group_assignment
+  FOR EACH ROW
+  EXECUTE FUNCTION employee_payroll.assert_p5_a4_pay_group_assignment_compatibility();
+
+CREATE FUNCTION payroll_ops.assert_p5_a4_payroll_cycle_compatibility()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, payroll_ops, organisation AS $$
+DECLARE
+  v_tenant_context text;
+  v_group_status varchar;
+  v_group_from date;
+  v_group_to date;
+  v_group_calendar uuid;
+  v_period_calendar uuid;
+  v_period_start date;
+  v_period_end date;
+  v_frequency varchar;
+  v_timezone varchar;
+  v_custom_days integer;
+  v_custom_authorised boolean;
+  v_publication_required boolean;
+  v_calendar_state varchar;
+BEGIN
+  v_tenant_context := current_setting('app.tenant_id', true);
+  IF v_tenant_context IS NULL OR btrim(v_tenant_context) = '' THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT
+    group_version.approval_status,
+    group_version.effective_from,
+    group_version.effective_to,
+    group_version.calendar_id,
+    period.calendar_id,
+    period.period_start,
+    period.period_end,
+    calendar.frequency,
+    calendar.timezone,
+    calendar.custom_period_days,
+    calendar.custom_frequency_authorised,
+    calendar.publication_required
+  INTO
+    v_group_status, v_group_from, v_group_to, v_group_calendar,
+    v_period_calendar, v_period_start, v_period_end,
+    v_frequency, v_timezone, v_custom_days, v_custom_authorised,
+    v_publication_required
+  FROM organisation.pay_group_version group_version
+  JOIN organisation.pay_period period
+    ON period.tenant_id = group_version.tenant_id
+   AND period.id = NEW.pay_period_id
+  JOIN organisation.payroll_calendar calendar
+    ON calendar.tenant_id = group_version.tenant_id
+   AND calendar.id = group_version.calendar_id
+  WHERE group_version.tenant_id = NEW.tenant_id
+    AND group_version.id = NEW.pay_group_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'payroll cycle dependencies do not exist in the current tenant' USING ERRCODE = '23503';
+  END IF;
+  IF v_group_status <> 'APPROVED' THEN
+    RAISE EXCEPTION 'payroll cycle requires an approved pay-group version' USING ERRCODE = '23514';
+  END IF;
+  IF v_group_calendar <> v_period_calendar THEN
+    RAISE EXCEPTION 'payroll cycle period must belong to the pay-group calendar' USING ERRCODE = '23514';
+  END IF;
+  IF v_period_start < v_group_from
+     OR (v_group_to IS NOT NULL AND v_period_end >= v_group_to) THEN
+    RAISE EXCEPTION 'payroll cycle period must be contained by pay-group effective range' USING ERRCODE = '23514';
+  END IF;
+  IF v_frequency NOT IN ('MONTHLY','FORTNIGHTLY','WEEKLY','DAILY','CUSTOM') THEN
+    RAISE EXCEPTION 'payroll cycle calendar frequency is not authorised' USING ERRCODE = '23514';
+  END IF;
+  IF v_frequency = 'CUSTOM'
+     AND (NOT v_custom_authorised OR v_custom_days IS NULL OR v_custom_days < 1 OR v_custom_days > 366) THEN
+    RAISE EXCEPTION 'payroll cycle custom calendar policy is not authorised' USING ERRCODE = '23514';
+  END IF;
+  IF v_timezone IS NULL OR NOT EXISTS (
+    SELECT 1 FROM pg_timezone_names timezone_name WHERE timezone_name.name = v_timezone
+  ) THEN
+    RAISE EXCEPTION 'payroll cycle calendar timezone is invalid' USING ERRCODE = '23514';
+  END IF;
+
+  IF v_publication_required
+     OR EXISTS (
+       SELECT 1
+       FROM organisation.payroll_calendar_lifecycle_event event
+       WHERE event.tenant_id = NEW.tenant_id
+         AND event.calendar_id = v_group_calendar
+     ) THEN
+    v_calendar_state := organisation.payroll_calendar_current_state(
+      NEW.tenant_id,
+      v_group_calendar
+    );
+    IF v_calendar_state <> 'PUBLISHED' THEN
+      RAISE EXCEPTION 'payroll cycle requires a currently published payroll calendar'
+        USING ERRCODE = '23514';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER payroll_cycle_p5_a4_compatibility
+  BEFORE INSERT OR UPDATE OF tenant_id, pay_group_id, pay_period_id
+  ON payroll_ops.payroll_cycle
+  FOR EACH ROW
+  EXECUTE FUNCTION payroll_ops.assert_p5_a4_payroll_cycle_compatibility();
+
+-- The V023 command remains the governed runtime entry point for regular-cycle creation.
+-- P5-A4 closes the remaining lifecycle gap here rather than relying only on a
+-- context-sensitive table trigger: a runtime cycle cannot be created until the
+-- exact pay-group calendar version is currently PUBLISHED.
+CREATE OR REPLACE FUNCTION payroll_ops.create_regular_payroll_cycle(
+  p_tenant_id uuid,
+  p_pay_group_version_id uuid,
+  p_pay_period_id uuid,
+  p_actor varchar,
+  p_created_at timestamptz
+) RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path =
+  pg_catalog,
+  payroll_ops,
+  organisation,
+  platform AS $$
+DECLARE
+  v_cycle_id uuid := gen_random_uuid();
+BEGIN
+  IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
+    RAISE EXCEPTION 'tenant context mismatch'
+      USING ERRCODE = '42501';
+  END IF;
+
+  IF p_actor IS NULL OR btrim(p_actor) = '' THEN
+    RAISE EXCEPTION 'actor is required'
+      USING ERRCODE = '23514';
+  END IF;
+
+  IF p_created_at IS NULL THEN
+    RAISE EXCEPTION 'creation timestamp is required'
+      USING ERRCODE = '23514';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM organisation.pay_group_version group_version
+    JOIN organisation.pay_period period
+      ON period.tenant_id = group_version.tenant_id
+     AND period.id = p_pay_period_id
+     AND period.calendar_id = group_version.calendar_id
+    JOIN organisation.payroll_calendar calendar
+      ON calendar.tenant_id = group_version.tenant_id
+     AND calendar.id = group_version.calendar_id
+    WHERE group_version.tenant_id = p_tenant_id
+      AND group_version.id = p_pay_group_version_id
+      AND group_version.approval_status = 'APPROVED'
+      AND group_version.effective_from <= period.period_start
+      AND (
+        group_version.effective_to IS NULL
+        OR group_version.effective_to > period.period_end
+      )
+      AND period.status = 'OPEN'
+      AND (
+        (
+          NOT calendar.publication_required
+          AND NOT EXISTS (
+            SELECT 1
+            FROM organisation.payroll_calendar_lifecycle_event event
+            WHERE event.tenant_id = group_version.tenant_id
+              AND event.calendar_id = group_version.calendar_id
+          )
+        )
+        OR organisation.payroll_calendar_current_state(
+             group_version.tenant_id,
+             group_version.calendar_id
+           ) = 'PUBLISHED'
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM organisation.pay_group_version successor
+        WHERE successor.tenant_id = group_version.tenant_id
+          AND successor.supersedes_version_id = group_version.id
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'cycle requires an approved current pay-group version, open compatible period and published calendar'
+      USING ERRCODE = '23514';
+  END IF;
+
+  INSERT INTO payroll_ops.payroll_cycle(
+    id,
+    tenant_id,
+    pay_group_id,
+    pay_period_id,
+    cycle_type,
+    status,
+    created_at,
+    created_by,
+    updated_at,
+    updated_by
+  ) VALUES (
+    v_cycle_id,
+    p_tenant_id,
+    p_pay_group_version_id,
+    p_pay_period_id,
+    'REGULAR',
+    'DRAFT',
+    p_created_at,
+    p_actor,
+    p_created_at,
+    p_actor
+  );
+
+  RETURN v_cycle_id;
+END $$;
+
+CREATE VIEW organisation.payroll_calendar_operational_v
+WITH (security_invoker = true) AS
+SELECT
+  calendar.tenant_id,
+  calendar.id,
+  calendar.calendar_series_id,
+  calendar.calendar_version,
+  calendar.supersedes_calendar_id,
+  calendar.code,
+  calendar.name,
+  calendar.frequency,
+  calendar.timezone,
+  calendar.custom_period_days,
+  calendar.custom_frequency_authorised,
+  organisation.payroll_calendar_current_state(calendar.tenant_id, calendar.id) AS lifecycle_status,
+  latest_event.id AS latest_lifecycle_event_id,
+  latest_event.occurred_at AS lifecycle_changed_at,
+  latest_event.occurred_by AS lifecycle_changed_by,
+  latest_event.reason AS lifecycle_reason,
+  (SELECT count(*)::integer FROM organisation.payroll_calendar_milestone_rule rule
+    WHERE rule.tenant_id = calendar.tenant_id AND rule.calendar_id = calendar.id) AS milestone_rule_count,
+  (SELECT count(*)::integer FROM organisation.payroll_calendar_holiday holiday
+    WHERE holiday.tenant_id = calendar.tenant_id AND holiday.calendar_id = calendar.id) AS holiday_count,
+  (SELECT count(*)::integer FROM organisation.pay_period period
+    WHERE period.tenant_id = calendar.tenant_id AND period.calendar_id = calendar.id) AS period_count,
+  (SELECT min(period.period_start) FROM organisation.pay_period period
+    WHERE period.tenant_id = calendar.tenant_id AND period.calendar_id = calendar.id) AS first_period_start,
+  (SELECT max(period.period_end) FROM organisation.pay_period period
+    WHERE period.tenant_id = calendar.tenant_id AND period.calendar_id = calendar.id) AS last_period_end
+FROM organisation.payroll_calendar calendar
+LEFT JOIN LATERAL (
+  SELECT event.id, event.occurred_at, event.occurred_by, event.reason
+  FROM organisation.payroll_calendar_lifecycle_event event
+  WHERE event.tenant_id = calendar.tenant_id AND event.calendar_id = calendar.id
+  ORDER BY event.sequence_no DESC
+  LIMIT 1
+) latest_event ON true;
+
+CREATE VIEW organisation.pay_period_operational_v
+WITH (security_invoker = true) AS
+SELECT
+  period.tenant_id,
+  period.id,
+  period.calendar_id,
+  period.period_code,
+  period.period_start,
+  period.period_end,
+  period.payment_date,
+  period.status,
+  max(milestone.original_date) FILTER (WHERE milestone.milestone_type = 'INPUT_CUTOFF') AS input_cutoff_original_date,
+  max(milestone.adjusted_date) FILTER (WHERE milestone.milestone_type = 'INPUT_CUTOFF') AS input_cutoff_adjusted_date,
+  max(milestone.original_date) FILTER (WHERE milestone.milestone_type = 'CALCULATION') AS calculation_original_date,
+  max(milestone.adjusted_date) FILTER (WHERE milestone.milestone_type = 'CALCULATION') AS calculation_adjusted_date,
+  max(milestone.original_date) FILTER (WHERE milestone.milestone_type = 'APPROVAL') AS approval_original_date,
+  max(milestone.adjusted_date) FILTER (WHERE milestone.milestone_type = 'APPROVAL') AS approval_adjusted_date,
+  max(milestone.original_date) FILTER (WHERE milestone.milestone_type = 'RELEASE') AS release_original_date,
+  max(milestone.adjusted_date) FILTER (WHERE milestone.milestone_type = 'RELEASE') AS release_adjusted_date,
+  max(milestone.original_date) FILTER (WHERE milestone.milestone_type = 'PAYMENT') AS payment_original_date,
+  max(milestone.adjusted_date) FILTER (WHERE milestone.milestone_type = 'PAYMENT') AS payment_adjusted_date
+FROM organisation.pay_period period
+LEFT JOIN organisation.pay_period_milestone milestone
+  ON milestone.tenant_id = period.tenant_id
+ AND milestone.pay_period_id = period.id
+GROUP BY period.tenant_id, period.id, period.calendar_id, period.period_code,
+         period.period_start, period.period_end, period.payment_date, period.status;
+
+REVOKE ALL ON organisation.payroll_calendar_lifecycle_event FROM PUBLIC;
+GRANT SELECT ON organisation.payroll_calendar_lifecycle_event TO payroll_app;
+REVOKE INSERT, UPDATE, DELETE ON organisation.payroll_calendar_lifecycle_event FROM payroll_app;
+
+REVOKE ALL ON FUNCTION organisation.payroll_calendar_current_state(uuid, uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION organisation.payroll_calendar_was_published(uuid, uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION organisation.create_governed_payroll_calendar(
+  uuid, varchar, varchar, varchar, varchar, integer, boolean, smallint[], varchar, timestamptz
+) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION organisation.create_governed_payroll_calendar(
+  uuid, varchar, varchar, varchar, varchar, integer, boolean, smallint[], varchar, timestamptz
+) TO payroll_app;
+
+REVOKE ALL ON FUNCTION organisation.publish_payroll_calendar(uuid, uuid, varchar, varchar, timestamptz) FROM PUBLIC;
+REVOKE ALL ON FUNCTION organisation.amend_payroll_calendar(uuid, uuid, varchar, timestamptz) FROM PUBLIC;
+REVOKE ALL ON FUNCTION organisation.retire_payroll_calendar(uuid, uuid, varchar, varchar, timestamptz) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION organisation.payroll_calendar_current_state(uuid, uuid) TO payroll_app;
+GRANT EXECUTE ON FUNCTION organisation.payroll_calendar_was_published(uuid, uuid) TO payroll_app;
+GRANT EXECUTE ON FUNCTION organisation.publish_payroll_calendar(uuid, uuid, varchar, varchar, timestamptz) TO payroll_app;
+GRANT EXECUTE ON FUNCTION organisation.amend_payroll_calendar(uuid, uuid, varchar, timestamptz) TO payroll_app;
+GRANT EXECUTE ON FUNCTION organisation.retire_payroll_calendar(uuid, uuid, varchar, varchar, timestamptz) TO payroll_app;
+
+GRANT SELECT ON organisation.payroll_calendar_operational_v, organisation.pay_period_operational_v TO payroll_app;
+
+REVOKE CREATE ON SCHEMA organisation FROM payroll_app;
+REVOKE CREATE ON SCHEMA employee_payroll FROM payroll_app;
+REVOKE CREATE ON SCHEMA payroll_ops FROM payroll_app;
+
+COMMENT ON COLUMN organisation.payroll_calendar.publication_required IS
+  'True for P5-A4 governed calendar versions that must be PUBLISHED before payroll-cycle creation; legacy pre-P5-A4 calendars remain compatible until explicitly lifecycle-managed.';
+COMMENT ON FUNCTION organisation.create_governed_payroll_calendar(
+  uuid, varchar, varchar, varchar, varchar, integer, boolean, smallint[], varchar, timestamptz
+) IS
+  'Creates a P5-A4 lifecycle-governed payroll calendar that must be published before payroll-cycle creation.';
+
+COMMENT ON TABLE organisation.payroll_calendar_lifecycle_event IS
+  'Append-only P5-A4 publication/retirement evidence. Retirement never rewrites a published calendar or period.';
+COMMENT ON COLUMN organisation.payroll_calendar.calendar_series_id IS
+  'Stable calendar-series identity shared by amendment versions.';
+COMMENT ON COLUMN organisation.payroll_calendar.calendar_version IS
+  'Monotonic business version within a calendar series.';
+COMMENT ON FUNCTION organisation.publish_payroll_calendar(uuid, uuid, varchar, varchar, timestamptz) IS
+  'Publishes a complete draft schedule; publishing an amendment appends retirement evidence for its superseded source.';
+COMMENT ON FUNCTION organisation.amend_payroll_calendar(uuid, uuid, varchar, timestamptz) IS
+  'Creates a new draft successor version and copies policy rules/holidays without copying or rewriting published periods.';
+COMMENT ON FUNCTION organisation.retire_payroll_calendar(uuid, uuid, varchar, varchar, timestamptz) IS
+  'Appends retirement evidence for a currently published calendar without mutating its schedule history.';
+COMMENT ON VIEW organisation.payroll_calendar_operational_v IS
+  'Tenant-safe P5-A4 calendar lifecycle, frequency and generation-readiness summary.';
+COMMENT ON VIEW organisation.pay_period_operational_v IS
+  'Tenant-safe P5-A4 period read model exposing original and adjusted five-milestone evidence.';
