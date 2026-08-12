@@ -2,7 +2,7 @@
 
 ## Status
 
-**RESERVED — P5-A4 ONLY**
+**COMMITTED AND IMMUTABLE — P5-A4 PRODUCT MERGE**
 
 ## Canonical base
 
@@ -38,3 +38,11 @@ V038 must not contain unrelated E03+ capability, calculation/results/payment/acc
 ## Closure rule
 
 If P5-A4 product merge uses V038, V038 becomes committed and immutable at that merge. If P5-A4 closes without requiring a migration, closure reconciliation must explicitly release V038 as unused rather than creating an empty migration.
+
+<!-- P5-A4-V038-CLOSURE -->
+## Product-merge closure
+
+P5-A4 used V038 and merged it through product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`.
+V038 is therefore committed and immutable. V001-V038 are immutable.
+V039 is unreserved and may not be claimed without a separately merged
+capability activation authority.

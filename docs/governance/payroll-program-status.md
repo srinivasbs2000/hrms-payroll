@@ -3,18 +3,18 @@
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
-**Product reconciliation baseline:** P5-FAD-01 backend product merge PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`; UI baseline remains `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Product reconciliation baseline:** P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; UI baseline remains `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
-**Latest merged product increment:** P5-FAD-01 backend PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`; no FAD UI product write
+**Latest merged product increment:** P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; no P5-A4 UI product write
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** None after this P5-FAD-01 status closure
-**Migration state:** V001–V037 committed and immutable
-**Next migration:** V038 unreserved; no capability owns it
+**Active product write owner:** None after P5-A4 status closure
+**Migration state:** V001–V038 committed and immutable
+**Next migration:** V039 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 12 August 2026 for P5-FAD-01 post-merge semantic closure
-**Current execution capability:** None after this closure; P5-FAD-01 is MERGED / CLOSED
+**Last reconciled:** 13 August 2026 for P5-A4 post-merge semantic closure
+**Current execution capability:** None after this closure; P5-A4 is MERGED / CLOSED
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -38,6 +38,25 @@ Conversation history and thread names are locators only. They are not the
 project-status authority.
 
 ## 2. Latest completed milestone
+
+P5-A4 delivered the remaining Calendar & Pay Groups capability for
+`PLN-E02-001` through `PLN-E02-010`:
+
+- versioned pay groups plus deterministic PSU/establishment population routing;
+- stable/versioned payroll-calendar identity and history-preserving successors;
+- deterministic contiguous period generation across monthly, fortnightly,
+  weekly, daily and authorised custom frequencies;
+- input, calculation, approval, release and payment milestones;
+- weekend/holiday adjustment with original and adjusted evidence;
+- append-only publish/amend/retire lifecycle and immutable published history;
+- fail-closed assignment/cycle compatibility and governed publication;
+- tenant-safe operational views and lifecycle HTTP evidence.
+
+Evidence: product PR #58 / merge `6ce57213c8d77e76d8addee55a92f0349229a314`, R3
+`80441eb433afc15e89abbb940ab9f4a9c1eb2f26` and hosted run
+`31634393939` with 7/7 required checks GREEN.
+
+### Previous completed milestone — P5-FAD-01
 
 P5-FAD-01 delivered the remaining reusable Foundation application-approval
 authority and effective-dated delegation controls for PLN-E01-011:
@@ -161,9 +180,9 @@ The approved program contains 450 detailed source-linked stories:
 
 | Status | Stories | Percentage |
 |---|---:|---:|
-| Implemented | 19 | 4.22% |
-| Partially implemented | 153 | 34.00% |
-| Not evidenced | 88 | 19.56% |
+| Implemented | 29 | 6.44% |
+| Partially implemented | 147 | 32.67% |
+| Not evidenced | 84 | 18.67% |
 | Not started | 159 | 35.33% |
 | Legal/domain revalidation | 31 | 6.89% |
 | **Total** | **450** | **100%** |
@@ -232,6 +251,7 @@ and an empty requirement list is explicitly not a legal conclusion.
 | P5-FBA-01 — employer banking and authorised-signatory authority | Original P5-A3 (bank/signatory slice) |
 | P5-FSR-01 — immutable foundation snapshot and composed readiness closure | Original P5-A3 (snapshot/readiness slice) |
 | P5-FAD-01 — shared application approval authority and delegation | Original P5-A3 (approval/delegation slice) |
+| P5-A4 — pay groups, periods and calendar lifecycle | Original P5-A4 |
 
 Execution labels and original PLN-01 package identifiers remain separate fields.
 Reuse of a label does not imply completion of the original package with the same
@@ -248,8 +268,8 @@ textual identifier.
   application approver/delegation controls are all implemented within their
   bounded generic Foundation contracts.
 - Original P5-A4 — pay groups, period generation and milestone rules:
-  partially implemented and dependency-ready.
-- Original P5-A5: partially implemented and dependent on P5-A4.
+  complete through P5-A4 / product PR #58.
+- Original P5-A5: partially implemented and dependency-unblocked by P5-A4 closure; separate R3 selection and activation remain mandatory.
 - Original P5-B1: substantially implemented; gap closure remains.
 - Original P5-B2 and P5-B3: partially implemented.
 - Original P5-B4, P5-B5 and P5-B6: partially implemented by current P5-A3;
@@ -359,3 +379,24 @@ Every future product increment is incomplete until:
 4. the status-closure PR is merged;
 5. active ownership and migration reservation are explicitly closed;
 6. only then is the next product package selected and authorized.
+
+<!-- P5-A4-PROGRAM-STATUS-CLOSURE -->
+### P5-A4 canonical ledger reconciliation
+
+P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314` changes:
+
+- `PLN-E02-001` -> IMPLEMENTED;
+- `PLN-E02-002` -> IMPLEMENTED;
+- `PLN-E02-003` -> IMPLEMENTED;
+- `PLN-E02-004` -> IMPLEMENTED;
+- `PLN-E02-005` -> IMPLEMENTED;
+- `PLN-E02-006` -> IMPLEMENTED;
+- `PLN-E02-007` -> IMPLEMENTED;
+- `PLN-E02-008` -> IMPLEMENTED;
+- `PLN-E02-009` -> IMPLEMENTED;
+- `PLN-E02-010` -> IMPLEMENTED.
+
+The resulting 450-story ledger is 29 implemented, 147 partially implemented,
+84 not evidenced, 159 not started and 31 requiring legal/domain revalidation.
+V038 is immutable. V039 is unreserved. P5-A4 retains no write ownership.
+Original P5-A5/E03 is dependency-unblocked but is not activated by this closure.
