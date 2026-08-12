@@ -2,7 +2,7 @@
 
 ## Authority
 
-- Status: **ACTIVE**
+- Status: **CLOSED after product merge and post-merge semantic reconciliation**
 - Package: **Original P5-A4 — Pay Groups, Period Generation & Milestone Rules**
 - Canonical activation base: `850e934b5ab839b349d0130e021f03276f9c90c6`
 - Business-story boundary: `PLN-E02-001` through `PLN-E02-010` only.
@@ -96,3 +96,20 @@ Independently prove story-by-story E02-001..010 coverage, migration immutability
 ### Closure
 
 Only after product merge and post-merge reconciliation may E02 story statuses be updated from evidence and P5-A4 be marked CLOSED. V038 becomes immutable at product merge if used; if unused, its reservation is explicitly released during closure.
+
+<!-- P5-A4-POST-MERGE-CLOSURE -->
+## Post-merge closure
+
+- activation PR: #57; canonical activated main: `25531485e4d29287905765825b48728566455b81`;
+- G01: `f038bdfb48162706b6ad1dd46358cc8a2a5c0c2a`;
+- G02: `840c1060b3da27fda05d722372978ac2c925ca3b`;
+- G03: `155563bd2ebfd6da27299b9b60f3a25691f398b8`;
+- independent R3 hardening: `80441eb433afc15e89abbb940ab9f4a9c1eb2f26`;
+- product PR: #58;
+- product merge: `6ce57213c8d77e76d8addee55a92f0349229a314`;
+- hosted product run: `31634393939` — 7/7 required checks GREEN;
+- `PLN-E02-001` through `PLN-E02-010` reconcile to IMPLEMENTED;
+- V038 is committed and immutable;
+- V039 is unreserved;
+- P5-A4 retains no active product path ownership after this closure merges;
+- Original P5-A5/E03 is not activated by this closure.

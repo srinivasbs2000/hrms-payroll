@@ -1,20 +1,20 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 12 August 2026 after P5-FAD-01 product merge and post-merge reconciliation
+**Updated:** 13 August 2026 after P5-A4 product merge and post-merge reconciliation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
-**Product reconciliation baseline:** P5-FAD-01 backend PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`; UI baseline `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Product reconciliation baseline:** P5-A4 backend PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; UI baseline `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-FAD-01 backend PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`; no FAD UI product write
+**Latest merged product increment:** P5-A4 backend PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; no P5-A4 UI product write
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** None after P5-FAD-01 status closure; fresh R3 selection required
-**Current state:** P5-FAD-01 MERGED; post-merge closure releases ownership and V037 reservation
-**Migrations:** V001–V037 committed and immutable after this closure
-**Next migration:** V038 unreserved after this closure
+**Active capability:** None after P5-A4 status closure; fresh R3 selection required
+**Current state:** P5-A4 MERGED; post-merge closure releases ownership and closes E02
+**Migrations:** V001–V038 committed and immutable after this closure
+**Next migration:** V039 unreserved after this closure
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | None after P5-FAD-01 status closure |
+| Active write owner | None after P5-A4 status closure |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
 | Active path ownership | None; fresh R3 activation required before new product writes |
-| Migration state | V001–V037 immutable after this closure |
-| Next migration | V038 unreserved; no capability owns it |
+| Migration state | V001–V038 immutable after this closure |
+| Next migration | V039 unreserved; no capability owns it |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -44,9 +44,9 @@ live read-only GitHub evidence before starting write-capable work.
 
 The 450 detailed stories reconcile to:
 
-- 19 implemented;
-- 153 partially implemented;
-- 88 not evidenced;
+- 29 implemented;
+- 147 partially implemented;
+- 84 not evidenced;
 - 159 not started;
 - 31 requiring legal/domain revalidation.
 
@@ -130,3 +130,16 @@ selecting any next capability.
 Do not reserve V038, create a new product branch or infer the next capability
 from conversation history alone. A separately merged activation authority is
 required before new product writes.
+
+<!-- P5-A4-HANDOFF-CLOSURE -->
+## P5-A4 post-merge continuation checkpoint
+
+P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314` closes
+`PLN-E02-001` through `PLN-E02-010` as IMPLEMENTED. Final product head
+before merge was R3 `80441eb433afc15e89abbb940ab9f4a9c1eb2f26` and hosted run
+`31634393939` passed all seven required checks.
+
+V038 is committed and immutable. V039 is unreserved. There is no active product
+write owner after the closure PR merges. Original P5-A5/E03 is now dependency-
+unblocked by P5-A4 completion but remains inactive until a fresh R3
+reconciliation and separately merged activation authority.

@@ -1,6 +1,6 @@
 # Payroll vertical-slice Flyway package
 
-`sql/` is the canonical source for the ordered V001-V037 migrations. The Maven
+`sql/` is the canonical source for the ordered V001-V038 migrations. The Maven
 `backend/database-migrations` module packages these files at `db/migration` and
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
@@ -18,8 +18,11 @@ through P5-FSR-01 G01 backend PR #47 / `16d2488252b8a5c3aecd64c0f43fe18b6743d6e8
 and retained unchanged through later FSR hardening. V036 is committed and
 immutable. V037 is `V037__foundation_approval_delegation.sql`, delivered through
 P5-FAD-01 product PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`.
-V037 is committed and immutable. V001-V037 are now immutable. V038 is unreserved
-and may not be claimed without a separately merged capability activation authority.
+V037 is committed and immutable. V038 is
+`V038__pay_group_routing_compatibility_foundation.sql`, delivered through
+P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`. V038 is committed and immutable.
+V001-V038 are now immutable. V039 is unreserved and may not be claimed without
+a separately merged capability activation authority.
 
 V033 implements the P5-A3 configuration-design foundation: schema-1 salary
 structures, versioned CTC policies, typed eligibility rules and deterministic
@@ -82,6 +85,7 @@ Migration order:
 35. P5-FBA-01 employer bank-account/signatory identity/version, encrypted bank secret metadata, delegated-authority scope and bounded banking readiness
 36. P5-FSR-01 immutable foundation-configuration snapshot, exact input/calculation binding and history-preserving V035 upgrade
 37. P5-FAD-01 entity/PSU-scoped application approval authority, bounded delegation and tenant-safe resolution
+38. P5-A4 versioned pay-group routing, governed payroll-calendar lifecycle, deterministic period/frequency/milestone generation, compatibility and operational evidence
 
 This remains a greenfield product with no evidenced production deployment.
 Forward-only migrations and populated-upgrade tests protect reproducible local,

@@ -1,7 +1,7 @@
 # Payroll Feature Delivery Lineage
 
-**Product reconciliation baseline:** `a80e7b4da121665a8b1548acada6b96fac4dfa01` (P5-FAD-01 product merge); UI baseline remains `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
-**Product implementation baseline:** P5-FAD-01 G01 `64a34a3b4a58d3de8ccfd185a7da21102ec78b71`; G02 `f581d582d6bfce8239370e2230a612df28e0024a`; R3 repair/product head `2db3845785b8c178c9660f712056f79e5e5409ed`; product merge `a80e7b4da121665a8b1548acada6b96fac4dfa01`
+**Product reconciliation baseline:** P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; UI baseline remains `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Product implementation baseline:** P5-A4 G01 `f038bdfb48162706b6ad1dd46358cc8a2a5c0c2a`; G02 `840c1060b3da27fda05d722372978ac2c925ca3b`; G03 `155563bd2ebfd6da27299b9b60f3a25691f398b8`; R3 `80441eb433afc15e89abbb940ab9f4a9c1eb2f26`; product merge `6ce57213c8d77e76d8addee55a92f0349229a314`
 **Purpose:** Trace original epic -> original backlog row -> current story -> migration -> commit -> PR/merge -> evidence -> remaining scope.
 
 ## 1. Epic-level lineage
@@ -9,7 +9,7 @@
 | Epic | Current Stories | Migrations | Commit Evidence | PR/Merge | Classification |
 |---|---|---|---|---|---|
 | E01 | S1-00, S1-01, S1-02, S1-03, S1-04, S1-05, S1-06; P5-JRF-01; P5-FBA-01; P5-FSR-01; P5-FAD-01 | V014-V016; V034-V037 (plus foundational V001-V013) | P5-JRF-01 c8ab727787a23b0b211caf27c2158300a38a8eab; P5-FBA-01 backend 088484b1855b5af6f0c67dfe1426204b9a720b13 / UI 062e3a1e43e311a79687ae5645ae2934b8e5cb35; P5-FSR-01 G01 7a399bb58dddac485c460b9f6fc2985304eaf886, G02 640f3a354a5c607375c484e4f995205c613efac2, UTC runtime 9731d74f99fb7b458751c7b18da5cb1cc24fbc29, UI a6433007a1552ab34f9e5086e2448f6a532e387a; P5-FAD-01 G01 64a34a3b4a58d3de8ccfd185a7da21102ec78b71, G02 f581d582d6bfce8239370e2230a612df28e0024a, R3 repair 2db3845785b8c178c9660f712056f79e5e5409ed | PR #36 / 6ee101bd398b745a0078bd0517b4e3797c571c2b; PR #44 / a0234d94ef280a41a744ea6e8483f786a497d211; UI #12 / 5c45ab41ee3cb4466fac822c04c771f5de0ba119; P5-FSR backend #47 / 16d2488252b8a5c3aecd64c0f43fe18b6743d6e8, #49 / 954ed05d11dcb367f6de6e1f3e78aafc17c8beab, #51 / 74bbd65449adad7b7058d8afd96097b1e08d2a0a; UI #13 / 8e8b47c829ac33aa2495ef07fba0ae2afd51e770; P5-FAD backend #55 / a80e7b4da121665a8b1548acada6b96fac4dfa01 | IMPLEMENTED |
-| E02 | S2-01, S2-02; population execution contributes through S3-01 | V017-V018 | Inherited Sprint 2 range through 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
+| E02 | P5-A4; inherited S2-01/S2-02/S3-01 foundations | V017-V018, V023, V038 | G01 f038bdf; G02 840c106; G03 155563b; R3 80441eb | PR #58 / 6ce57213c8d77e76d8addee55a92f0349229a314 | IMPLEMENTED |
 | E03 | S2-03; P5-A2 general catalogue and named bases | V019; V032 | Sprint 2 foundation plus `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` | PR #3; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` | PARTIALLY IMPLEMENTED |
 | E04 | S2-04 | V020 | Inherited Sprint 2 entry head 24f2ed4893a90627eb6be69aa3747eba4343e195 | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
 | E05 | S2-05, S2-06; generic statutory profile contribution from S4-02 | V021-V022; V028 for generic statutory profiles | adf3769b945d56828aa984e634e6e1bbb62582d7; 1575cbc373bf4dc22ff116b1ea4bbfb7e5a19288; 63c9b1a719765fce3868eb7fc69fac37bc196dc9; 12536c3f629cf567022f3fd50998397d1d0b5911; e98f70b0346a13e463f8e768ab4014be0e30ca0f | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
@@ -237,3 +237,15 @@ and consumed decision lineage, and does not confer application access from legal
 authorised-signatory status. E02 calendar/pay-group approval workflows remain
 outside this capability and should reuse the shared authority when separately
 activated.
+
+<!-- P5-A4-LINEAGE-CLOSURE -->
+## P5-A4 post-merge lineage
+
+P5-A4 closes `PLN-E02-001` through `PLN-E02-010` through product PR #58 /
+`6ce57213c8d77e76d8addee55a92f0349229a314`. The final product lineage is G01
+`f038bdfb48162706b6ad1dd46358cc8a2a5c0c2a`, G02
+`840c1060b3da27fda05d722372978ac2c925ca3b`, G03
+`155563bd2ebfd6da27299b9b60f3a25691f398b8` and independent R3
+`80441eb433afc15e89abbb940ab9f4a9c1eb2f26`. Hosted product run
+`31634393939` passed all seven required checks. V038 is immutable after the
+product merge. No E03/P5-A5 product work is activated by this record.
