@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 13 August 2026 after P5-A4 product merge and post-merge reconciliation
+**Updated:** 13 August 2026 after end-to-end story/UI reconciliation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** None after P5-A4 status closure; fresh R3 selection required
-**Current state:** P5-A4 MERGED; post-merge closure releases ownership and closes E02
+**Active capability:** None; end-to-end UI gap closure must precede new capability activation
+**Current state:** P5-A4 backend merged/closed; canonical story completion is 18 IMPLEMENTED after end-to-end UI reconciliation
 **Migrations:** V001–V038 committed and immutable after this closure
 **Next migration:** V039 unreserved after this closure
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -44,8 +44,8 @@ live read-only GitHub evidence before starting write-capable work.
 
 The 450 detailed stories reconcile to:
 
-- 29 implemented;
-- 147 partially implemented;
+- 18 implemented;
+- 158 partially implemented;
 - 84 not evidenced;
 - 159 not started;
 - 31 requiring legal/domain revalidation.
@@ -123,14 +123,17 @@ After this status-closure PR merges:
 
 ## Exact next controlled action
 
-After this status-closure PR merges, verify merged `main` and hosted CI, then
-perform a fresh R3 reconciliation against the canonical story ledger before
-selecting any next capability.
+Complete the 11 end-to-end UI gaps identified by
+`docs/governance/payroll-end-to-end-story-reconciliation.md` before activating
+P5-A5/E03.
 
-Do not reserve V038, create a new product branch or infer the next capability
-from conversation history alone. A separately merged activation authority is
-required before new product writes.
+The UI-gap closure must use the existing backend contracts wherever they are
+sufficient, update `srinivasbs2000/hrms-payroll-web`, add real-backend browser
+E2E, and restore a story to IMPLEMENTED only after its required UI surface is
+green.
 
+V039 remains unreserved. No next product capability is activated by this
+governance reconciliation.
 <!-- P5-A4-HANDOFF-CLOSURE -->
 ## P5-A4 post-merge continuation checkpoint
 
