@@ -13,7 +13,7 @@
 **Migration state:** V001–V038 committed and immutable
 **Next migration:** V039 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 13 August 2026 for P5-A4 post-merge semantic closure
+**Last reconciled:** 13 August 2026 for end-to-end story/UI reconciliation
 **Current execution capability:** None after this closure; P5-A4 is MERGED / CLOSED
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
@@ -180,8 +180,8 @@ The approved program contains 450 detailed source-linked stories:
 
 | Status | Stories | Percentage |
 |---|---:|---:|
-| Implemented | 29 | 6.44% |
-| Partially implemented | 147 | 32.67% |
+| Implemented | 18 | 4.00% |
+| Partially implemented | 158 | 35.11% |
 | Not evidenced | 84 | 18.67% |
 | Not started | 159 | 35.33% |
 | Legal/domain revalidation | 31 | 6.89% |
@@ -240,6 +240,26 @@ foundation readiness: generic registration requirements remain caller-declared
 and an empty requirement list is explicitly not a legal conclusion.
 
 
+## 3A. End-to-end story/UI reconciliation
+
+The 13 August 2026 end-to-end reconciliation audits all 29 stories previously
+marked IMPLEMENTED against the authoritative React UI baseline
+`8e8b47c829ac33aa2495ef07fba0ae2afd51e770` and classifies UI applicability
+for all 450 detailed stories.
+
+Result:
+
+- 18 remain IMPLEMENTED with required end-to-end UI/operational evidence;
+- 11 are downgraded to PARTIALLY IMPLEMENTED because required UI is partial or
+  missing;
+- all remaining 421 stories now have explicit UI applicability;
+- `backlog/payroll-story-ui-applicability.csv` is mandatory for future
+  activation and closure;
+- P5-A5/E03 must not activate until the 11 current end-to-end UI gaps are closed
+  or an explicit owner-approved sequencing decision supersedes this gate.
+
+The backend/product merges remain valid historical evidence. This reconciliation
+changes story completion classification; it does not roll back backend code.
 ## 4. Execution-label to original-package mapping
 
 | Completed execution increment | Primary original package mapping |
@@ -267,8 +287,9 @@ textual identifier.
   legal signatory authority, immutable snapshots/readiness and reusable
   application approver/delegation controls are all implemented within their
   bounded generic Foundation contracts.
-- Original P5-A4 — pay groups, period generation and milestone rules:
-  complete through P5-A4 / product PR #58.
+- Original P5-A4 — pay groups, period generation and milestone rules: backend/domain
+  capability is complete through P5-A4 / product PR #58, but end-to-end story
+  completion is PARTIAL until the required E02 operator UI gaps are closed.
 - Original P5-A5: partially implemented and dependency-unblocked by P5-A4 closure; separate R3 selection and activation remain mandatory.
 - Original P5-B1: substantially implemented; gap closure remains.
 - Original P5-B2 and P5-B3: partially implemented.

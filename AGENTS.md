@@ -121,6 +121,24 @@ When an authorized payload is already applied and only a post-application
 validation false positive occurs, preserve it and use a bounded resume package
 after verifying the exact branch, base SHA, empty index, changed paths and
 payload hashes.
+## End-to-end story and UI applicability gate
+
+Every detailed story must be reconciled against
+`backlog/payroll-story-ui-applicability.csv` before activation.
+
+- Business/workflow stories are not backend-only deliverables.
+- When UI applicability requires a product, operational, administration or
+  audit surface, capability authority must include the UI repository and exact
+  browser journey.
+- `IMPLEMENTED` requires all applicable backend, API, UI, authorization,
+  audit and real-backend browser-E2E evidence.
+- Backend/domain completion without required UI is
+  `PARTIALLY IMPLEMENTED`.
+- A technical API/event/test story may be `NOT_REQUIRED_DIRECTLY` for UI, but
+  this never removes the UI obligation from the consuming business story.
+- UI deferral must be explicit and prevents end-to-end story closure.
+- Capability closure must reconcile backend and UI merge evidence whenever the
+  selected story set contains a UI-required story.
 ## Model and Agent Routing Policy
 
 This routing policy is dormant unless the project owner has explicitly authorized Codex for the specific task. The standing default remains non-Codex local payload execution.
