@@ -49,6 +49,45 @@ class PayGroupCalendarPublicationMigrationIT {
   }
 
   @Test
+  void runtimeLegacyCreationCommandsRemainCompatibleButRequirePublication() throws Exception {
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        setTenant(statement);
+
+        UUID generalized = scalarUuid(
+            statement,
+            "SELECT organisation.create_payroll_calendar('"
+                + TENANT
+                + "'::uuid,'LEGACY_GENERIC'::varchar,'Legacy Generic'::varchar,"
+                + "'MONTHLY'::varchar,'Asia/Kolkata'::varchar,NULL::integer,"
+                + "false,ARRAY[6,7]::smallint[],'test'::varchar,clock_timestamp())");
+
+        UUID monthly = scalarUuid(
+            statement,
+            "SELECT organisation.create_monthly_payroll_calendar('"
+                + TENANT
+                + "'::uuid,'LEGACY_MONTHLY'::varchar,'Legacy Monthly'::varchar,"
+                + "'Asia/Kolkata'::varchar,'test'::varchar,clock_timestamp())");
+
+        assertThat(
+                scalarLong(
+                    statement,
+                    "SELECT count(*) FROM organisation.payroll_calendar "
+                        + "WHERE tenant_id='"
+                        + TENANT
+                        + "' AND id IN ('"
+                        + generalized
+                        + "','"
+                        + monthly
+                        + "') AND publication_required"))
+            .isEqualTo(2);
+        connection.commit();
+      }
+    }
+  }
+
+  @Test
   void publishAndRetireAreAppendOnlyAndOperationallyVisible() throws Exception {
     UUID calendar = createReadyCalendar("MONTHLY_G03", "MONTHLY", null, false);
     UUID period = firstPeriod(calendar);

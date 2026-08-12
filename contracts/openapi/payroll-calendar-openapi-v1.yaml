@@ -108,7 +108,7 @@ pathItems:
       operationId: retirePayrollCalendar
       x-permission: calendar.create
       parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
-      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/LifecycleRequest'}}}}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RetirementRequest'}}}}
       responses:
         '200': {description: Retired operational state, content: {application/json: {schema: {$ref: '#/components/schemas/CalendarOperational'}}}}
         '403': {$ref: '#/components/responses/Problem'}
@@ -195,11 +195,17 @@ components:
         paymentDay: {type: [integer, 'null'], minimum: 1, maximum: 31}
         startDate: {type: [string, 'null'], format: date}
         periodCount: {type: [integer, 'null'], minimum: 1, maximum: 1000}
-      description: Use year/paymentDay for backward-compatible monthly generation, or startDate/periodCount for generalized generation.
+      description: Use year/paymentDay only for backward-compatible monthly generation. Publishable P5-A4 schedules use startDate/periodCount after exactly five milestone rules are configured.
     LifecycleRequest:
       type: object
       additionalProperties: false
       properties: {reason: {type: [string, 'null'], maxLength: 500}}
+    RetirementRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason: {type: string, minLength: 1, maxLength: 500}
     PayPeriod:
       type: object
       required: [id, calendarId, periodCode, periodStart, periodEnd, paymentDate, status]
@@ -213,7 +219,7 @@ components:
         status: {type: string}
     CalendarOperational:
       type: object
-      required: [id, calendarSeriesId, calendarVersion, code, name, frequency, timezone, customFrequencyAuthorised, lifecycleStatus, milestoneRuleCount, holidayCount, periodCount]
+      required: [id, calendarSeriesId, calendarVersion, code, name, frequency, timezone, customFrequencyAuthorised, publicationRequired, lifecycleStatus, milestoneRuleCount, holidayCount, periodCount]
       properties:
         id: {type: string, format: uuid}
         calendarSeriesId: {type: string, format: uuid}
@@ -225,6 +231,7 @@ components:
         timezone: {type: string}
         customPeriodDays: {type: [integer, 'null']}
         customFrequencyAuthorised: {type: boolean}
+        publicationRequired: {type: boolean}
         lifecycleStatus: {type: string, enum: [DRAFT, PUBLISHED, RETIRED]}
         latestLifecycleEventId: {type: [string, 'null'], format: uuid}
         lifecycleChangedAt: {type: [string, 'null'], format: date-time}

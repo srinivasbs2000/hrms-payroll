@@ -220,6 +220,7 @@ public class PayrollCalendarRepository {
         result.getString("frequency"), result.getString("timezone"),
         (Integer) result.getObject("custom_period_days"),
         result.getBoolean("custom_frequency_authorised"),
+        result.getBoolean("publication_required"),
         result.getString("lifecycle_status"),
         result.getObject("latest_lifecycle_event_id", UUID.class),
         result.getTimestamp("lifecycle_changed_at") == null ? null

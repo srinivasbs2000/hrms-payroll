@@ -15,6 +15,7 @@ public record PayrollCalendarOperationalView(
     String timezone,
     Integer customPeriodDays,
     boolean customFrequencyAuthorised,
+    boolean publicationRequired,
     String lifecycleStatus,
     UUID latestLifecycleEventId,
     Instant lifecycleChangedAt,

@@ -2294,10 +2294,10 @@ ALTER TABLE organisation.payroll_calendar
   ADD COLUMN supersedes_calendar_id uuid,
   ADD COLUMN publication_required boolean NOT NULL DEFAULT false;
 
--- Existing calendars can predate P5-A4. Temporarily suspend RLS only inside
--- this atomic migration transaction so every tenant's legacy row receives the
--- deterministic version-series backfill before NOT NULL is asserted.
-ALTER TABLE organisation.payroll_calendar DISABLE ROW LEVEL SECURITY;
+-- Existing calendars can predate P5-A4. Follow the established migration-owner
+-- pattern used by prior identity upgrades: keep RLS enabled, temporarily remove
+-- FORCE so only the table owner can backfill all tenants, then restore FORCE.
+ALTER TABLE organisation.payroll_calendar NO FORCE ROW LEVEL SECURITY;
 
 UPDATE organisation.payroll_calendar
 SET calendar_series_id = id
@@ -2324,7 +2324,6 @@ ALTER TABLE organisation.payroll_calendar
   ADD CONSTRAINT payroll_calendar_series_version_uk
     UNIQUE (tenant_id, calendar_series_id, calendar_version);
 
-ALTER TABLE organisation.payroll_calendar ENABLE ROW LEVEL SECURITY;
 ALTER TABLE organisation.payroll_calendar FORCE ROW LEVEL SECURITY;
 
 CREATE UNIQUE INDEX payroll_calendar_one_successor_uk
@@ -2356,6 +2355,27 @@ CREATE TRIGGER payroll_calendar_version_identity
   BEFORE INSERT ON organisation.payroll_calendar
   FOR EACH ROW
   EXECUTE FUNCTION organisation.initialise_payroll_calendar_version_identity();
+
+-- V018/G02 controlled creation functions remain callable for compatibility.
+-- Any calendar created through the canonical runtime login after V038 must
+-- nevertheless enter the publication-governed lifecycle. Direct owner/migration
+-- seed rows retain publication_required=false so pre-P5-A4 compatibility data
+-- remains distinguishable and upgrade-safe.
+CREATE FUNCTION organisation.require_runtime_calendar_publication()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, organisation AS $$
+BEGIN
+  IF session_user = 'payroll_app' THEN
+    NEW.publication_required := true;
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER payroll_calendar_runtime_publication_required
+  BEFORE INSERT ON organisation.payroll_calendar
+  FOR EACH ROW
+  EXECUTE FUNCTION organisation.require_runtime_calendar_publication();
 
 CREATE FUNCTION organisation.create_governed_payroll_calendar(
   p_tenant_id uuid,
@@ -3162,6 +3182,7 @@ SELECT
   calendar.timezone,
   calendar.custom_period_days,
   calendar.custom_frequency_authorised,
+  calendar.publication_required,
   organisation.payroll_calendar_current_state(calendar.tenant_id, calendar.id) AS lifecycle_status,
   latest_event.id AS latest_lifecycle_event_id,
   latest_event.occurred_at AS lifecycle_changed_at,
@@ -3244,7 +3265,9 @@ REVOKE CREATE ON SCHEMA employee_payroll FROM payroll_app;
 REVOKE CREATE ON SCHEMA payroll_ops FROM payroll_app;
 
 COMMENT ON COLUMN organisation.payroll_calendar.publication_required IS
-  'True for P5-A4 governed calendar versions that must be PUBLISHED before payroll-cycle creation; legacy pre-P5-A4 calendars remain compatible until explicitly lifecycle-managed.';
+  'True for runtime-created P5-A4 governed calendar versions that must be PUBLISHED before payroll-cycle creation; owner/migration legacy compatibility rows may remain false.';
+COMMENT ON FUNCTION organisation.require_runtime_calendar_publication() IS
+  'Marks calendars inserted through the canonical payroll_app runtime login as publication governed while preserving owner-only legacy migration compatibility.';
 COMMENT ON FUNCTION organisation.create_governed_payroll_calendar(
   uuid, varchar, varchar, varchar, varchar, integer, boolean, smallint[], varchar, timestamptz
 ) IS
