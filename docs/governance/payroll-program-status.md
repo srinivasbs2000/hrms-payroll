@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** None after P5-A4 status closure
+**Active product write owner:** P5-E2E-UI-01 in `srinivasbs2000/hrms-payroll-web` only after activation; backend product writes prohibited
 **Migration state:** V001–V038 committed and immutable
 **Next migration:** V039 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 13 August 2026 for end-to-end story/UI reconciliation
-**Current execution capability:** None after this closure; P5-A4 is MERGED / CLOSED
+**Last reconciled:** 13 August 2026 for P5-E2E-UI-01 activation authority
+**Current execution capability:** P5-E2E-UI-01 — Existing Story UI Gap Closure after activation merge
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -421,3 +421,22 @@ The resulting 450-story ledger is 29 implemented, 147 partially implemented,
 84 not evidenced, 159 not started and 31 requiring legal/domain revalidation.
 V038 is immutable. V039 is unreserved. P5-A4 retains no write ownership.
 Original P5-A5/E03 is dependency-unblocked but is not activated by this closure.
+
+<!-- P5-E2E-UI-01-ACTIVATION -->
+## P5-E2E-UI-01 activation authority
+
+P5-E2E-UI-01 is the bounded end-to-end UI gap-closure capability selected after
+the 13 August 2026 450-story reconciliation.
+
+- exact stories: PLN-E01-011 and PLN-E02-001 through PLN-E02-010;
+- selected-story UI applicability revalidated: YES;
+- UI product repository: `srinivasbs2000/hrms-payroll-web`;
+- UI baseline: `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`;
+- backend/program baseline: `9394cc35660a45cb14febd781b484b4c3bcbc8a3`;
+- backend product writes: prohibited;
+- migration: none; V039 remains unreserved;
+- story statuses remain 18 IMPLEMENTED / 158 PARTIALLY IMPLEMENTED at activation;
+- P5-A5/E03 remains inactive.
+
+Scope authority:
+`docs/planning/pln-01/p5-e2e-ui-01-story-ui-gap-closure-scope.md`.
