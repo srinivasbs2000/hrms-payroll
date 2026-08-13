@@ -14,6 +14,7 @@ import com.acme.hrms.payroll.security.ApprovalRole;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -64,7 +65,7 @@ public class ApprovalAuthorityRepository {
       UUID authorityId, long expectedVersion, String actor, String reason, Instant changedAt) {
     long affected = scalarLong("""
         SELECT security.suspend_approval_authority(?, ?, ?, ?, ?, ?)
-        """, TenantContext.require(), authorityId, expectedVersion, actor, reason, changedAt);
+        """, TenantContext.require(), authorityId, expectedVersion, actor, reason, changedAt.atOffset(ZoneOffset.UTC));
     if (affected != 1) {
       throw new ConflictException("Approval authority is not active at the expected version");
     }
@@ -75,7 +76,7 @@ public class ApprovalAuthorityRepository {
       UUID authorityId, long expectedVersion, String actor, String reason, Instant changedAt) {
     long affected = scalarLong("""
         SELECT security.retire_approval_authority(?, ?, ?, ?, ?, ?)
-        """, TenantContext.require(), authorityId, expectedVersion, actor, reason, changedAt);
+        """, TenantContext.require(), authorityId, expectedVersion, actor, reason, changedAt.atOffset(ZoneOffset.UTC));
     if (affected != 1) {
       throw new ConflictException("Approval authority cannot retire at the expected version");
     }
@@ -118,7 +119,7 @@ public class ApprovalAuthorityRepository {
       UUID delegationId, long expectedVersion, String actor, String reason, Instant changedAt) {
     long affected = scalarLong("""
         SELECT security.revoke_approval_delegation(?, ?, ?, ?, ?, ?)
-        """, TenantContext.require(), delegationId, expectedVersion, actor, reason, changedAt);
+        """, TenantContext.require(), delegationId, expectedVersion, actor, reason, changedAt.atOffset(ZoneOffset.UTC));
     if (affected != 1) {
       throw new ConflictException(
           "Approval delegation cannot be revoked by this actor at the expected version");

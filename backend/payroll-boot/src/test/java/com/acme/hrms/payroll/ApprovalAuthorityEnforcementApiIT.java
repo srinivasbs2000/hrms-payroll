@@ -165,6 +165,65 @@ class ApprovalAuthorityEnforcementApiIT {
     assertThat(decisionCount("https://issuer.example.test|service-subject")).isZero();
   }
 
+  @Test
+  void authorityLifecycleStateFunctionsBindTimestamptzThroughJdbc() throws Exception {
+    JsonNode draft = createLegalEntity("FAD_STATE", "maker-state");
+    String identityId = draft.path("identityId").asText();
+
+    UUID lifecycleAuthorityId = seedAuthority(identityId, "state-owner");
+
+    MvcResult suspendedResult =
+        mvc.perform(post(
+                    "/api/v1/foundation-approval-authorities/{authorityId}/suspension",
+                    lifecycleAuthorityId)
+                .with(token(
+                    "state-owner", false, "foundation-approval-authority.write"))
+                .header("Idempotency-Key", "fad-state-suspend")
+                .header("If-Match", "0")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Test suspension\"}"))
+            .andExpect(status().isOk())
+            .andReturn();
+    JsonNode suspended = objectMapper.readTree(suspendedResult.getResponse().getContentAsString());
+    assertThat(suspended.path("status").asText()).isEqualTo("SUSPENDED");
+    assertThat(suspended.path("versionNo").asLong()).isEqualTo(1L);
+
+    MvcResult retiredResult =
+        mvc.perform(post(
+                    "/api/v1/foundation-approval-authorities/{authorityId}/retirement",
+                    lifecycleAuthorityId)
+                .with(token(
+                    "state-owner", false, "foundation-approval-authority.write"))
+                .header("Idempotency-Key", "fad-state-retire")
+                .header("If-Match", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Test retirement\"}"))
+            .andExpect(status().isOk())
+            .andReturn();
+    JsonNode retired = objectMapper.readTree(retiredResult.getResponse().getContentAsString());
+    assertThat(retired.path("status").asText()).isEqualTo("RETIRED");
+    assertThat(retired.path("versionNo").asLong()).isEqualTo(2L);
+
+    UUID delegationAuthorityId = seedAuthority(identityId, "delegator-state");
+    UUID delegationId =
+        seedDelegation(delegationAuthorityId, "delegator-state", "delegate-state");
+
+    MvcResult revokedResult =
+        mvc.perform(post(
+                    "/api/v1/foundation-approval-delegations/{delegationId}/revocation",
+                    delegationId)
+                .with(token(
+                    "delegator-state", false, "foundation-approval-delegation.write"))
+                .header("Idempotency-Key", "fad-state-revoke")
+                .header("If-Match", "0")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Test revocation\"}"))
+            .andExpect(status().isOk())
+            .andReturn();
+    JsonNode revoked = objectMapper.readTree(revokedResult.getResponse().getContentAsString());
+    assertThat(revoked.path("status").asText()).isEqualTo("REVOKED");
+    assertThat(revoked.path("versionNo").asLong()).isEqualTo(1L);
+  }
   private JsonNode createLegalEntity(String code, String maker) throws Exception {
     MvcResult result =
         mvc.perform(post("/api/v1/legal-entities")

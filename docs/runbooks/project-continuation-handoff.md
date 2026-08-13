@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 13 August 2026 for P5-E2E-UI-01 activation authority
+**Updated:** 13 August 2026 for P5-E2E-UI-01-B01 demonstrated backend defect amendment
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** P5-E2E-UI-01 after activation merge; bounded 11-story end-to-end UI gap closure
-**Current state:** P5-E2E-UI-01 activation authority; UI-only product ownership after merge, backend product writes prohibited
+**Active capability:** P5-E2E-UI-01; bounded B01 backend state-time binding amendment runs while the nine-file UI implementation is preserved
+**Current state:** P5-E2E-UI-01 UI implementation preserved; B01 authorizes only the demonstrated approval lifecycle JDBC time-binding correction after its local activation commit
 **Migrations:** V001–V038 committed and immutable after this closure
 **Next migration:** V039 unreserved after this closure
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -32,9 +32,9 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | None after P5-A4 status closure |
+| Active write owner | P5-E2E-UI-01 UI branch plus bounded P5-E2E-UI-01-B01 backend amendment after activation |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | None; fresh R3 activation required before new product writes |
+| Active path ownership | B01 only: ApprovalAuthorityRepository.java and ApprovalAuthorityEnforcementApiIT.java; UI ownership unchanged |
 | Migration state | V001–V038 immutable after this closure |
 | Next migration | V039 unreserved; no capability owns it |
 | Product deployment | Greenfield; no evidenced production deployment |
@@ -156,3 +156,20 @@ reconciliation and separately merged activation authority.
 - backend write owner: NONE;
 - migration: NONE; V039 unreserved;
 - P5-A5/E03: NOT ACTIVATED.
+
+<!-- P5-E2E-UI-01-B01-ACTIVATION -->
+## P5-E2E-UI-01-B01 continuation checkpoint
+
+- demonstrated boundary: delegation creation succeeds, delegation revocation
+  reaches backend and fails HTTP 500 because pgJDBC cannot bind `Instant` to the
+  V037 `timestamptz` state-function argument;
+- same repository pattern exists in suspend, retire and revoke;
+- amendment authority: exact two Java paths only;
+- migration: NONE; V039 unreserved;
+- UI branch/state: preserve the existing nine-file P5-E2E-UI-01 working tree;
+- local validation: full Maven verify, explicit lifecycle IT report proof, then
+  the existing P5 browser project against the exact local B01 product commit;
+- publication/merge: not authorized by the local B01 execution package.
+
+Scope authority:
+`docs/planning/pln-01/p5-e2e-ui-01-b01-approval-state-time-binding-amendment.md`.

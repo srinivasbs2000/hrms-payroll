@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-A3 React test hygiene through PR #33
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** P5-E2E-UI-01 in `srinivasbs2000/hrms-payroll-web` only after activation; backend product writes prohibited
+**Active product write owner:** P5-E2E-UI-01 UI work remains in `srinivasbs2000/hrms-payroll-web`; bounded backend amendment P5-E2E-UI-01-B01 owns only its two authorized Java paths after local activation
 **Migration state:** V001–V038 committed and immutable
 **Next migration:** V039 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 13 August 2026 for P5-E2E-UI-01 activation authority
-**Current execution capability:** P5-E2E-UI-01 — Existing Story UI Gap Closure after activation merge
+**Last reconciled:** 13 August 2026 for P5-E2E-UI-01-B01 demonstrated backend defect amendment
+**Current execution capability:** P5-E2E-UI-01 with bounded P5-E2E-UI-01-B01 backend state-time binding amendment
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -440,3 +440,23 @@ the 13 August 2026 450-story reconciliation.
 
 Scope authority:
 `docs/planning/pln-01/p5-e2e-ui-01-story-ui-gap-closure-scope.md`.
+
+<!-- P5-E2E-UI-01-B01-ACTIVATION -->
+## P5-E2E-UI-01-B01 bounded backend amendment
+
+Real-browser P5-E2E-UI-01 evidence demonstrated that V037 approval-authority
+state functions are reached with `java.time.Instant` JDBC parameters that pgJDBC
+cannot bind to the existing `timestamptz` argument. Source review proves the
+same defect affects suspend, retire and delegation revoke.
+
+B01 is separately bounded backend amendment authority under the existing
+P5-E2E-UI-01 backend-defect rule. It authorizes only:
+
+- `ApprovalAuthorityRepository.java` JDBC time binding for the three state calls;
+- `ApprovalAuthorityEnforcementApiIT.java` regression coverage.
+
+No migration, OpenAPI or permission change is authorized. V039 remains
+unreserved. The existing UI working tree stays open and is not replayed.
+
+Scope authority:
+`docs/planning/pln-01/p5-e2e-ui-01-b01-approval-state-time-binding-amendment.md`.
