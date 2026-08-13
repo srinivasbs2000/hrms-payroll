@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 13 August 2026 after end-to-end story/UI reconciliation
+**Updated:** 13 August 2026 for P5-E2E-UI-01 activation authority
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** None; end-to-end UI gap closure must precede new capability activation
-**Current state:** P5-A4 backend merged/closed; canonical story completion is 18 IMPLEMENTED after end-to-end UI reconciliation
+**Active capability:** P5-E2E-UI-01 after activation merge; bounded 11-story end-to-end UI gap closure
+**Current state:** P5-E2E-UI-01 activation authority; UI-only product ownership after merge, backend product writes prohibited
 **Migrations:** V001–V038 committed and immutable after this closure
 **Next migration:** V039 unreserved after this closure
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -123,17 +123,15 @@ After this status-closure PR merges:
 
 ## Exact next controlled action
 
-Complete the 11 end-to-end UI gaps identified by
-`docs/governance/payroll-end-to-end-story-reconciliation.md` before activating
-P5-A5/E03.
+After P5-E2E-UI-01 activation authority merges, create/use only
+`feature/p5-e2e-ui-01-story-ui-gap-closure` in
+`srinivasbs2000/hrms-payroll-web` and implement the 11 selected UI gaps against
+the existing backend contracts.
 
-The UI-gap closure must use the existing backend contracts wherever they are
-sufficient, update `srinivasbs2000/hrms-payroll-web`, add real-backend browser
-E2E, and restore a story to IMPLEMENTED only after its required UI surface is
-green.
+Do not reserve V039. Do not activate P5-A5/E03. If a genuine backend contract
+defect is demonstrated, stop that affected story and obtain separate backend
+amendment authority before any backend product write.
 
-V039 remains unreserved. No next product capability is activated by this
-governance reconciliation.
 <!-- P5-A4-HANDOFF-CLOSURE -->
 ## P5-A4 post-merge continuation checkpoint
 
@@ -146,3 +144,15 @@ V038 is committed and immutable. V039 is unreserved. There is no active product
 write owner after the closure PR merges. Original P5-A5/E03 is now dependency-
 unblocked by P5-A4 completion but remains inactive until a fresh R3
 reconciliation and separately merged activation authority.
+
+<!-- P5-E2E-UI-01-ACTIVATION -->
+## P5-E2E-UI-01 activation checkpoint
+
+- backend/program baseline: `9394cc35660a45cb14febd781b484b4c3bcbc8a3`;
+- UI baseline: `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`;
+- selected stories: PLN-E01-011 and PLN-E02-001..010;
+- UI applicability revalidated: YES;
+- product write owner after activation: UI repository only;
+- backend write owner: NONE;
+- migration: NONE; V039 unreserved;
+- P5-A5/E03: NOT ACTIVATED.
