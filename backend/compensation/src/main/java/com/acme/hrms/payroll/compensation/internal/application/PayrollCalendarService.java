@@ -3,8 +3,13 @@ package com.acme.hrms.payroll.compensation.internal.application;
 import com.acme.hrms.payroll.compensation.GeneratePeriodsRequest;
 import com.acme.hrms.payroll.compensation.PayPeriodOperationalView;
 import com.acme.hrms.payroll.compensation.PayPeriodView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarHolidayView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarHolidayWriteRequest;
 import com.acme.hrms.payroll.compensation.PayrollCalendarLifecycleRequest;
+import com.acme.hrms.payroll.compensation.PayrollCalendarMilestoneRuleView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarMilestoneRulesRequest;
 import com.acme.hrms.payroll.compensation.PayrollCalendarOperationalView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarReadinessView;
 import com.acme.hrms.payroll.compensation.PayrollCalendarView;
 import com.acme.hrms.payroll.compensation.PayrollCalendarWriteRequest;
 import com.acme.hrms.payroll.compensation.internal.infrastructure.PayrollCalendarRepository;
@@ -28,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -106,6 +112,50 @@ public class PayrollCalendarService {
   public List<PayPeriodView> periods(UUID calendarId, Integer year) {
     validateYear(year);
     return transactions.read(() -> repository.periods(calendarId, year));
+  }
+
+  public List<PayrollCalendarMilestoneRuleView> milestoneRules(UUID calendarId) {
+    return transactions.read(() -> repository.milestoneRules(calendarId));
+  }
+
+  public List<PayrollCalendarMilestoneRuleView> configureMilestoneRules(
+      UUID calendarId, String key, PayrollCalendarMilestoneRulesRequest request) {
+    request.validate();
+    return idempotentMilestoneRules(
+        "calendar:milestone-rules:" + calendarId, key, request, () -> {
+          PayrollCalendarView calendar = repository.calendar(calendarId);
+          String principal = actor.require();
+          List<PayrollCalendarMilestoneRuleView> before =
+              repository.milestoneRules(calendarId);
+          List<PayrollCalendarMilestoneRuleView> configured = configureCalendarChild(
+              () -> repository.configureMilestoneRules(
+                  calendarId, request.rules(), principal, clock.instant()));
+          recordMilestoneRules(calendar, before, configured, principal);
+          return configured;
+        });
+  }
+
+  public List<PayrollCalendarHolidayView> holidays(UUID calendarId) {
+    return transactions.read(() -> repository.holidays(calendarId));
+  }
+
+  public PayrollCalendarHolidayView configureHoliday(
+      UUID calendarId, String key, PayrollCalendarHolidayWriteRequest request) {
+    request.validate();
+    return idempotentHoliday("calendar:holiday:" + calendarId, key, request, () -> {
+      PayrollCalendarView calendar = repository.calendar(calendarId);
+      String principal = actor.require();
+      PayrollCalendarHolidayView before =
+          repository.holiday(calendarId, request.holidayDate());
+      PayrollCalendarHolidayView configured = configureCalendarChild(
+          () -> repository.configureHoliday(calendarId, request, principal, clock.instant()));
+      recordHoliday(calendar, before, configured, principal);
+      return configured;
+    });
+  }
+
+  public PayrollCalendarReadinessView readiness(UUID calendarId) {
+    return transactions.read(() -> repository.readiness(calendarId));
   }
 
   public PayrollCalendarOperationalView publish(
@@ -195,6 +245,49 @@ public class PayrollCalendarService {
         sourceCalendarId, 1, after));
   }
 
+  private void recordMilestoneRules(
+      PayrollCalendarView calendar,
+      List<PayrollCalendarMilestoneRuleView> before,
+      List<PayrollCalendarMilestoneRuleView> configured,
+      String principal) {
+    Map<String, Object> beforeState = Map.of(
+        "calendarId", calendar.id(),
+        "configuration", before);
+    Map<String, Object> afterState = Map.of(
+        "calendarId", calendar.id(),
+        "configuration", configured);
+    audit.append(
+        "MILESTONE_RULES_CONFIGURED", OBJECT_TYPE, calendar.id(),
+        beforeState, afterState, Map.of(), principal);
+    for (PayrollCalendarMilestoneRuleView rule : configured) {
+      Map<String, Object> payload = Map.of(
+          "calendarId", calendar.id(),
+          "rule", rule);
+      outbox.append(events.create(
+          "PayrollCalendarMilestoneRuleConfigured", 1, TenantContext.require(), null,
+          "PAYROLL_CALENDAR_MILESTONE_RULE", rule.id(), rule.versionNo(), payload));
+    }
+  }
+
+  private void recordHoliday(
+      PayrollCalendarView calendar,
+      PayrollCalendarHolidayView before,
+      PayrollCalendarHolidayView configured,
+      String principal) {
+    Map<String, Object> beforeState = before == null ? null : Map.of(
+        "calendarId", calendar.id(),
+        "configuration", before);
+    Map<String, Object> afterState = Map.of(
+        "calendarId", calendar.id(),
+        "configuration", configured);
+    audit.append(
+        "HOLIDAY_CONFIGURED", OBJECT_TYPE, calendar.id(),
+        beforeState, afterState, Map.of(), principal);
+    outbox.append(events.create(
+        "PayrollCalendarHolidayConfigured", 1, TenantContext.require(), null,
+        "PAYROLL_CALENDAR_HOLIDAY", configured.id(), configured.versionNo(), afterState));
+  }
+
   private Map<String, Object> calendarState(PayrollCalendarView view) {
     Map<String, Object> state = new LinkedHashMap<>();
     state.put("id", view.id());
@@ -263,6 +356,64 @@ public class PayrollCalendarService {
       idempotency.complete(operation, key, 201, response);
       return response;
     });
+  }
+
+  private List<PayrollCalendarMilestoneRuleView> idempotentMilestoneRules(
+      String operation,
+      String key,
+      Object request,
+      Supplier<List<PayrollCalendarMilestoneRuleView>> work) {
+    requireKey(key);
+    return transactions.write(() -> {
+      String requestHash = canonical.hash(request);
+      var saved = idempotency.find(operation, key);
+      if (saved.isPresent()) {
+        verifyReplay(saved.get(), requestHash);
+        try {
+          return objectMapper.readValue(
+              saved.get().body(),
+              new TypeReference<List<PayrollCalendarMilestoneRuleView>>() {});
+        } catch (JsonProcessingException exception) {
+          throw new IllegalStateException(
+              "Stored milestone-rule response is invalid", exception);
+        }
+      }
+      reserve(operation, key, requestHash);
+      List<PayrollCalendarMilestoneRuleView> response = work.get();
+      idempotency.complete(operation, key, 200, response);
+      return response;
+    });
+  }
+
+  private PayrollCalendarHolidayView idempotentHoliday(
+      String operation,
+      String key,
+      Object request,
+      Supplier<PayrollCalendarHolidayView> work) {
+    requireKey(key);
+    return transactions.write(() -> {
+      String requestHash = canonical.hash(request);
+      var saved = idempotency.find(operation, key);
+      if (saved.isPresent()) {
+        verifyReplay(saved.get(), requestHash);
+        return readSaved(
+            saved.get(), PayrollCalendarHolidayView.class,
+            "Stored holiday response is invalid");
+      }
+      reserve(operation, key, requestHash);
+      PayrollCalendarHolidayView response = work.get();
+      idempotency.complete(operation, key, 200, response);
+      return response;
+    });
+  }
+
+  private <T> T configureCalendarChild(Supplier<T> work) {
+    try {
+      return work.get();
+    } catch (DataIntegrityViolationException exception) {
+      throw new IllegalArgumentException(
+          "Payroll calendar configuration is immutable or invalid", exception);
+    }
   }
 
   private <T> T readSaved(IdempotencyStore.SavedResponse saved, Class<T> type, String message) {

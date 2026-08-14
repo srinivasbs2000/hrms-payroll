@@ -66,6 +66,45 @@ public class PayrollCalendarController {
     return service.periods(calendarId, year);
   }
 
+  @GetMapping("/{calendarId}/milestone-rules")
+  @PreAuthorize("hasAuthority('calendar.read')")
+  public List<PayrollCalendarMilestoneRuleView> milestoneRules(
+      @PathVariable UUID calendarId) {
+    return service.milestoneRules(calendarId);
+  }
+
+  @PostMapping("/{calendarId}/milestone-rules")
+  @PreAuthorize("hasAuthority('calendar.create')")
+  public List<PayrollCalendarMilestoneRuleView> configureMilestoneRules(
+      @PathVariable UUID calendarId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody PayrollCalendarMilestoneRulesRequest request) {
+    return service.configureMilestoneRules(calendarId, idempotencyKey, request);
+  }
+
+  @GetMapping("/{calendarId}/holidays")
+  @PreAuthorize("hasAuthority('calendar.read')")
+  public List<PayrollCalendarHolidayView> holidays(
+      @PathVariable UUID calendarId) {
+    return service.holidays(calendarId);
+  }
+
+  @PostMapping("/{calendarId}/holidays")
+  @PreAuthorize("hasAuthority('calendar.create')")
+  public PayrollCalendarHolidayView configureHoliday(
+      @PathVariable UUID calendarId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody PayrollCalendarHolidayWriteRequest request) {
+    return service.configureHoliday(calendarId, idempotencyKey, request);
+  }
+
+  @GetMapping("/{calendarId}/readiness")
+  @PreAuthorize("hasAuthority('calendar.read')")
+  public PayrollCalendarReadinessView readiness(
+      @PathVariable UUID calendarId) {
+    return service.readiness(calendarId);
+  }
+
   @PostMapping("/{calendarId}/publication")
   @PreAuthorize("hasAuthority('calendar.create')")
   public PayrollCalendarOperationalView publish(

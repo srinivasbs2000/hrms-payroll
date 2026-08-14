@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
@@ -292,6 +293,147 @@ class PayrollCalendarApiIT {
   }
 
   @Test
+  void configurationAndReadinessAreIdempotentLifecycleSafeAndTenantIsolated()
+      throws Exception {
+    MvcResult created = mvc.perform(
+            post("/api/v1/payroll-calendars")
+                .with(token(TENANT_A, "calendar.create"))
+                .header("Idempotency-Key", "b02-calendar-create-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "code":"B02_WEEKLY",
+                      "name":"B02 Weekly",
+                      "frequency":"WEEKLY",
+                      "timezone":"Asia/Kolkata"
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andReturn();
+    String calendarId = objectMapper.readTree(
+        created.getResponse().getContentAsString()).get("id").asText();
+
+    String rules = """
+        {
+          "rules":[
+            {"milestoneType":"INPUT_CUTOFF","anchorType":"PERIOD_END","offsetDays":-3,"adjustmentPolicy":"PREVIOUS_WORKING_DAY"},
+            {"milestoneType":"CALCULATION","anchorType":"PERIOD_END","offsetDays":-2,"adjustmentPolicy":"PREVIOUS_WORKING_DAY"},
+            {"milestoneType":"APPROVAL","anchorType":"PERIOD_END","offsetDays":-1,"adjustmentPolicy":"PREVIOUS_WORKING_DAY"},
+            {"milestoneType":"RELEASE","anchorType":"PERIOD_END","offsetDays":0,"adjustmentPolicy":"PREVIOUS_WORKING_DAY"},
+            {"milestoneType":"PAYMENT","anchorType":"PERIOD_END","offsetDays":0,"adjustmentPolicy":"NEXT_WORKING_DAY"}
+          ]
+        }
+        """;
+    MvcResult configured = mvc.perform(
+            post("/api/v1/payroll-calendars/{calendarId}/milestone-rules", calendarId)
+                .with(token(TENANT_A, "calendar.create"))
+                .header("Idempotency-Key", "b02-calendar-rules-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(rules))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(5))
+        .andExpect(jsonPath("$[0].milestoneType").value("INPUT_CUTOFF"))
+        .andReturn();
+
+    MvcResult replay = mvc.perform(
+            post("/api/v1/payroll-calendars/{calendarId}/milestone-rules", calendarId)
+                .with(token(TENANT_A, "calendar.create"))
+                .header("Idempotency-Key", "b02-calendar-rules-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(rules))
+        .andExpect(status().isOk())
+        .andReturn();
+    assertThat(objectMapper.readTree(replay.getResponse().getContentAsString()).get(0).get("id"))
+        .isEqualTo(objectMapper.readTree(
+            configured.getResponse().getContentAsString()).get(0).get("id"));
+
+    mvc.perform(
+            post("/api/v1/payroll-calendars/{calendarId}/holidays", calendarId)
+                .with(token(TENANT_A, "calendar.create"))
+                .header("Idempotency-Key", "b02-calendar-holiday-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"holidayDate":"2028-01-03","holidayName":"Synthetic Holiday"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.versionNo").value(0));
+
+    mvc.perform(
+            post("/api/v1/payroll-calendars/{calendarId}/holidays", calendarId)
+                .with(token(TENANT_A, "calendar.create"))
+                .header("Idempotency-Key", "b02-calendar-holiday-correction-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"holidayDate":"2028-01-03","holidayName":"Corrected Holiday"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.holidayName").value("Corrected Holiday"))
+        .andExpect(jsonPath("$.versionNo").value(1));
+
+    assertThat(domainEventCount("PayrollCalendarMilestoneRuleConfigured")).isEqualTo(5);
+    assertThat(domainEventCount("PayrollCalendarHolidayConfigured")).isEqualTo(2);
+    mvc.perform(
+            get("/api/v1/payroll-calendars/{calendarId}/audit", calendarId)
+                .with(token(TENANT_A, "audit.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[1].action").value("MILESTONE_RULES_CONFIGURED"))
+        .andExpect(jsonPath("$[2].action").value("HOLIDAY_CONFIGURED"))
+        .andExpect(jsonPath("$[3].action").value("HOLIDAY_CONFIGURED"));
+
+    mvc.perform(
+            get("/api/v1/payroll-calendars/{calendarId}/readiness", calendarId)
+                .with(token(TENANT_A, "calendar.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.generationReady").value(true))
+        .andExpect(jsonPath("$.publicationReady").value(false))
+        .andExpect(jsonPath("$.blockers[0]").value("PAY_PERIODS_NOT_GENERATED"));
+
+    mvc.perform(
+            post("/api/v1/payroll-calendars/{calendarId}/periods", calendarId)
+                .with(token(TENANT_A, "calendar.period.generate"))
+                .header("Idempotency-Key", "b02-calendar-periods-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"startDate":"2028-01-01","periodCount":2}
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.length()").value(2));
+
+    mvc.perform(
+            get("/api/v1/payroll-calendars/{calendarId}/readiness", calendarId)
+                .with(token(TENANT_A, "calendar.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.publicationReady").value(true))
+        .andExpect(jsonPath("$.blockers").isEmpty());
+
+    mvc.perform(
+            post("/api/v1/payroll-calendars/{calendarId}/publication", calendarId)
+                .with(token(TENANT_A, "calendar.create"))
+                .header("Idempotency-Key", "b02-calendar-publish-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"B02 contract test\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lifecycleStatus").value("PUBLISHED"));
+
+    mvc.perform(
+            post("/api/v1/payroll-calendars/{calendarId}/holidays", calendarId)
+                .with(token(TENANT_A, "calendar.create"))
+                .header("Idempotency-Key", "b02-calendar-holiday-after-publish")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"holidayDate":"2028-01-04","holidayName":"Too Late"}
+                    """))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.detail")
+            .value("Payroll calendar configuration is immutable or invalid"));
+
+    mvc.perform(
+            get("/api/v1/payroll-calendars/{calendarId}/milestone-rules", calendarId)
+                .with(token(TENANT_B, "calendar.read")))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void missingCalendarPermissionIsForbidden()
       throws Exception {
     mvc.perform(
@@ -318,5 +460,18 @@ class PayrollCalendarApiIT {
         POSTGRES.getJdbcUrl(),
         "postgres",
         "postgres");
+  }
+
+  private static int domainEventCount(String eventType) throws Exception {
+    try (Connection connection = admin();
+        Statement statement = connection.createStatement();
+        ResultSet result = statement.executeQuery(
+            "SELECT count(*) FROM integration.outbox_event WHERE event_type='"
+                + eventType + "'")) {
+      if (!result.next()) {
+        throw new IllegalStateException("Outbox count query returned no row");
+      }
+      return result.getInt(1);
+    }
   }
 }

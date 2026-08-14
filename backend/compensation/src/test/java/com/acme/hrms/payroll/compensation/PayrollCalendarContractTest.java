@@ -26,6 +26,11 @@ class PayrollCalendarContractTest {
         .containsEntry("list", "hasAuthority('calendar.read')")
         .containsEntry("generate", "hasAuthority('calendar.period.generate')")
         .containsEntry("periods", "hasAuthority('calendar.read')")
+        .containsEntry("milestoneRules", "hasAuthority('calendar.read')")
+        .containsEntry("configureMilestoneRules", "hasAuthority('calendar.create')")
+        .containsEntry("holidays", "hasAuthority('calendar.read')")
+        .containsEntry("configureHoliday", "hasAuthority('calendar.create')")
+        .containsEntry("readiness", "hasAuthority('calendar.read')")
         .containsEntry("publish", "hasAuthority('calendar.create')")
         .containsEntry("amend", "hasAuthority('calendar.create')")
         .containsEntry("retire", "hasAuthority('calendar.create')")
@@ -72,5 +77,31 @@ class PayrollCalendarContractTest {
     assertThatThrownBy(() -> new PayrollCalendarLifecycleRequest(" ").requireReason())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("reason");
+  }
+
+  @Test
+  void completeMilestoneRuleSetIsRequired() {
+    java.util.List<PayrollCalendarMilestoneRuleWriteRequest> complete = java.util.List.of(
+        rule("INPUT_CUTOFF", -3),
+        rule("CALCULATION", -2),
+        rule("APPROVAL", -1),
+        rule("RELEASE", 0),
+        rule("PAYMENT", 0));
+    new PayrollCalendarMilestoneRulesRequest(complete).validate();
+
+    assertThatThrownBy(() -> new PayrollCalendarMilestoneRulesRequest(
+        java.util.List.of(
+            rule("INPUT_CUTOFF", -3),
+            rule("CALCULATION", -2),
+            rule("APPROVAL", -1),
+            rule("RELEASE", 0),
+            rule("RELEASE", 1))).validate())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("exactly once");
+  }
+
+  private PayrollCalendarMilestoneRuleWriteRequest rule(String type, int offset) {
+    return new PayrollCalendarMilestoneRuleWriteRequest(
+        type, "PERIOD_END", offset, "PREVIOUS_WORKING_DAY");
   }
 }

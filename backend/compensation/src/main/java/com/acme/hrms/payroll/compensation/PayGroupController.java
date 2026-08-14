@@ -71,6 +71,56 @@ public class PayGroupController {
     return service.history(identityId);
   }
 
+  @GetMapping("/routing-rules")
+  @PreAuthorize("hasAuthority('pay-group.read')")
+  public List<PayGroupRoutingRuleView> routingRules(
+      @RequestParam(required = false)
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+      LocalDate asOf) {
+    return service.routingRules(asOf);
+  }
+
+  @PostMapping("/routing-rules")
+  @PreAuthorize("hasAuthority('pay-group.create')")
+  public ResponseEntity<PayGroupRoutingRuleView> createRoutingRule(
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody PayGroupRoutingRuleWriteRequest request) {
+    PayGroupRoutingRuleView result = service.createRoutingRule(idempotencyKey, request);
+    return ResponseEntity.created(
+            URI.create("/api/v1/pay-groups/routing-rules/" + result.id()))
+        .eTag(Long.toString(result.versionNo()))
+        .body(result);
+  }
+
+  @PostMapping("/routing-rules/{ruleId}/end-date")
+  @PreAuthorize("hasAuthority('pay-group.version.end-date')")
+  public ResponseEntity<PayGroupRoutingRuleView> endDateRoutingRule(
+      @PathVariable UUID ruleId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @RequestHeader("If-Match") String ifMatch,
+      @Valid @RequestBody PayGroupRoutingRuleEndDateRequest request) {
+    PayGroupRoutingRuleView result = service.endDateRoutingRule(
+        ruleId, idempotencyKey, request.effectiveTo(), expectedVersion(ifMatch));
+    return ResponseEntity.ok()
+        .eTag(Long.toString(result.versionNo()))
+        .body(result);
+  }
+
+  @GetMapping("/routing-readiness")
+  @PreAuthorize("hasAuthority('pay-group.read')")
+  public PayGroupRoutingReadinessView routingReadiness(
+      @RequestParam UUID payrollAssignmentVersionId,
+      @RequestParam UUID payGroupVersionId,
+      @RequestParam
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+      LocalDate effectiveFrom,
+      @RequestParam
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+      LocalDate effectiveTo) {
+    return service.routingReadiness(
+        payrollAssignmentVersionId, payGroupVersionId, effectiveFrom, effectiveTo);
+  }
+
   @PostMapping("/{identityId}/versions")
   @PreAuthorize("hasAuthority('pay-group.version.create')")
   public ResponseEntity<PayGroupView> addVersion(
