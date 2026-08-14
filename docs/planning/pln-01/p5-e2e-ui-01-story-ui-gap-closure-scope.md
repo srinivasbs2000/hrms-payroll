@@ -1,14 +1,14 @@
 # P5-E2E-UI-01 — Existing Story UI Gap Closure
 
-**Status:** CONTRACT-BOUNDARY RECONCILIATION COMPLETE AFTER G05 — 3 stories restored to IMPLEMENTED; 8 remain PARTIALLY IMPLEMENTED and require separate amendment authority
+**Status:** B02 BACKEND CONTRACT PUBLISHED — 3 stories implemented; 8 remain partial pending B02-G03 UI/browser closure
 **Execution capability:** P5-E2E-UI-01
 **Program/governance repository:** `srinivasbs2000/hrms-payroll`
 **UI product repository:** `srinivasbs2000/hrms-payroll-web`
 **Backend activation baseline:** `9394cc35660a45cb14febd781b484b4c3bcbc8a3`
 **UI activation baseline:** `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
-**Migration:** NONE; V039 remains unreserved
-**Backend product write authority:** NONE
-**UI product write authority after activation:** P5-E2E-UI-01 only
+**Migration:** V001–V039 immutable; V040 remains unreserved
+**Backend product write authority:** NONE; published backend authority is `d635200523c1685f42ae08c24bd6d7acaa7d68a3`
+**UI product write authority after B02-G02 reconciliation:** P5-E2E-UI-01-B02-G03 only
 **Selected-story UI applicability revalidated:** YES
 
 ## 1. Business objective
@@ -199,6 +199,34 @@ The read-only audit found existing V038 database primitives for milestone rules,
 holidays, pay-group routing and compatibility checks. B02 therefore begins with
 HTTP/application contract exposure and does not reserve V039.
 
-The eight G06-partial E02 stories remain partial during activation. Backend
-publication precedes UI product work, and P5-A5/E03 remains inactive until a
-truthful B02 closure reconciliation.
+The eight G06-partial E02 stories remain partial. The required backend
+publication is now complete and the B02-G03 continuation below supersedes this
+activation checkpoint. P5-A5/E03 remains inactive.
+
+<!-- P5-E2E-UI-01-B02-G03-ACTIVATION -->
+## 13. B02-G03 UI continuation authority
+
+Backend PR #68 merged the governed calendar-configuration, routing,
+compatibility and readiness contracts at
+`d635200523c1685f42ae08c24bd6d7acaa7d68a3`. B02-G01/G02 are closed.
+
+After the backend governance reconciliation merges, UI product work may resume
+from UI main `2a42f3909a2ee249ca26be8fb0e14e945f8903a9` on
+`feature/p5-e2e-ui-01-b02-g03-ui-closure`.
+
+B02-G03 is bounded to the remaining partial E02 operator journeys:
+
+- routing-rule administration and deterministic resolution visibility;
+- milestone-rule administration;
+- holiday/working-day configuration and correction;
+- proactive calendar/routing compatibility and bounded readiness;
+- consolidated pay-group/calendar operational visibility needed by the eight
+  selected rows.
+
+The UI must use business selectors where available, display backend blocker and
+version evidence, preserve permission/lifecycle failures, and prove the
+applicable workflows through real-browser E2E against the exact merged backend.
+
+This authority does not promote a story, modify backend code/OpenAPI, reserve a
+migration, create a permission or activate P5-A5/E03. Story promotion remains a
+B02-G04 evidence decision after UI publication.

@@ -1,20 +1,20 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 14 August 2026 after B02-R01-G01 database-contract publication and merge
+**Updated:** 15 August 2026 after B02-G01 backend publication and B02-G02 hosted closure
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
-**Product reconciliation baseline:** P5-E2E-UI-01-B02-R01-G01 backend PR #66 / `246ca75983b37293b74fdb4baa44e093fa546f8f`; P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
+**Product reconciliation baseline:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`; P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-E2E-UI-01-B02-R01-G01 backend PR #66 / `246ca75983b37293b74fdb4baa44e093fa546f8f`
+**Latest merged product increment:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** P5-E2E-UI-01-B02-G01 — Remaining backend contract exposure continuation
-**Current state:** R01-G01 database contract is merged; B02-G01 Java/HTTP contract exposure may resume after this reconciliation merges
-**Migrations:** V001–V039 committed and immutable after this closure
-**Next migration:** V040 unreserved after this closure
+**Active capability:** P5-E2E-UI-01-B02-G03 — Remaining E02 UI/browser closure after this reconciliation merges
+**Current state:** B02-G01 backend PR #68 is merged and all B02-G02 hosted gates are green
+**Migrations:** V001–V039 committed and immutable
+**Next migration:** V040 unreserved; no capability owns it
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,9 +32,9 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | P5-E2E-UI-01-B02-G01 after this reconciliation merges; bounded backend Java/HTTP contract exposure only |
+| Active write owner | P5-E2E-UI-01-B02-G03 after this reconciliation merges; UI repository only |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | R01-G01 closed; B02-G01 exact paths must be finalized by a fresh artifact-contract preflight |
+| Active path ownership | Backend B02-G01/G02 closed; B02-G03 exact UI paths require fresh read-only preflight |
 | Migration state | V001–V039 immutable after this closure |
 | Next migration | V040 unreserved; no capability owns it |
 | Product deployment | Greenfield; no evidenced production deployment |
@@ -240,8 +240,31 @@ P5-A5/E03 remains inactive.
 - story totals: unchanged at 21 / 155 / 84 / 159 / 31;
 - P5-A5/E03: NOT ACTIVATED.
 
-Next controlled action: run the B02-G01 backend Java/HTTP artifact-contract
-preflight against `246ca75983b37293b74fdb4baa44e093fa546f8f`. Resume calendar
-configuration, routing administration using the published V039 contract, and
-compatibility/readiness exposure. Do not start B02-G03 UI work before B02-G02
-backend publication.
+The earlier B02-G01 preflight/resume instruction is satisfied by backend PR #68
+and is superseded by the B02-G02 closure checkpoint below.
+
+<!-- P5-E2E-UI-01-B02-G02-CLOSURE -->
+## B02-G01/G02 backend-contract closure checkpoint
+
+- authoritative artifact preflight: PASS; no migration and no new permission;
+- implementation commit: `52da3d39508c5a1c59d8cc59c10819368b55ab9b`;
+- backend product PR: #68;
+- backend merge/main: `d635200523c1685f42ae08c24bd6d7acaa7d68a3`;
+- exact reviewed/merged tree: `fc2328d49e899ebee2b42173484e99276b862dfc`;
+- hosted backend CI: exact seven checks GREEN;
+- local main after publication: clean at the backend merge;
+- B02-G01/G02 write ownership: NONE;
+- story totals: unchanged at 21 / 155 / 84 / 159 / 31;
+- migration state: V001–V039 immutable; V040 unreserved;
+- P5-A5/E03: NOT ACTIVATED.
+
+After this reconciliation merges, the next controlled action is a read-only
+B02-G03 UI artifact/route/test preflight against:
+
+- backend `d635200523c1685f42ae08c24bd6d7acaa7d68a3`;
+- UI main `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`;
+- UI repository `srinivasbs2000/hrms-payroll-web`;
+- future branch `feature/p5-e2e-ui-01-b02-g03-ui-closure`.
+
+Do not modify backend code, OpenAPI, migrations or permissions in B02-G03. Do
+not promote stories until B02-G04 browser-evidence reconciliation.

@@ -3,18 +3,18 @@
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
-**Product reconciliation baseline:** P5-E2E-UI-01-B02-R01-G01 backend PR #66 / `246ca75983b37293b74fdb4baa44e093fa546f8f`; P5-E2E-UI-01 UI closure evidence PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
+**Product reconciliation baseline:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`; P5-E2E-UI-01 UI closure evidence PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
-**Latest merged product increment:** P5-E2E-UI-01-B02-R01-G01 product PR #66 / `246ca75983b37293b74fdb4baa44e093fa546f8f`
+**Latest merged product increment:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`
 **Latest merged quality increment:** P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`, hosted `payroll-web-ci` all five checks GREEN
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** P5-E2E-UI-01-B02-G01 after this reconciliation merges; bounded backend Java/HTTP contract exposure only
+**Active product write owner:** P5-E2E-UI-01-B02-G03 after this reconciliation merges; UI repository only
 **Migration state:** V001–V039 committed and immutable
 **Next migration:** V040 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 14 August 2026 after R01-G01 database-contract publication and merge
-**Current execution capability:** P5-E2E-UI-01-B02-G01 — Remaining backend contract exposure resumes after R01 closure
+**Last reconciled:** 15 August 2026 after B02-G01 backend publication and B02-G02 hosted closure
+**Current execution capability:** P5-E2E-UI-01-B02-G03 — Remaining E02 operator/admin UI closure
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -552,6 +552,34 @@ REVALIDATION because the database contract alone does not complete the eight
 remaining E02 end-to-end stories. P5-A5/E03 remains inactive.
 
 **Next controlled action after this reconciliation merges:** resume
-P5-E2E-UI-01-B02-G01 backend Java/HTTP artifact-contract preflight against
-`246ca75983b37293b74fdb4baa44e093fa546f8f`. B02-G03 UI work remains blocked
-until B02-G02 backend publication is complete.
+The earlier B02-G01 preflight instruction is satisfied by backend PR #68 and is
+superseded by the B02-G02 closure checkpoint below.
+
+<!-- P5-E2E-UI-01-B02-G02-CLOSURE -->
+## P5-E2E-UI-01-B02-G01/G02 backend-contract closure
+
+B02-G01 implementation commit `52da3d39508c5a1c59d8cc59c10819368b55ab9b`
+merged through backend PR #68 at
+`d635200523c1685f42ae08c24bd6d7acaa7d68a3`. The exact 25-path merge tree is
+`fc2328d49e899ebee2b42173484e99276b862dfc`.
+
+The published contract provides governed calendar milestone-rule and holiday
+configuration, calendar readiness, pay-group routing-rule administration and
+effective end-dating, deterministic resolution, compatibility findings and
+bounded interval readiness. Existing lifecycle, tenant/RLS, permission,
+optimistic-concurrency, audit and outbox controls remain authoritative.
+
+Local targeted/full Maven and OpenAPI verification passed. PR #68 then passed
+the exact seven hosted backend checks before merge. The post-merge tree is
+identical to the reviewed implementation tree.
+
+B02-G01 and B02-G02 are CLOSED and retain no product write ownership. No story
+is promoted by backend publication alone; totals remain 21 / 155 / 84 / 159 /
+31. V001–V039 remain immutable, V040 remains unreserved and P5-A5/E03 remains
+inactive.
+
+After this governance reconciliation merges, B02-G03 is the sole active product
+write gate in `srinivasbs2000/hrms-payroll-web`. Its backend authority is pinned
+to `d635200523c1685f42ae08c24bd6d7acaa7d68a3`, its UI baseline is
+`2a42f3909a2ee249ca26be8fb0e14e945f8903a9`, and its product branch is
+`feature/p5-e2e-ui-01-b02-g03-ui-closure`.

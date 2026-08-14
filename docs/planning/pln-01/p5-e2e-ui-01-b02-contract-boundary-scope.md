@@ -1,8 +1,8 @@
 # P5-E2E-UI-01-B02 — Remaining E02 Contract Boundary Amendment
 
-**Status:** ACTIVE — R01 database contract published; B02-G01 backend Java/HTTP contract exposure resumes
-**Parent capability:** P5-E2E-UI-01 — Existing Story UI Gap Closure  
-**Authority baseline:** backend `981417aaa6fc7f9b141dfcf7433ff0fe2cd515da`; UI `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`  
+**Status:** ACTIVE — B02-G01/G02 backend contract published; B02-G03 UI closure is next
+**Parent capability:** P5-E2E-UI-01 — Existing Story UI Gap Closure
+**Authority baseline:** backend `981417aaa6fc7f9b141dfcf7433ff0fe2cd515da`; UI `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
 **Migration position:** V001-V039 immutable; V040 remains unreserved
 **P5-A5/E03:** NOT ACTIVATED
 
@@ -219,8 +219,42 @@ Implementation commit `6d528362b6d9ccb5066f5c033caa8035b0f6ab82` merged through
 backend PR #66 at `246ca75983b37293b74fdb4baa44e093fa546f8f`; targeted and
 full Maven verification passed, followed by all seven hosted backend checks.
 
-R01-G01 is closed. V001–V039 are immutable and V040 is unreserved. B02-G01 may
-now resume the calendar configuration, routing administration and
-compatibility/readiness Java/HTTP contracts in sections 3.1–3.3. This outcome
-does not promote any story and does not authorize B02-G03 UI work before B02-G02
-backend publication. P5-A5/E03 remains inactive.
+R01-G01 is closed. V001–V039 are immutable and V040 is unreserved. The earlier
+B02-G01 resume instruction was executed and is superseded by the B02-G02
+closure checkpoint below. P5-A5/E03 remains inactive.
+
+<!-- P5-E2E-UI-01-B02-G02-CLOSURE -->
+## 12. B02-G01/G02 backend-contract publication outcome
+
+The artifact-contract preflight authorized no migration and no new permission.
+B02-G01 then exposed the existing V038/V039 calendar and routing foundations
+through bounded Java/HTTP/OpenAPI contracts.
+
+Implementation commit `52da3d39508c5a1c59d8cc59c10819368b55ab9b`
+merged through backend PR #68 at
+`d635200523c1685f42ae08c24bd6d7acaa7d68a3`. Local affected compilation,
+targeted contract tests, PayGroupApiIT, PayrollCalendarApiIT, full Maven and
+OpenAPI validation passed. All seven hosted backend checks passed before merge,
+and merge-tree equivalence was proven.
+
+B02-G01 and B02-G02 are closed. Their published business boundary includes:
+
+- complete five-rule payroll-calendar milestone configuration and inspection;
+- holiday/working-day configuration and correction with draft-state control;
+- calendar readiness evidence;
+- routing-rule inspection, creation and governed effective end-dating;
+- deterministic pay-group resolution and compatibility findings;
+- bounded interval routing-readiness checkpoints and coverage evidence.
+
+No story is promoted at this backend-only gate. Totals remain 21 / 155 / 84 /
+159 / 31. V001–V039 remain immutable, V040 is unreserved and P5-A5/E03 remains
+inactive.
+
+After this reconciliation merges, section 5 B02-G03 is active with:
+
+- backend authority: `d635200523c1685f42ae08c24bd6d7acaa7d68a3`;
+- UI baseline: `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`;
+- UI repository: `srinivasbs2000/hrms-payroll-web`;
+- UI product branch: `feature/p5-e2e-ui-01-b02-g03-ui-closure`;
+- backend/program repository: read-only except later evidence reconciliation;
+- migration and permission mutation: prohibited.
