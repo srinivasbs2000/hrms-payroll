@@ -1,6 +1,6 @@
 # P5-E2E-UI-01 — Existing Story UI Gap Closure
 
-**Status:** ACTIVATED only after this authority merges
+**Status:** CONTRACT-BOUNDARY RECONCILIATION COMPLETE AFTER G05 — 3 stories restored to IMPLEMENTED; 8 remain PARTIALLY IMPLEMENTED and require separate amendment authority
 **Execution capability:** P5-E2E-UI-01
 **Program/governance repository:** `srinivasbs2000/hrms-payroll`
 **UI product repository:** `srinivasbs2000/hrms-payroll-web`
@@ -172,3 +172,19 @@ After this authority merges:
 - V039 remains unreserved;
 - P5-A5/E03 remains inactive;
 - next controlled action is the bounded UI implementation gate.
+
+<!-- P5-E2E-UI-01-G06-OUTCOME -->
+## 11. G06 post-G05 outcome
+
+G05 UI PR #15 merged at `2a42f3909a2ee249ca26be8fb0e14e945f8903a9` with hosted UI CI green.
+
+The story-completion gate restores `PLN-E01-011`, `PLN-E02-001` and
+`PLN-E02-005` to IMPLEMENTED.
+
+The following remain PARTIALLY IMPLEMENTED and are not falsely closed:
+`PLN-E02-002`, `003`, `004`, `006`, `007`, `008`, `009`, `010`.
+
+This capability has reached the limit of its current UI-only/backend-read-only
+authority. Section 5 applies: a separately bounded backend amendment authority
+must be activated before addressing the demonstrated missing contracts. V039
+remains unreserved and P5-A5/E03 remains inactive.

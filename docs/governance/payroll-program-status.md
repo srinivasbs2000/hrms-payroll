@@ -3,18 +3,18 @@
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
-**Product reconciliation baseline:** P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; UI baseline remains `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Product reconciliation baseline:** P5-A4 backend product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; P5-E2E-UI-01 UI closure evidence PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
 **Latest merged product increment:** P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; no P5-A4 UI product write
-**Latest merged quality increment:** P5-A3 React test hygiene through PR #33
+**Latest merged quality increment:** P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`, hosted `payroll-web-ci` all five checks GREEN
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** P5-E2E-UI-01 UI work remains in `srinivasbs2000/hrms-payroll-web`; bounded backend amendment P5-E2E-UI-01-B01 owns only its two authorized Java paths after local activation
+**Active product write owner:** NONE after G06; eight selected stories remain contract/UI-boundary partial and require separately activated P5-E2E-UI-01-B02 before backend product writes
 **Migration state:** V001–V038 committed and immutable
 **Next migration:** V039 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 13 August 2026 for P5-E2E-UI-01-B01 demonstrated backend defect amendment
-**Current execution capability:** P5-E2E-UI-01 with bounded P5-E2E-UI-01-B01 backend state-time binding amendment
+**Last reconciled:** 14 August 2026 after P5-E2E-UI-01 G05 hosted UI merge and contract-boundary story reconciliation
+**Current execution capability:** P5-E2E-UI-01 G06 governance reconciliation; next capability must be separately bounded P5-E2E-UI-01-B02
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -180,8 +180,8 @@ The approved program contains 450 detailed source-linked stories:
 
 | Status | Stories | Percentage |
 |---|---:|---:|
-| Implemented | 18 | 4.00% |
-| Partially implemented | 158 | 35.11% |
+| Implemented | 21 | 4.67% |
+| Partially implemented | 155 | 34.44% |
 | Not evidenced | 84 | 18.67% |
 | Not started | 159 | 35.33% |
 | Legal/domain revalidation | 31 | 6.89% |
@@ -460,3 +460,26 @@ unreserved. The existing UI working tree stays open and is not replayed.
 
 Scope authority:
 `docs/planning/pln-01/p5-e2e-ui-01-b01-approval-state-time-binding-amendment.md`.
+
+<!-- P5-E2E-UI-01-G06-RECONCILIATION -->
+## P5-E2E-UI-01 G06 post-G05 reconciliation
+
+UI PR #15 merged at `2a42f3909a2ee249ca26be8fb0e14e945f8903a9` from exact G05 commit `16c1eea7eadd45979fdf879ff86ef04878bbb3ef`;
+hosted `payroll-web-ci` completed all five checks successfully. Backend
+authority remained `28f8a7208d31546cc3bec3fa31004fe4e5a1bc8b` during G05.
+
+Story outcomes after applying the story-completion gate conservatively:
+
+- IMPLEMENTED: `PLN-E01-011`, `PLN-E02-001`, `PLN-E02-005`;
+- remain PARTIALLY IMPLEMENTED: `PLN-E02-002`, `003`, `004`, `006`,
+  `007`, `008`, `009`, `010`.
+
+Current detailed-story totals are 21 IMPLEMENTED / 155 PARTIALLY IMPLEMENTED /
+84 NOT EVIDENCED / 159 NOT STARTED / 31 legal-domain revalidation = 450.
+
+P5-E2E-UI-01 therefore reaches its current UI-authority contract boundary but is
+not a full 11-story closure. P5-A5/E03 remains inactive. V039 remains unreserved.
+
+**Next controlled action:** independently audit and activate a separately bounded
+`P5-E2E-UI-01-B02` backend contract amendment for the demonstrated remaining
+contract gaps; do not perform backend product writes under G06.
