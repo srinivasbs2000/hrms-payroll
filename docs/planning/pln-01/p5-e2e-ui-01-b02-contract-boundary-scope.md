@@ -189,3 +189,20 @@ Activation is complete only when:
 5. P5-A5/E03 remains inactive;
 6. the next controlled action is B02-G01 backend contract implementation
    preflight against the activation merge SHA.
+<!-- P5-E2E-UI-01-B02-R01-ACTIVATION -->
+## 10. B02-R01 routing correction/end-dating amendment
+
+B02-G01 preflight executed the stop condition in section 3.2. V038 supports
+routing-rule inspection/create and global retire, but it does not expose a safe
+effective-end/correction function and `payroll_app` direct routing-table UPDATE
+remains revoked.
+
+The separately bounded `P5-E2E-UI-01-B02-R01` amendment is therefore activated
+for the missing database contract only. This activation does not reserve V039.
+
+After R01 activation merges, R01-G01 may reserve V039 only after confirming no
+concurrent reservation and only for the bounded effective-end function,
+minimum grant and contract tests. No schema/table shape expansion is authorized.
+
+B02-G01 Java/HTTP implementation remains paused until the R01 database contract
+is published. P5-A5/E03 remains inactive.

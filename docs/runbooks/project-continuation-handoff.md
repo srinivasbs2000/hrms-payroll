@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 14 August 2026 after G06 merge and P5-E2E-UI-01-B02 contract-boundary activation
+**Updated:** 14 August 2026 after B02-G01 preflight and B02-R01 routing database-contract amendment activation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** P5-E2E-UI-01-B02 — Remaining E02 Contract Boundary Amendment
-**Current state:** G06 merged; B02 audit confirms existing V038 primitives with missing HTTP/UI administration/readiness exposure; activation is governance-only
+**Active capability:** P5-E2E-UI-01-B02-R01 — Routing Rule Correction/End-Dating Database Contract Amendment
+**Current state:** B02-G01 preflight proved calendar/readiness/routing read-create paths ready but routing effective-end/correction blocked by the V038 database contract; R01 activation is governance-only
 **Migrations:** V001–V038 committed and immutable after this closure
 **Next migration:** V039 unreserved after this closure
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -32,9 +32,9 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | P5-E2E-UI-01-B02 after activation merge; B02-G01 backend contract exposure only |
+| Active write owner | P5-E2E-UI-01-B02-R01 after activation merge; routing effective-end database-contract amendment only |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | Activation governance only in this PR; B02-G01 exact backend paths must be revalidated before product write |
+| Active path ownership | R01 activation governance only; after merge R01-G01 may own only the bounded routing effective-end migration/function/grant/tests |
 | Migration state | V001–V038 immutable after this closure |
 | Next migration | V039 unreserved; no capability owns it |
 | Product deployment | Greenfield; no evidenced production deployment |
@@ -210,3 +210,17 @@ Scope authority:
 
 If B02-G01 discovers a required schema change, stop and obtain separately
 reviewed amendment authority before any migration reservation.
+<!-- P5-E2E-UI-01-B02-R01-ACTIVATION -->
+## B02-R01 activation checkpoint
+
+B02-G01 implementation preflight passed and deliberately stopped the routing
+correction/end-dating sub-boundary. Existing V038 grants prevent direct routing
+table mutation by `payroll_app`; create and retire functions exist, but no safe
+effective-end function exists.
+
+R01 activation is governance-only. V039 remains unreserved in activation. After
+merge, R01-G01 may reserve V039 only for the bounded effective-end database
+contract after proving the migration slot remains free.
+
+B02-G01 Java/HTTP implementation resumes only after R01 database publication.
+P5-A5/E03 remains inactive.

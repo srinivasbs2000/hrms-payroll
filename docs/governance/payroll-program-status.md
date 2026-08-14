@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`, hosted `payroll-web-ci` all five checks GREEN
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** P5-E2E-UI-01-B02 after activation merge; B02-G01 owns only the bounded remaining E02 backend contract exposure
+**Active product write owner:** P5-E2E-UI-01-B02-R01 after activation merge; R01 owns only the routing effective-end database-contract amendment
 **Migration state:** V001–V038 committed and immutable
 **Next migration:** V039 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 14 August 2026 after G06 merge and B02 read-only contract audit / activation
-**Current execution capability:** P5-E2E-UI-01-B02 — Remaining E02 Contract Boundary Amendment
+**Last reconciled:** 14 August 2026 after B02-G01 preflight proved the routing correction/end-dating database-contract gap
+**Current execution capability:** P5-E2E-UI-01-B02-R01 — Routing Rule Correction/End-Dating Database Contract Amendment
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -503,4 +503,24 @@ proves a schema requirement, that sub-boundary must stop for separate review.
 P5-A5/E03 remains inactive.
 
 Next controlled action after this activation merges: B02-G01 backend contract
+implementation preflight against the activation merge SHA.
+<!-- P5-E2E-UI-01-B02-R01-ACTIVATION -->
+## P5-E2E-UI-01-B02-R01 activation
+
+B02-G01 preflight proved that V038 cannot express safe effective end-dating of
+an existing pay-group routing rule: direct routing-table UPDATE is revoked from
+`payroll_app`, while V038 exposes create and retire but no effective-end
+function.
+
+R01 is activated as the separately reviewed, smallest database-contract
+amendment. The activation itself is governance-only and does not reserve V039.
+
+After this activation merges, R01-G01 may reserve V039 only if live/local
+migration preflight still proves it is unreserved, and only for the bounded
+routing effective-end function/grant/test contract. No table, column, index,
+history rewrite or routing-policy redesign is authorized.
+
+Story totals remain unchanged. P5-A5/E03 remains inactive.
+
+**Next controlled action after activation merge:** R01-G01 database-contract
 implementation preflight against the activation merge SHA.
