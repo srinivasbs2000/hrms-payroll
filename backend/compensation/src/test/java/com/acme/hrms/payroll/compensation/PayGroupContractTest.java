@@ -47,6 +47,18 @@ class PayGroupContractTest {
             "history",
             "hasAuthority('pay-group.read')")
         .containsEntry(
+            "routingRules",
+            "hasAuthority('pay-group.read')")
+        .containsEntry(
+            "createRoutingRule",
+            "hasAuthority('pay-group.create')")
+        .containsEntry(
+            "endDateRoutingRule",
+            "hasAuthority('pay-group.version.end-date')")
+        .containsEntry(
+            "routingReadiness",
+            "hasAuthority('pay-group.read')")
+        .containsEntry(
             "addVersion",
             "hasAuthority('pay-group.version.create')")
         .containsEntry(
@@ -111,5 +123,22 @@ class PayGroupContractTest {
             () -> unsupportedProration.validate(true))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("CALENDAR_DAYS");
+  }
+
+  @Test
+  void routingRuleRangeAndPriorityAreFailClosed() {
+    PayGroupRoutingRuleWriteRequest invalidPriority = new PayGroupRoutingRuleWriteRequest(
+        UUID.randomUUID(), PSU_VERSION, null, 0,
+        LocalDate.of(2027, 1, 1), null);
+    assertThatThrownBy(invalidPriority::validate)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("priority");
+
+    PayGroupRoutingRuleWriteRequest invalidRange = new PayGroupRoutingRuleWriteRequest(
+        UUID.randomUUID(), PSU_VERSION, null, 10,
+        LocalDate.of(2027, 1, 2), LocalDate.of(2027, 1, 2));
+    assertThatThrownBy(invalidRange::validate)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("effectiveTo");
   }
 }

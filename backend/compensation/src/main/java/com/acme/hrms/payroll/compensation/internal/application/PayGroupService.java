@@ -1,5 +1,8 @@
 package com.acme.hrms.payroll.compensation.internal.application;
 
+import com.acme.hrms.payroll.compensation.PayGroupRoutingReadinessView;
+import com.acme.hrms.payroll.compensation.PayGroupRoutingRuleView;
+import com.acme.hrms.payroll.compensation.PayGroupRoutingRuleWriteRequest;
 import com.acme.hrms.payroll.compensation.PayGroupView;
 import com.acme.hrms.payroll.compensation.PayGroupWriteRequest;
 import com.acme.hrms.payroll.compensation.internal.infrastructure.PayGroupRepository;
@@ -28,6 +31,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PayGroupService {
   private static final String OBJECT_TYPE = "PAY_GROUP";
+  private static final String ROUTING_OBJECT_TYPE = "PAY_GROUP_ROUTING_RULE";
 
   private final PayGroupRepository repository;
   private final TenantTransactionExecutor transactions;
@@ -184,6 +188,57 @@ public class PayGroupService {
         () -> repository.history(identityId));
   }
 
+  public List<PayGroupRoutingRuleView> routingRules(LocalDate asOf) {
+    return transactions.read(() -> repository.routingRules(effectiveDate(asOf)));
+  }
+
+  public PayGroupRoutingRuleView createRoutingRule(
+      String key, PayGroupRoutingRuleWriteRequest request) {
+    request.validate();
+    return idempotentRoutingRule("pay-group:routing-rule:create", key, request, () -> {
+      PayGroupRoutingRuleView created = repository.createRoutingRule(request, actor.require());
+      recordRouting("CREATED", "PayGroupRoutingRuleCreated", created, null);
+      return created;
+    }, 201);
+  }
+
+  public PayGroupRoutingRuleView endDateRoutingRule(
+      UUID ruleId,
+      String key,
+      LocalDate effectiveTo,
+      long expectedVersion) {
+    if (effectiveTo == null) {
+      throw new IllegalArgumentException("effectiveTo is required");
+    }
+    return idempotentRoutingRule(
+        "pay-group:routing-rule:end-date:" + ruleId,
+        key,
+        Map.of("effectiveTo", effectiveTo, "expectedVersion", expectedVersion),
+        () -> {
+          PayGroupRoutingRuleView before = repository.routingRule(ruleId);
+          PayGroupRoutingRuleView ended = repository.endDateRoutingRule(
+              ruleId, effectiveTo, expectedVersion, actor.require(), clock.instant());
+          recordRouting("END_DATED", "PayGroupRoutingRuleEndDated", ended, before);
+          return ended;
+        },
+        200);
+  }
+
+  public PayGroupRoutingReadinessView routingReadiness(
+      UUID payrollAssignmentVersionId,
+      UUID payGroupVersionId,
+      LocalDate effectiveFrom,
+      LocalDate effectiveTo) {
+    if (effectiveFrom == null) {
+      throw new IllegalArgumentException("effectiveFrom is required");
+    }
+    if (effectiveTo == null || !effectiveTo.isAfter(effectiveFrom)) {
+      throw new IllegalArgumentException("effectiveTo must be after effectiveFrom");
+    }
+    return transactions.read(() -> repository.routingReadiness(
+        payrollAssignmentVersionId, payGroupVersionId, effectiveFrom, effectiveTo));
+  }
+
   public List<AuditReader.AuditEventView> audit(
       UUID identityId) {
     return transactions.read(
@@ -216,6 +271,31 @@ public class PayGroupService {
     outbox.append(event);
   }
 
+  private void recordRouting(
+      String action,
+      String eventType,
+      PayGroupRoutingRuleView after,
+      PayGroupRoutingRuleView before) {
+    String principal = actor.require();
+    audit.append(
+        action,
+        ROUTING_OBJECT_TYPE,
+        after.id(),
+        routingState(before),
+        routingState(after),
+        Map.of(),
+        principal);
+    outbox.append(events.create(
+        eventType,
+        1,
+        TenantContext.require(),
+        null,
+        ROUTING_OBJECT_TYPE,
+        after.id(),
+        after.versionNo(),
+        routingState(after)));
+  }
+
   private Map<String, Object> state(PayGroupView view) {
     if (view == null) {
       return null;
@@ -234,6 +314,23 @@ public class PayGroupService {
     state.put("effectiveFrom", view.effectiveFrom());
     state.put("effectiveTo", view.effectiveTo());
     state.put("approvalStatus", view.approvalStatus());
+    return state;
+  }
+
+  private Map<String, Object> routingState(PayGroupRoutingRuleView view) {
+    if (view == null) {
+      return null;
+    }
+    Map<String, Object> state = new LinkedHashMap<>();
+    state.put("id", view.id());
+    state.put("payGroupVersionId", view.payGroupVersionId());
+    state.put("payrollStatutoryUnitVersionId", view.payrollStatutoryUnitVersionId());
+    state.put("establishmentVersionId", view.establishmentVersionId());
+    state.put("priority", view.priority());
+    state.put("effectiveFrom", view.effectiveFrom());
+    state.put("effectiveTo", view.effectiveTo());
+    state.put("status", view.status());
+    state.put("versionNo", view.versionNo());
     return state;
   }
 
@@ -283,6 +380,46 @@ public class PayGroupService {
 
       PayGroupView response = work.get();
       idempotency.complete(operation, key, 200, response);
+      return response;
+    });
+  }
+
+  private PayGroupRoutingRuleView idempotentRoutingRule(
+      String operation,
+      String key,
+      Object request,
+      Supplier<PayGroupRoutingRuleView> work,
+      int statusCode) {
+    if (key == null || key.isBlank()) {
+      throw new IllegalArgumentException("Idempotency-Key is required");
+    }
+    return transactions.write(() -> {
+      String requestHash = canonical.hash(request);
+      var saved = idempotency.find(operation, key);
+      if (saved.isPresent()) {
+        if (!saved.get().requestHash().equals(requestHash)) {
+          throw new ConflictException(
+              "Idempotency-Key was already used with a different request");
+        }
+        if (!saved.get().completed()) {
+          throw new ConflictException("Idempotent operation is still in progress");
+        }
+        try {
+          return objectMapper.readValue(
+              saved.get().body(), PayGroupRoutingRuleView.class);
+        } catch (JsonProcessingException exception) {
+          throw new IllegalStateException(
+              "Stored routing-rule response is invalid", exception);
+        }
+      }
+      try {
+        idempotency.reserve(
+            operation, key, requestHash, clock.instant().plus(Duration.ofHours(24)));
+      } catch (IllegalStateException exception) {
+        throw new ConflictException("Idempotency-Key is already in use", exception);
+      }
+      PayGroupRoutingRuleView response = work.get();
+      idempotency.complete(operation, key, statusCode, response);
       return response;
     });
   }

@@ -3,7 +3,12 @@ package com.acme.hrms.payroll.compensation.internal.infrastructure;
 import com.acme.hrms.payroll.compensation.GeneratePeriodsRequest;
 import com.acme.hrms.payroll.compensation.PayPeriodOperationalView;
 import com.acme.hrms.payroll.compensation.PayPeriodView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarHolidayView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarHolidayWriteRequest;
+import com.acme.hrms.payroll.compensation.PayrollCalendarMilestoneRuleView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarMilestoneRuleWriteRequest;
 import com.acme.hrms.payroll.compensation.PayrollCalendarOperationalView;
+import com.acme.hrms.payroll.compensation.PayrollCalendarReadinessView;
 import com.acme.hrms.payroll.compensation.PayrollCalendarView;
 import com.acme.hrms.payroll.compensation.PayrollCalendarWriteRequest;
 import com.acme.hrms.payroll.platform.ResourceNotFoundException;
@@ -13,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -133,6 +139,156 @@ public class PayrollCalendarRepository {
         Date.valueOf(year + "-01-01"), Date.valueOf((year + 1) + "-01-01"));
   }
 
+  public List<PayrollCalendarMilestoneRuleView> milestoneRules(UUID calendarId) {
+    calendar(calendarId);
+    return jdbc.query(
+        """
+        select id,calendar_id,milestone_type,anchor_type,offset_days,
+               adjustment_policy,version_no
+        from organisation.payroll_calendar_milestone_rule
+        where tenant_id=? and calendar_id=?
+        order by case milestone_type
+          when 'INPUT_CUTOFF' then 1
+          when 'CALCULATION' then 2
+          when 'APPROVAL' then 3
+          when 'RELEASE' then 4
+          when 'PAYMENT' then 5
+        end
+        """,
+        this::mapMilestoneRule,
+        TenantContext.require(),
+        calendarId);
+  }
+
+  public List<PayrollCalendarMilestoneRuleView> configureMilestoneRules(
+      UUID calendarId,
+      List<PayrollCalendarMilestoneRuleWriteRequest> rules,
+      String actor,
+      Instant changedAt) {
+    UUID tenantId = TenantContext.require();
+    for (PayrollCalendarMilestoneRuleWriteRequest rule : rules) {
+      UUID id = jdbc.queryForObject(
+          """
+          select organisation.configure_payroll_calendar_milestone_rule(
+            ?,?,?,?,?,?,?,?
+          )
+          """,
+          UUID.class,
+          tenantId,
+          calendarId,
+          rule.resolvedMilestoneType(),
+          rule.resolvedAnchorType(),
+          rule.offsetDays(),
+          rule.resolvedAdjustmentPolicy(),
+          actor,
+          Timestamp.from(changedAt));
+      requiredUuid(id, "Milestone-rule configuration returned no identifier");
+    }
+    return milestoneRules(calendarId);
+  }
+
+  public List<PayrollCalendarHolidayView> holidays(UUID calendarId) {
+    calendar(calendarId);
+    return jdbc.query(
+        """
+        select id,calendar_id,holiday_date,holiday_name,version_no
+        from organisation.payroll_calendar_holiday
+        where tenant_id=? and calendar_id=?
+        order by holiday_date,id
+        """,
+        this::mapHoliday,
+        TenantContext.require(),
+        calendarId);
+  }
+
+  public PayrollCalendarHolidayView holiday(UUID calendarId, java.time.LocalDate date) {
+    return jdbc.query(
+            """
+            select id,calendar_id,holiday_date,holiday_name,version_no
+            from organisation.payroll_calendar_holiday
+            where tenant_id=? and calendar_id=? and holiday_date=?
+            """,
+            this::mapHoliday,
+            TenantContext.require(),
+            calendarId,
+            Date.valueOf(date))
+        .stream()
+        .findFirst()
+        .orElse(null);
+  }
+
+  public PayrollCalendarHolidayView configureHoliday(
+      UUID calendarId,
+      PayrollCalendarHolidayWriteRequest request,
+      String actor,
+      Instant changedAt) {
+    UUID id = jdbc.queryForObject(
+        """
+        select organisation.add_payroll_calendar_holiday(
+          ?,?,?,?,?,?
+        )
+        """,
+        UUID.class,
+        TenantContext.require(),
+        calendarId,
+        Date.valueOf(request.holidayDate()),
+        request.holidayName(),
+        actor,
+        Timestamp.from(changedAt));
+    return holiday(requiredUuid(id, "Holiday configuration returned no identifier"));
+  }
+
+  public PayrollCalendarReadinessView readiness(UUID calendarId) {
+    PayrollCalendarOperationalView operational = operations(calendarId);
+    Integer incompletePeriods = jdbc.queryForObject(
+        """
+        select count(*)
+        from organisation.pay_period period
+        where period.tenant_id=? and period.calendar_id=?
+          and (
+            select count(*)
+            from organisation.pay_period_milestone milestone
+            where milestone.tenant_id=period.tenant_id
+              and milestone.pay_period_id=period.id
+          ) <> 5
+        """,
+        Integer.class,
+        TenantContext.require(),
+        calendarId);
+    int incomplete = incompletePeriods == null ? 0 : incompletePeriods;
+    boolean draft = "DRAFT".equals(operational.lifecycleStatus());
+    boolean completeRules = operational.milestoneRuleCount() == 5;
+    boolean generationReady = draft && completeRules;
+    boolean publicationReady = generationReady
+        && operational.periodCount() > 0
+        && incomplete == 0;
+    List<String> blockers = new ArrayList<>();
+    if (!draft) {
+      blockers.add("CALENDAR_NOT_DRAFT");
+    }
+    if (!completeRules) {
+      blockers.add("MILESTONE_RULE_SET_INCOMPLETE");
+    }
+    if (operational.periodCount() == 0) {
+      blockers.add("PAY_PERIODS_NOT_GENERATED");
+    }
+    if (incomplete > 0) {
+      blockers.add("PERIOD_MILESTONE_EVIDENCE_INCOMPLETE");
+    }
+    return new PayrollCalendarReadinessView(
+        calendarId,
+        operational.frequency(),
+        operational.timezone(),
+        operational.lifecycleStatus(),
+        operational.milestoneRuleCount(),
+        operational.holidayCount(),
+        operational.periodCount(),
+        incomplete,
+        generationReady,
+        publicationReady,
+        List.copyOf(blockers));
+  }
+
   public UUID publish(UUID calendarId, String reason, String actor, Instant at) {
     return requiredUuid(jdbc.queryForObject(
         "select organisation.publish_payroll_calendar(?,?,?,?,?)", UUID.class,
@@ -196,6 +352,44 @@ public class PayrollCalendarRepository {
         result.getObject("supersedes_calendar_id", UUID.class),
         result.getString("code"), result.getString("name"),
         result.getString("frequency"), result.getString("timezone"));
+  }
+
+  private PayrollCalendarMilestoneRuleView mapMilestoneRule(
+      ResultSet result, int row) throws SQLException {
+    return new PayrollCalendarMilestoneRuleView(
+        result.getObject("id", UUID.class),
+        result.getObject("calendar_id", UUID.class),
+        result.getString("milestone_type"),
+        result.getString("anchor_type"),
+        result.getInt("offset_days"),
+        result.getString("adjustment_policy"),
+        result.getLong("version_no"));
+  }
+
+  private PayrollCalendarHolidayView mapHoliday(
+      ResultSet result, int row) throws SQLException {
+    return new PayrollCalendarHolidayView(
+        result.getObject("id", UUID.class),
+        result.getObject("calendar_id", UUID.class),
+        result.getObject("holiday_date", java.time.LocalDate.class),
+        result.getString("holiday_name"),
+        result.getLong("version_no"));
+  }
+
+  private PayrollCalendarHolidayView holiday(UUID holidayId) {
+    return jdbc.query(
+            """
+            select id,calendar_id,holiday_date,holiday_name,version_no
+            from organisation.payroll_calendar_holiday
+            where tenant_id=? and id=?
+            """,
+            this::mapHoliday,
+            TenantContext.require(),
+            holidayId)
+        .stream()
+        .findFirst()
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Payroll calendar holiday was not found"));
   }
 
   private PayPeriodView mapPeriod(ResultSet result, int row) throws SQLException {

@@ -53,6 +53,18 @@ class PayGroupApiIT {
       "12100000-0000-0000-0000-000000000001";
   private static final String CALENDAR_ID =
       "13000000-0000-0000-0000-000000000001";
+  private static final String ESTABLISHMENT_ID =
+      "14000000-0000-0000-0000-000000000001";
+  private static final String ESTABLISHMENT_VERSION_ID =
+      "14100000-0000-0000-0000-000000000001";
+  private static final String RELATIONSHIP_ID =
+      "15000000-0000-0000-0000-000000000001";
+  private static final String RELATIONSHIP_VERSION_ID =
+      "15100000-0000-0000-0000-000000000001";
+  private static final String ASSIGNMENT_ID =
+      "16000000-0000-0000-0000-000000000001";
+  private static final String ASSIGNMENT_VERSION_ID =
+      "16100000-0000-0000-0000-000000000001";
 
   private static final PostgreSQLContainer POSTGRES =
       new PostgreSQLContainer("postgres:17-alpine")
@@ -192,6 +204,27 @@ class PayGroupApiIT {
               + TENANT_A
               + "','MONTHLY_IN','Monthly India','MONTHLY',"
               + "'Asia/Kolkata','test','test')");
+      statement.execute(
+          "INSERT INTO organisation.establishment("
+              + "id,tenant_id,code,created_by,updated_by) VALUES ('"
+              + ESTABLISHMENT_ID
+              + "','"
+              + TENANT_A
+              + "','BLR','test','test')");
+      statement.execute(
+          "INSERT INTO organisation.establishment_version("
+              + "id,tenant_id,establishment_id,payroll_statutory_unit_version_id,"
+              + "version_sequence,name,state_code,effective_from,effective_to,"
+              + "approval_status,approved_at,approved_by,created_by,updated_by) VALUES ('"
+              + ESTABLISHMENT_VERSION_ID
+              + "','"
+              + TENANT_A
+              + "','"
+              + ESTABLISHMENT_ID
+              + "','"
+              + PSU_VERSION_ID
+              + "',1,'Bengaluru','KA','2026-01-01','2028-01-01','APPROVED',"
+              + "clock_timestamp(),'test','test','test')");
     }
   }
 
@@ -362,6 +395,131 @@ class PayGroupApiIT {
   }
 
   @Test
+  void routingAdministrationAndReadinessReuseGovernedDatabaseContracts()
+      throws Exception {
+    String payGroupRequest = """
+        {
+          "code":"ROUTED_MONTHLY",
+          "name":"Routed Monthly",
+          "payrollStatutoryUnitVersionId":"%s",
+          "calendarId":"%s",
+          "currency":"INR",
+          "prorationMethod":"CALENDAR_DAYS",
+          "effectiveFrom":"2026-01-01",
+          "effectiveTo":"2028-01-01"
+        }
+        """.formatted(PSU_VERSION_ID, CALENDAR_ID);
+    MvcResult created = mvc.perform(
+            post("/api/v1/pay-groups")
+                .with(token(TENANT_A, "pay-group.create"))
+                .header("Idempotency-Key", "b02-pay-group-create-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payGroupRequest))
+        .andExpect(status().isCreated())
+        .andReturn();
+    JsonNode payGroup = objectMapper.readTree(created.getResponse().getContentAsString());
+    String identityId = payGroup.get("identityId").asText();
+    String versionId = payGroup.get("versionId").asText();
+
+    mvc.perform(
+            post("/api/v1/pay-groups/{identityId}/versions/{versionId}/approval",
+                identityId, versionId)
+                .with(token(TENANT_A, "pay-group.approve"))
+                .header("Idempotency-Key", "b02-pay-group-approve-0001"))
+        .andExpect(status().isOk());
+    seedApprovedPayrollAssignment();
+
+    String routingRequest = """
+        {
+          "payGroupVersionId":"%s",
+          "payrollStatutoryUnitVersionId":"%s",
+          "establishmentVersionId":"%s",
+          "priority":10,
+          "effectiveFrom":"2026-01-01",
+          "effectiveTo":"2028-01-01"
+        }
+        """.formatted(versionId, PSU_VERSION_ID, ESTABLISHMENT_VERSION_ID);
+    MvcResult routed = mvc.perform(
+            post("/api/v1/pay-groups/routing-rules")
+                .with(token(TENANT_A, "pay-group.create"))
+                .header("Idempotency-Key", "b02-routing-create-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(routingRequest))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.versionNo").value(0))
+        .andReturn();
+    String ruleId = objectMapper.readTree(
+        routed.getResponse().getContentAsString()).get("id").asText();
+
+    mvc.perform(
+            get("/api/v1/pay-groups/routing-rules")
+                .param("asOf", "2026-06-01")
+                .with(token(TENANT_A, "pay-group.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value(ruleId));
+
+    mvc.perform(
+            get("/api/v1/pay-groups/routing-readiness")
+                .param("payrollAssignmentVersionId", ASSIGNMENT_VERSION_ID)
+                .param("payGroupVersionId", versionId)
+                .param("effectiveFrom", "2026-06-01")
+                .param("effectiveTo", "2027-01-01")
+                .with(token(TENANT_A, "pay-group.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.compatible").value(true))
+        .andExpect(jsonPath("$.routingMatchesRequestedPayGroup").value(true))
+        .andExpect(jsonPath("$.resolutionAtEffectiveFrom.resolutionSource")
+            .value("ESTABLISHMENT_RULE"))
+        .andExpect(jsonPath("$.routingCoverageComplete").value(true))
+        .andExpect(jsonPath("$.ready").value(true))
+        .andExpect(jsonPath("$.calendarFrequency").value("MONTHLY"))
+        .andExpect(jsonPath("$.calendarTimezone").value("Asia/Kolkata"));
+
+    mvc.perform(
+            get("/api/v1/pay-groups/routing-rules")
+                .param("asOf", "2026-06-01")
+                .with(token(TENANT_B, "pay-group.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isEmpty());
+
+    mvc.perform(
+            post("/api/v1/pay-groups/routing-rules/{ruleId}/end-date", ruleId)
+                .with(token(TENANT_A, "pay-group.version.end-date"))
+                .header("Idempotency-Key", "b02-routing-end-date-0001")
+                .header("If-Match", "0")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"effectiveTo\":\"2026-10-01\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.effectiveTo").value("2026-10-01"))
+        .andExpect(jsonPath("$.versionNo").value(1));
+
+    mvc.perform(
+            get("/api/v1/pay-groups/routing-readiness")
+                .param("payrollAssignmentVersionId", ASSIGNMENT_VERSION_ID)
+                .param("payGroupVersionId", versionId)
+                .param("effectiveFrom", "2026-06-01")
+                .param("effectiveTo", "2027-01-01")
+                .with(token(TENANT_A, "pay-group.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.compatible").value(true))
+        .andExpect(jsonPath("$.routingCoverageComplete").value(false))
+        .andExpect(jsonPath("$.routingMatchesRequestedPayGroup").value(false))
+        .andExpect(jsonPath("$.ready").value(false))
+        .andExpect(jsonPath("$.resolutionCheckpoints[1].asOf").value("2026-10-01"))
+        .andExpect(jsonPath("$.resolutionCheckpoints[1].matchesRequestedPayGroup")
+            .value(false));
+
+    mvc.perform(
+            post("/api/v1/pay-groups/routing-rules/{ruleId}/end-date", ruleId)
+                .with(token(TENANT_A, "pay-group.version.end-date"))
+                .header("Idempotency-Key", "b02-routing-stale-end-date")
+                .header("If-Match", "0")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"effectiveTo\":\"2026-09-01\"}"))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
   void missingPayGroupPermissionIsForbidden()
       throws Exception {
     mvc.perform(
@@ -379,6 +537,48 @@ class PayGroupApiIT {
         .subject("synthetic-subject")
         .claim("tenant_id", tenant))
         .authorities(() -> permission);
+  }
+
+  private static void seedApprovedPayrollAssignment() throws Exception {
+    try (Connection connection = admin();
+        Statement statement = connection.createStatement()) {
+      connection.setAutoCommit(false);
+      statement.execute("SELECT set_config('app.tenant_id','" + TENANT_A + "',false)");
+      statement.execute(
+          "INSERT INTO employee_payroll.payroll_relationship("
+              + "id,tenant_id,external_employee_id,employee_number,created_by,updated_by) "
+              + "VALUES ('" + RELATIONSHIP_ID + "','" + TENANT_A
+              + "','EMP-EXT-B02','E-B02','test','test')");
+      statement.execute(
+          "INSERT INTO employee_payroll.payroll_relationship_version("
+              + "id,tenant_id,payroll_relationship_id,legal_entity_version_id,"
+              + "version_sequence,relationship_start,relationship_end,created_by,updated_by) "
+              + "VALUES ('" + RELATIONSHIP_VERSION_ID + "','" + TENANT_A + "','"
+              + RELATIONSHIP_ID + "','" + LEGAL_VERSION_ID
+              + "',1,'2026-01-01','2028-01-01','test','test')");
+      statement.execute(
+          "SELECT employee_payroll.approve_payroll_relationship_version('"
+              + TENANT_A + "','" + RELATIONSHIP_VERSION_ID
+              + "','test',clock_timestamp())");
+      statement.execute(
+          "INSERT INTO employee_payroll.payroll_assignment("
+              + "id,tenant_id,payroll_relationship_id,assignment_number,created_by,updated_by) "
+              + "VALUES ('" + ASSIGNMENT_ID + "','" + TENANT_A + "','"
+              + RELATIONSHIP_ID + "','A-B02','test','test')");
+      statement.execute(
+          "INSERT INTO employee_payroll.payroll_assignment_version("
+              + "id,tenant_id,payroll_assignment_id,payroll_relationship_version_id,"
+              + "establishment_version_id,version_sequence,assignment_start,assignment_end,"
+              + "created_by,updated_by) VALUES ('" + ASSIGNMENT_VERSION_ID + "','"
+              + TENANT_A + "','" + ASSIGNMENT_ID + "','" + RELATIONSHIP_VERSION_ID
+              + "','" + ESTABLISHMENT_VERSION_ID
+              + "',1,'2026-01-01','2028-01-01','test','test')");
+      statement.execute(
+          "SELECT employee_payroll.approve_payroll_assignment_version('"
+              + TENANT_A + "','" + ASSIGNMENT_VERSION_ID
+              + "','test',clock_timestamp())");
+      connection.commit();
+    }
   }
 
   private static Connection admin() throws Exception {

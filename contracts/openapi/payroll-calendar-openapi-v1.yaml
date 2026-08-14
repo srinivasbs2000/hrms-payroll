@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: HRMS Payroll Calendar API
-  version: 1.0.0
-  description: P5-A4 payroll calendar frequency, period, lifecycle and operational contract.
+  version: 1.1.0
+  description: P5-A4 calendar lifecycle plus B02 calendar-configuration, routing and readiness contracts.
 pathItems:
   CalendarCollection:
     parameters:
@@ -155,9 +155,141 @@ pathItems:
         '200': {description: Calendar audit events}
         '401': {$ref: '#/components/responses/Problem'}
         '403': {$ref: '#/components/responses/Problem'}
+  CalendarMilestoneRules:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Calendar]
+      summary: Read the complete milestone-rule configuration
+      operationId: listPayrollCalendarMilestoneRules
+      x-permission: calendar.read
+      responses:
+        '200': {description: Ordered milestone rules, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/CalendarMilestoneRule'}}}}}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Calendar]
+      summary: Configure the complete required five-rule set
+      operationId: configurePayrollCalendarMilestoneRules
+      x-permission: calendar.create
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CalendarMilestoneRuleSetWrite'}}}}
+      responses:
+        '200': {description: Configured rules, content: {application/json: {schema: {type: array, minItems: 5, maxItems: 5, items: {$ref: '#/components/schemas/CalendarMilestoneRule'}}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  CalendarHolidays:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Calendar]
+      summary: Read configured holiday and working-day exceptions
+      operationId: listPayrollCalendarHolidays
+      x-permission: calendar.read
+      responses:
+        '200': {description: Ordered holiday configuration, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/CalendarHoliday'}}}}}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Calendar]
+      summary: Add or correct a holiday by date while the calendar is mutable
+      operationId: configurePayrollCalendarHoliday
+      x-permission: calendar.create
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CalendarHolidayWrite'}}}}
+      responses:
+        '200': {description: Configured holiday, content: {application/json: {schema: {$ref: '#/components/schemas/CalendarHoliday'}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  CalendarReadiness:
+    parameters:
+    - $ref: '#/components/parameters/CalendarId'
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Calendar]
+      summary: Read generation and publication readiness evidence
+      operationId: getPayrollCalendarReadiness
+      x-permission: calendar.read
+      responses:
+        '200': {description: Calendar readiness evidence, content: {application/json: {schema: {$ref: '#/components/schemas/CalendarReadiness'}}}}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+  PayGroupRoutingRules:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Calendar]
+      summary: List active routing rules effective on a date
+      operationId: listPayGroupRoutingRules
+      x-permission: pay-group.read
+      parameters: [{$ref: '#/components/parameters/AsOf'}]
+      responses:
+        '200': {description: Effective routing rules, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/PayGroupRoutingRule'}}}}}
+        '403': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Calendar]
+      summary: Create an effective-dated ranked routing rule
+      operationId: createPayGroupRoutingRule
+      x-permission: pay-group.create
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PayGroupRoutingRuleWrite'}}}}
+      responses:
+        '201': {description: Routing rule created, content: {application/json: {schema: {$ref: '#/components/schemas/PayGroupRoutingRule'}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  PayGroupRoutingRuleEndDate:
+    parameters:
+    - $ref: '#/components/parameters/RoutingRuleId'
+    - $ref: '#/components/parameters/CorrelationId'
+    post:
+      tags: [Calendar]
+      summary: Shorten an active routing rule through optimistic concurrency
+      operationId: endDatePayGroupRoutingRule
+      x-permission: pay-group.version.end-date
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RoutingRuleEndDateWrite'}}}}
+      responses:
+        '200': {description: End-dated routing rule, content: {application/json: {schema: {$ref: '#/components/schemas/PayGroupRoutingRule'}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+        '422': {$ref: '#/components/responses/Problem'}
+  PayGroupRoutingReadiness:
+    parameters:
+    - $ref: '#/components/parameters/CorrelationId'
+    get:
+      tags: [Calendar]
+      summary: Read assignment compatibility and deterministic routing evidence
+      operationId: getPayGroupRoutingReadiness
+      x-permission: pay-group.read
+      parameters:
+      - {name: payrollAssignmentVersionId, in: query, required: true, schema: {type: string, format: uuid}}
+      - {name: payGroupVersionId, in: query, required: true, schema: {type: string, format: uuid}}
+      - {name: effectiveFrom, in: query, required: true, schema: {type: string, format: date}}
+      - {name: effectiveTo, in: query, required: true, schema: {type: string, format: date}}
+      responses:
+        '200': {description: 'Compatibility, routing and bounded calendar context', content: {application/json: {schema: {$ref: '#/components/schemas/PayGroupRoutingReadiness'}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
 components:
   parameters:
     CalendarId: {name: calendarId, in: path, required: true, schema: {type: string, format: uuid}}
+    RoutingRuleId: {name: ruleId, in: path, required: true, schema: {type: string, format: uuid}}
+    AsOf: {name: asOf, in: query, required: false, schema: {type: string, format: date}}
+    IfMatch: {name: If-Match, in: header, required: true, schema: {type: string, pattern: '^(W/)?"?[0-9]+"?$'}}
     CorrelationId: {name: X-Correlation-ID, in: header, required: false, schema: {type: string}}
     IdempotencyKey: {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 200}}
   responses:
@@ -257,3 +389,153 @@ components:
           releaseAdjustedDate: {type: [string, 'null'], format: date}
           paymentOriginalDate: {type: [string, 'null'], format: date}
           paymentAdjustedDate: {type: [string, 'null'], format: date}
+    CalendarMilestoneRuleWrite:
+      type: object
+      additionalProperties: false
+      required: [milestoneType, anchorType, offsetDays, adjustmentPolicy]
+      properties:
+        milestoneType: {type: string, enum: [INPUT_CUTOFF, CALCULATION, APPROVAL, RELEASE, PAYMENT]}
+        anchorType: {type: string, enum: [PERIOD_START, PERIOD_END]}
+        offsetDays: {type: integer, minimum: -366, maximum: 366}
+        adjustmentPolicy: {type: string, enum: [NONE, PREVIOUS_WORKING_DAY, NEXT_WORKING_DAY]}
+    CalendarMilestoneRuleSetWrite:
+      type: object
+      additionalProperties: false
+      required: [rules]
+      properties:
+        rules:
+          type: array
+          minItems: 5
+          maxItems: 5
+          description: Exactly one rule for each required milestone type.
+          items: {$ref: '#/components/schemas/CalendarMilestoneRuleWrite'}
+    CalendarMilestoneRule:
+      type: object
+      additionalProperties: false
+      required: [id, calendarId, milestoneType, anchorType, offsetDays, adjustmentPolicy, versionNo]
+      properties:
+        id: {type: string, format: uuid}
+        calendarId: {type: string, format: uuid}
+        milestoneType: {type: string, enum: [INPUT_CUTOFF, CALCULATION, APPROVAL, RELEASE, PAYMENT]}
+        anchorType: {type: string, enum: [PERIOD_START, PERIOD_END]}
+        offsetDays: {type: integer, minimum: -366, maximum: 366}
+        adjustmentPolicy: {type: string, enum: [NONE, PREVIOUS_WORKING_DAY, NEXT_WORKING_DAY]}
+        versionNo: {type: integer, format: int64, minimum: 0}
+    CalendarHolidayWrite:
+      type: object
+      additionalProperties: false
+      required: [holidayDate, holidayName]
+      properties:
+        holidayDate: {type: string, format: date}
+        holidayName: {type: string, minLength: 1, maxLength: 160}
+    CalendarHoliday:
+      type: object
+      additionalProperties: false
+      required: [id, calendarId, holidayDate, holidayName, versionNo]
+      properties:
+        id: {type: string, format: uuid}
+        calendarId: {type: string, format: uuid}
+        holidayDate: {type: string, format: date}
+        holidayName: {type: string, minLength: 1, maxLength: 160}
+        versionNo: {type: integer, format: int64, minimum: 0}
+    CalendarReadiness:
+      type: object
+      additionalProperties: false
+      required: [calendarId, frequency, timezone, lifecycleStatus, milestoneRuleCount, holidayCount, periodCount, incompletePeriodCount, generationReady, publicationReady, blockers]
+      properties:
+        calendarId: {type: string, format: uuid}
+        frequency: {type: string}
+        timezone: {type: string}
+        lifecycleStatus: {type: string, enum: [DRAFT, PUBLISHED, RETIRED]}
+        milestoneRuleCount: {type: integer, minimum: 0}
+        holidayCount: {type: integer, minimum: 0}
+        periodCount: {type: integer, minimum: 0}
+        incompletePeriodCount: {type: integer, minimum: 0}
+        generationReady: {type: boolean}
+        publicationReady: {type: boolean}
+        blockers:
+          type: array
+          uniqueItems: true
+          items: {type: string, enum: [CALENDAR_NOT_DRAFT, MILESTONE_RULE_SET_INCOMPLETE, PAY_PERIODS_NOT_GENERATED, PERIOD_MILESTONE_EVIDENCE_INCOMPLETE]}
+    PayGroupRoutingRuleWrite:
+      type: object
+      additionalProperties: false
+      required: [payGroupVersionId, payrollStatutoryUnitVersionId, effectiveFrom]
+      properties:
+        payGroupVersionId: {type: string, format: uuid}
+        payrollStatutoryUnitVersionId: {type: string, format: uuid}
+        establishmentVersionId: {type: [string, 'null'], format: uuid}
+        priority: {type: [integer, 'null'], minimum: 1, default: 100}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    PayGroupRoutingRule:
+      type: object
+      additionalProperties: false
+      required: [id, payGroupVersionId, payrollStatutoryUnitVersionId, priority, effectiveFrom, status, versionNo]
+      properties:
+        id: {type: string, format: uuid}
+        payGroupVersionId: {type: string, format: uuid}
+        payrollStatutoryUnitVersionId: {type: string, format: uuid}
+        establishmentVersionId: {type: [string, 'null'], format: uuid}
+        priority: {type: integer, minimum: 1}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        status: {type: string, enum: [ACTIVE, INACTIVE]}
+        versionNo: {type: integer, format: int64, minimum: 0}
+    RoutingRuleEndDateWrite:
+      type: object
+      additionalProperties: false
+      required: [effectiveTo]
+      properties:
+        effectiveTo: {type: string, format: date}
+    PayGroupResolution:
+      type: object
+      additionalProperties: false
+      required: [payGroupVersionId, resolutionSource]
+      properties:
+        payGroupVersionId: {type: string, format: uuid}
+        resolutionSource: {type: string, enum: [EXPLICIT_ASSIGNMENT, ESTABLISHMENT_RULE, PSU_RULE]}
+        routingRuleId: {type: [string, 'null'], format: uuid}
+    PayGroupCompatibilityIssue:
+      type: object
+      additionalProperties: false
+      required: [issueCode, issueDetail]
+      properties:
+        issueCode: {type: string}
+        issueDetail: {type: string}
+    PayGroupResolutionCheckpoint:
+      type: object
+      additionalProperties: false
+      required: [asOf, payGroupVersionId, resolutionSource, routingRuleId, matchesRequestedPayGroup]
+      properties:
+        asOf: {type: string, format: date}
+        payGroupVersionId: {type: [string, 'null'], format: uuid}
+        resolutionSource: {type: [string, 'null'], enum: [EXPLICIT_ASSIGNMENT, ESTABLISHMENT_RULE, PSU_RULE, null]}
+        routingRuleId: {type: [string, 'null'], format: uuid}
+        matchesRequestedPayGroup: {type: boolean}
+    PayGroupRoutingReadiness:
+      type: object
+      additionalProperties: false
+      required: [payrollAssignmentVersionId, requestedPayGroupVersionId, effectiveFrom, effectiveTo, payrollStatutoryUnitVersionId, calendarId, calendarFrequency, calendarTimezone, resolutionAtEffectiveFrom, compatible, routingCoverageComplete, routingMatchesRequestedPayGroup, ready, resolutionCheckpoints, issues]
+      properties:
+        payrollAssignmentVersionId: {type: string, format: uuid}
+        requestedPayGroupVersionId: {type: string, format: uuid}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        payrollStatutoryUnitVersionId: {type: [string, 'null'], format: uuid}
+        calendarId: {type: [string, 'null'], format: uuid}
+        calendarFrequency: {type: [string, 'null']}
+        calendarTimezone: {type: [string, 'null']}
+        resolutionAtEffectiveFrom:
+          oneOf:
+          - {$ref: '#/components/schemas/PayGroupResolution'}
+          - {type: 'null'}
+        compatible: {type: boolean}
+        routingCoverageComplete: {type: boolean}
+        routingMatchesRequestedPayGroup: {type: boolean}
+        ready: {type: boolean}
+        resolutionCheckpoints:
+          type: array
+          minItems: 1
+          items: {$ref: '#/components/schemas/PayGroupResolutionCheckpoint'}
+        issues: {type: array, items: {$ref: '#/components/schemas/PayGroupCompatibilityIssue'}}

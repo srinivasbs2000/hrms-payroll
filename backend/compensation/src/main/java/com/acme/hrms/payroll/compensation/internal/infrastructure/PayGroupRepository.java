@@ -1,5 +1,11 @@
 package com.acme.hrms.payroll.compensation.internal.infrastructure;
 
+import com.acme.hrms.payroll.compensation.PayGroupCompatibilityIssueView;
+import com.acme.hrms.payroll.compensation.PayGroupResolutionCheckpointView;
+import com.acme.hrms.payroll.compensation.PayGroupResolutionView;
+import com.acme.hrms.payroll.compensation.PayGroupRoutingReadinessView;
+import com.acme.hrms.payroll.compensation.PayGroupRoutingRuleView;
+import com.acme.hrms.payroll.compensation.PayGroupRoutingRuleWriteRequest;
 import com.acme.hrms.payroll.compensation.PayGroupView;
 import com.acme.hrms.payroll.compensation.PayGroupWriteRequest;
 import com.acme.hrms.payroll.platform.ConflictException;
@@ -170,6 +176,197 @@ public class PayGroupRepository {
         identityId);
   }
 
+  public List<PayGroupRoutingRuleView> routingRules(LocalDate asOf) {
+    return jdbc.query(
+        """
+        select id,pay_group_version_id,payroll_statutory_unit_version_id,
+               establishment_version_id,priority,effective_from,effective_to,
+               status,version_no
+        from organisation.pay_group_routing_rule
+        where tenant_id=? and status='ACTIVE'
+          and effective_from<=?
+          and (effective_to is null or effective_to>?)
+        order by establishment_version_id nulls last,priority,effective_from desc,id
+        """,
+        this::mapRoutingRule,
+        TenantContext.require(),
+        Date.valueOf(asOf),
+        Date.valueOf(asOf));
+  }
+
+  public PayGroupRoutingRuleView routingRule(UUID ruleId) {
+    return jdbc.query(
+            """
+            select id,pay_group_version_id,payroll_statutory_unit_version_id,
+                   establishment_version_id,priority,effective_from,effective_to,
+                   status,version_no
+            from organisation.pay_group_routing_rule
+            where tenant_id=? and id=?
+            """,
+            this::mapRoutingRule,
+            TenantContext.require(),
+            ruleId)
+        .stream()
+        .findFirst()
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Pay-group routing rule was not found"));
+  }
+
+  public PayGroupRoutingRuleView createRoutingRule(
+      PayGroupRoutingRuleWriteRequest request, String actor) {
+    UUID id = jdbc.queryForObject(
+        """
+        select organisation.create_pay_group_routing_rule(
+          ?,?,?,?,?,?,?,?
+        )
+        """,
+        UUID.class,
+        TenantContext.require(),
+        request.payGroupVersionId(),
+        request.payrollStatutoryUnitVersionId(),
+        request.establishmentVersionId(),
+        request.resolvedPriority(),
+        Date.valueOf(request.effectiveFrom()),
+        request.effectiveTo() == null ? null : Date.valueOf(request.effectiveTo()),
+        actor);
+    if (id == null) {
+      throw new IllegalStateException("Routing-rule creation returned no identifier");
+    }
+    return routingRule(id);
+  }
+
+  public PayGroupRoutingRuleView endDateRoutingRule(
+      UUID ruleId,
+      LocalDate effectiveTo,
+      long expectedVersion,
+      String actor,
+      Instant changedAt) {
+    Long affected = jdbc.queryForObject(
+        """
+        select organisation.end_date_pay_group_routing_rule(
+          ?,?,?,?,?,?
+        )
+        """,
+        Long.class,
+        TenantContext.require(),
+        ruleId,
+        Date.valueOf(effectiveTo),
+        expectedVersion,
+        actor,
+        Timestamp.from(changedAt));
+    if (affected == null || affected != 1) {
+      throw new ConflictException(
+          "Routing rule changed, is inactive, or cannot be shortened to the requested date");
+    }
+    return routingRule(ruleId);
+  }
+
+  public PayGroupRoutingReadinessView routingReadiness(
+      UUID payrollAssignmentVersionId,
+      UUID payGroupVersionId,
+      LocalDate effectiveFrom,
+      LocalDate effectiveTo) {
+    UUID tenantId = TenantContext.require();
+    List<PayGroupCompatibilityIssueView> issues = jdbc.query(
+        """
+        select issue_code,issue_detail
+        from organisation.pay_group_assignment_compatibility_issues(
+          ?,?,?,?,?
+        )
+        order by issue_code
+        """,
+        (result, row) -> new PayGroupCompatibilityIssueView(
+            result.getString("issue_code"), result.getString("issue_detail")),
+        tenantId,
+        payrollAssignmentVersionId,
+        payGroupVersionId,
+        Date.valueOf(effectiveFrom),
+        effectiveTo == null ? null : Date.valueOf(effectiveTo));
+    List<PayGroupResolutionCheckpointView> checkpoints = jdbc.query(
+        """
+        with candidate_dates(as_of) as (
+          values (?::date)
+          union
+          select rule.effective_from
+          from organisation.pay_group_routing_rule rule
+          where rule.tenant_id=? and rule.status='ACTIVE'
+            and rule.effective_from>? and rule.effective_from<?
+          union
+          select rule.effective_to
+          from organisation.pay_group_routing_rule rule
+          where rule.tenant_id=? and rule.status='ACTIVE'
+            and rule.effective_to>? and rule.effective_to<?
+          union
+          select assignment.effective_from
+          from employee_payroll.pay_group_assignment assignment
+          where assignment.tenant_id=?
+            and assignment.payroll_assignment_version_id=?
+            and assignment.effective_from>? and assignment.effective_from<?
+          union
+          select assignment.effective_to
+          from employee_payroll.pay_group_assignment assignment
+          where assignment.tenant_id=?
+            and assignment.payroll_assignment_version_id=?
+            and assignment.effective_to>? and assignment.effective_to<?
+        )
+        select candidate.as_of,
+               resolved.pay_group_version_id,
+               resolved.resolution_source,
+               resolved.routing_rule_id
+        from candidate_dates candidate
+        left join lateral organisation.resolve_pay_group_version_for_assignment(
+          ?,?,candidate.as_of
+        ) resolved on true
+        order by candidate.as_of
+        """,
+        (result, row) -> {
+          UUID resolvedPayGroup = result.getObject("pay_group_version_id", UUID.class);
+          return new PayGroupResolutionCheckpointView(
+              result.getObject("as_of", LocalDate.class),
+              resolvedPayGroup,
+              result.getString("resolution_source"),
+              result.getObject("routing_rule_id", UUID.class),
+              payGroupVersionId.equals(resolvedPayGroup));
+        },
+        Date.valueOf(effectiveFrom),
+        tenantId, Date.valueOf(effectiveFrom), Date.valueOf(effectiveTo),
+        tenantId, Date.valueOf(effectiveFrom), Date.valueOf(effectiveTo),
+        tenantId, payrollAssignmentVersionId,
+        Date.valueOf(effectiveFrom), Date.valueOf(effectiveTo),
+        tenantId, payrollAssignmentVersionId,
+        Date.valueOf(effectiveFrom), Date.valueOf(effectiveTo),
+        tenantId, payrollAssignmentVersionId);
+    PayGroupResolutionView resolutionAtEffectiveFrom = checkpoints.stream()
+        .filter(checkpoint -> checkpoint.asOf().equals(effectiveFrom))
+        .findFirst()
+        .filter(checkpoint -> checkpoint.payGroupVersionId() != null)
+        .map(checkpoint -> new PayGroupResolutionView(
+            checkpoint.payGroupVersionId(),
+            checkpoint.resolutionSource(),
+            checkpoint.routingRuleId()))
+        .orElse(null);
+    boolean routingCoverageComplete = !checkpoints.isEmpty()
+        && checkpoints.stream().allMatch(
+            PayGroupResolutionCheckpointView::matchesRequestedPayGroup);
+    RoutingContext context = routingContext(payGroupVersionId);
+    return new PayGroupRoutingReadinessView(
+        payrollAssignmentVersionId,
+        payGroupVersionId,
+        effectiveFrom,
+        effectiveTo,
+        context == null ? null : context.payrollStatutoryUnitVersionId(),
+        context == null ? null : context.calendarId(),
+        context == null ? null : context.calendarFrequency(),
+        context == null ? null : context.calendarTimezone(),
+        resolutionAtEffectiveFrom,
+        issues.isEmpty(),
+        routingCoverageComplete,
+        routingCoverageComplete,
+        issues.isEmpty() && routingCoverageComplete,
+        List.copyOf(checkpoints),
+        List.copyOf(issues));
+  }
+
   public PayGroupView approve(
       UUID versionId, String actor, Instant now) {
     Long affected = jdbc.queryForObject(
@@ -297,4 +494,49 @@ public class PayGroupRepository {
             "supersedes_version_id", UUID.class),
         result.getBoolean("superseded"));
   }
+
+  private PayGroupRoutingRuleView mapRoutingRule(
+      ResultSet result, int row) throws SQLException {
+    return new PayGroupRoutingRuleView(
+        result.getObject("id", UUID.class),
+        result.getObject("pay_group_version_id", UUID.class),
+        result.getObject("payroll_statutory_unit_version_id", UUID.class),
+        result.getObject("establishment_version_id", UUID.class),
+        result.getInt("priority"),
+        result.getObject("effective_from", LocalDate.class),
+        result.getObject("effective_to", LocalDate.class),
+        result.getString("status"),
+        result.getLong("version_no"));
+  }
+
+  private RoutingContext routingContext(UUID payGroupVersionId) {
+    return jdbc.query(
+            """
+            select group_version.payroll_statutory_unit_version_id,
+                   group_version.calendar_id,
+                   calendar.frequency,
+                   calendar.timezone
+            from organisation.pay_group_version group_version
+            join organisation.payroll_calendar calendar
+              on calendar.tenant_id=group_version.tenant_id
+             and calendar.id=group_version.calendar_id
+            where group_version.tenant_id=? and group_version.id=?
+            """,
+            (result, row) -> new RoutingContext(
+                result.getObject("payroll_statutory_unit_version_id", UUID.class),
+                result.getObject("calendar_id", UUID.class),
+                result.getString("frequency"),
+                result.getString("timezone")),
+            TenantContext.require(),
+            payGroupVersionId)
+        .stream()
+        .findFirst()
+        .orElse(null);
+  }
+
+  private record RoutingContext(
+      UUID payrollStatutoryUnitVersionId,
+      UUID calendarId,
+      String calendarFrequency,
+      String calendarTimezone) {}
 }

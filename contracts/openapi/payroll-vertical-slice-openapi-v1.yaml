@@ -863,8 +863,20 @@ paths:
     $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/PeriodOperations'
   /payroll-calendars/{calendarId}/audit:
     $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarAudit'
+  /payroll-calendars/{calendarId}/milestone-rules:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarMilestoneRules'
+  /payroll-calendars/{calendarId}/holidays:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarHolidays'
+  /payroll-calendars/{calendarId}/readiness:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/CalendarReadiness'
   /pay-groups:
     $ref: '#/components/pathItems/PayGroupCollection'
+  /pay-groups/routing-rules:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/PayGroupRoutingRules'
+  /pay-groups/routing-rules/{ruleId}/end-date:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/PayGroupRoutingRuleEndDate'
+  /pay-groups/routing-readiness:
+    $ref: './payroll-calendar-openapi-v1.yaml#/pathItems/PayGroupRoutingReadiness'
   /pay-groups/{identityId}:
     $ref: '#/components/pathItems/PayGroupIdentity'
   /pay-groups/{identityId}/versions:
