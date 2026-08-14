@@ -188,3 +188,17 @@ This capability has reached the limit of its current UI-only/backend-read-only
 authority. Section 5 applies: a separately bounded backend amendment authority
 must be activated before addressing the demonstrated missing contracts. V039
 remains unreserved and P5-A5/E03 remains inactive.
+
+<!-- P5-E2E-UI-01-B02-ACTIVATION -->
+## 12. B02 contract-boundary activation
+
+Following G06, the separately required backend amendment authority is activated
+as `P5-E2E-UI-01-B02 — Remaining E02 Contract Boundary Amendment`.
+
+The read-only audit found existing V038 database primitives for milestone rules,
+holidays, pay-group routing and compatibility checks. B02 therefore begins with
+HTTP/application contract exposure and does not reserve V039.
+
+The eight G06-partial E02 stories remain partial during activation. Backend
+publication precedes UI product work, and P5-A5/E03 remains inactive until a
+truthful B02 closure reconciliation.

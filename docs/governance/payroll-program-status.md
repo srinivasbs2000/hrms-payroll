@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`, hosted `payroll-web-ci` all five checks GREEN
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** NONE after G06; eight selected stories remain contract/UI-boundary partial and require separately activated P5-E2E-UI-01-B02 before backend product writes
+**Active product write owner:** P5-E2E-UI-01-B02 after activation merge; B02-G01 owns only the bounded remaining E02 backend contract exposure
 **Migration state:** V001–V038 committed and immutable
 **Next migration:** V039 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 14 August 2026 after P5-E2E-UI-01 G05 hosted UI merge and contract-boundary story reconciliation
-**Current execution capability:** P5-E2E-UI-01 G06 governance reconciliation; next capability must be separately bounded P5-E2E-UI-01-B02
+**Last reconciled:** 14 August 2026 after G06 merge and B02 read-only contract audit / activation
+**Current execution capability:** P5-E2E-UI-01-B02 — Remaining E02 Contract Boundary Amendment
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -483,3 +483,24 @@ not a full 11-story closure. P5-A5/E03 remains inactive. V039 remains unreserved
 **Next controlled action:** independently audit and activate a separately bounded
 `P5-E2E-UI-01-B02` backend contract amendment for the demonstrated remaining
 contract gaps; do not perform backend product writes under G06.
+
+<!-- P5-E2E-UI-01-B02-ACTIVATION -->
+## P5-E2E-UI-01-B02 activation
+
+The post-G06 read-only audit confirmed that the remaining E02 blockers are
+contract-exposure gaps over existing V038 persistence/function foundations.
+
+B02 is activated to expose only the bounded calendar configuration, pay-group
+routing administration and compatibility/readiness contracts required by the
+eight remaining E02 rows.
+
+No story status changes in this activation. Program totals remain 21
+IMPLEMENTED / 155 PARTIALLY IMPLEMENTED / 84 NOT EVIDENCED / 159 NOT STARTED /
+31 LEGAL/DOMAIN REVALIDATION = 450.
+
+No migration is authorized or expected. V039 remains unreserved. If B02-G01
+proves a schema requirement, that sub-boundary must stop for separate review.
+P5-A5/E03 remains inactive.
+
+Next controlled action after this activation merges: B02-G01 backend contract
+implementation preflight against the activation merge SHA.
