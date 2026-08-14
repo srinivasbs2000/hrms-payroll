@@ -59,3 +59,24 @@ UI-applicability counts at reconciliation:
 
 - UI required/admin/operational/audit: 396
 - no direct UI gate: 54
+
+<!-- P5-E2E-UI-01-G06-OVERLAY -->
+## Post-P5-E2E-UI-01 G05 overlay — 14 August 2026
+
+The original 13 August 2026 reconciliation above remains the historical baseline.
+G05 UI PR #15 merged at `2a42f3909a2ee249ca26be8fb0e14e945f8903a9` and added real-browser closure evidence.
+
+Restored to IMPLEMENTED:
+
+- `PLN-E01-011`;
+- `PLN-E02-001`;
+- `PLN-E02-005`.
+
+Eight selected stories remain PARTIALLY IMPLEMENTED: `PLN-E02-002`, `003`,
+`004`, `006`, `007`, `008`, `009`, `010`.
+
+Post-G06 totals: 21 IMPLEMENTED / 155 PARTIALLY IMPLEMENTED / 84 NOT EVIDENCED /
+159 NOT STARTED / 31 legal-domain revalidation = 450.
+
+The next action is not P5-A5/E03. It is a separately bounded backend amendment
+activation for the demonstrated contract gaps before any further product write.

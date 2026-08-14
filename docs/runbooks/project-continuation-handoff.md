@@ -1,18 +1,18 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 13 August 2026 for P5-E2E-UI-01-B01 demonstrated backend defect amendment
+**Updated:** 14 August 2026 after P5-E2E-UI-01 G05 hosted UI merge and G06 story-boundary reconciliation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
-**Product reconciliation baseline:** P5-A4 backend PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; UI baseline `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Product reconciliation baseline:** P5-A4 backend PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-A4 backend PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; no P5-A4 UI product write
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** P5-E2E-UI-01; bounded B01 backend state-time binding amendment runs while the nine-file UI implementation is preserved
-**Current state:** P5-E2E-UI-01 UI implementation preserved; B01 authorizes only the demonstrated approval lifecycle JDBC time-binding correction after its local activation commit
+**Active capability:** P5-E2E-UI-01 G06 governance reconciliation; no product writer after merge; B02 requires separate activation
+**Current state:** G05 merged at UI `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`; 3 selected stories restored to IMPLEMENTED and 8 remain PARTIALLY IMPLEMENTED at demonstrated contract/UI boundaries
 **Migrations:** V001–V038 committed and immutable after this closure
 **Next migration:** V039 unreserved after this closure
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -32,9 +32,9 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | P5-E2E-UI-01 UI branch plus bounded P5-E2E-UI-01-B01 backend amendment after activation |
+| Active write owner | NONE after G06; P5-E2E-UI-01-B02 must be separately activated before any backend product write |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | B01 only: ApprovalAuthorityRepository.java and ApprovalAuthorityEnforcementApiIT.java; UI ownership unchanged |
+| Active path ownership | Governance-only G06; no backend or UI product path ownership after merge |
 | Migration state | V001–V038 immutable after this closure |
 | Next migration | V039 unreserved; no capability owns it |
 | Product deployment | Greenfield; no evidenced production deployment |
@@ -44,8 +44,8 @@ live read-only GitHub evidence before starting write-capable work.
 
 The 450 detailed stories reconcile to:
 
-- 18 implemented;
-- 158 partially implemented;
+- 21 implemented;
+- 155 partially implemented;
 - 84 not evidenced;
 - 159 not started;
 - 31 requiring legal/domain revalidation.
@@ -121,16 +121,20 @@ After this status-closure PR merges:
 - the historical product branch may be retained;
 - no next capability is activated by this closure.
 
+
 ## Exact next controlled action
 
-After P5-E2E-UI-01 activation authority merges, create/use only
-`feature/p5-e2e-ui-01-story-ui-gap-closure` in
-`srinivasbs2000/hrms-payroll-web` and implement the 11 selected UI gaps against
-the existing backend contracts.
+After G06 governance reconciliation merges, do **not** activate P5-A5/E03.
 
-Do not reserve V039. Do not activate P5-A5/E03. If a genuine backend contract
-defect is demonstrated, stop that affected story and obtain separate backend
-amendment authority before any backend product write.
+Perform an independent contract audit and create a separately bounded
+`P5-E2E-UI-01-B02` activation authority for the demonstrated remaining
+Calendar & Pay Groups end-to-end boundaries. At minimum, the audit must resolve
+the missing milestone-rule configuration write contract and holiday/working-day
+configuration write contract, and determine the smallest backend/UI authority
+needed for population-routing and proactive compatibility closure.
+
+V039 remains unreserved unless that separately reviewed amendment proves schema
+change is unavoidable.
 
 <!-- P5-A4-HANDOFF-CLOSURE -->
 ## P5-A4 post-merge continuation checkpoint
@@ -173,3 +177,19 @@ reconciliation and separately merged activation authority.
 
 Scope authority:
 `docs/planning/pln-01/p5-e2e-ui-01-b01-approval-state-time-binding-amendment.md`.
+
+<!-- P5-E2E-UI-01-G06-CHECKPOINT -->
+## P5-E2E-UI-01 G06 continuation checkpoint
+
+- UI PR #15: merged;
+- UI merge: `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`;
+- G05 exact commit: `16c1eea7eadd45979fdf879ff86ef04878bbb3ef`;
+- G05 hosted UI CI: GREEN;
+- backend product state during G05: `28f8a7208d31546cc3bec3fa31004fe4e5a1bc8b`, unchanged;
+- selected-story result: 3 IMPLEMENTED / 8 PARTIALLY IMPLEMENTED;
+- program totals: 21 implemented / 155 partial / 84 not evidenced /
+  159 not started / 31 legal-domain revalidation;
+- product write owner after G06: NONE;
+- V001-V038 immutable; V039 unreserved;
+- P5-A5/E03: NOT ACTIVATED;
+- next: separately bounded P5-E2E-UI-01-B02 contract-amendment activation.
