@@ -1,9 +1,9 @@
 # P5-E2E-UI-01-B02 — Remaining E02 Contract Boundary Amendment
 
-**Status:** ACTIVATED AFTER G06 MERGE — backend contract exposure first; UI work only after backend publication  
+**Status:** ACTIVE — R01 database contract published; B02-G01 backend Java/HTTP contract exposure resumes
 **Parent capability:** P5-E2E-UI-01 — Existing Story UI Gap Closure  
 **Authority baseline:** backend `981417aaa6fc7f9b141dfcf7433ff0fe2cd515da`; UI `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`  
-**Migration position:** V001-V038 immutable; V039 remains unreserved  
+**Migration position:** V001-V039 immutable; V040 remains unreserved
 **P5-A5/E03:** NOT ACTIVATED
 
 ## 1. Purpose
@@ -206,3 +206,21 @@ minimum grant and contract tests. No schema/table shape expansion is authorized.
 
 B02-G01 Java/HTTP implementation remains paused until the R01 database contract
 is published. P5-A5/E03 remains inactive.
+
+<!-- P5-E2E-UI-01-B02-R01-G01-CLOSURE -->
+## 11. R01-G01 database-contract publication outcome
+
+The R01 stop boundary is resolved. V039 was reserved only after the independent
+migration preflight and adds the bounded
+`organisation.end_date_pay_group_routing_rule` contract without table-shape,
+policy or direct-DML expansion.
+
+Implementation commit `6d528362b6d9ccb5066f5c033caa8035b0f6ab82` merged through
+backend PR #66 at `246ca75983b37293b74fdb4baa44e093fa546f8f`; targeted and
+full Maven verification passed, followed by all seven hosted backend checks.
+
+R01-G01 is closed. V001–V039 are immutable and V040 is unreserved. B02-G01 may
+now resume the calendar configuration, routing administration and
+compatibility/readiness Java/HTTP contracts in sections 3.1–3.3. This outcome
+does not promote any story and does not authorize B02-G03 UI work before B02-G02
+backend publication. P5-A5/E03 remains inactive.
