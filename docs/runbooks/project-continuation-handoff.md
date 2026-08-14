@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 14 August 2026 after P5-E2E-UI-01 G05 hosted UI merge and G06 story-boundary reconciliation
+**Updated:** 14 August 2026 after G06 merge and P5-E2E-UI-01-B02 contract-boundary activation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** P5-E2E-UI-01 G06 governance reconciliation; no product writer after merge; B02 requires separate activation
-**Current state:** G05 merged at UI `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`; 3 selected stories restored to IMPLEMENTED and 8 remain PARTIALLY IMPLEMENTED at demonstrated contract/UI boundaries
+**Active capability:** P5-E2E-UI-01-B02 — Remaining E02 Contract Boundary Amendment
+**Current state:** G06 merged; B02 audit confirms existing V038 primitives with missing HTTP/UI administration/readiness exposure; activation is governance-only
 **Migrations:** V001–V038 committed and immutable after this closure
 **Next migration:** V039 unreserved after this closure
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -32,9 +32,9 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | NONE after G06; P5-E2E-UI-01-B02 must be separately activated before any backend product write |
+| Active write owner | P5-E2E-UI-01-B02 after activation merge; B02-G01 backend contract exposure only |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | Governance-only G06; no backend or UI product path ownership after merge |
+| Active path ownership | Activation governance only in this PR; B02-G01 exact backend paths must be revalidated before product write |
 | Migration state | V001–V038 immutable after this closure |
 | Next migration | V039 unreserved; no capability owns it |
 | Product deployment | Greenfield; no evidenced production deployment |
@@ -193,3 +193,20 @@ Scope authority:
 - V001-V038 immutable; V039 unreserved;
 - P5-A5/E03: NOT ACTIVATED;
 - next: separately bounded P5-E2E-UI-01-B02 contract-amendment activation.
+
+<!-- P5-E2E-UI-01-B02-ACTIVATION -->
+## P5-E2E-UI-01-B02 activation checkpoint
+
+- backend activation baseline: `981417aaa6fc7f9b141dfcf7433ff0fe2cd515da`;
+- UI baseline: `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`;
+- G06 totals remain 21 / 155 / 84 / 159 / 31;
+- eight E02 rows remain PARTIALLY IMPLEMENTED at activation;
+- V001-V038 immutable;
+- V039 unreserved;
+- P5-A5/E03 inactive;
+- no product write occurs in the activation PR;
+- first product-write gate after merge: B02-G01 backend contract exposure;
+- B02-G03 UI work starts only after B02-G02 backend publication.
+
+If B02-G01 discovers a required schema change, stop and obtain separately
+reviewed amendment authority before any migration reservation.
