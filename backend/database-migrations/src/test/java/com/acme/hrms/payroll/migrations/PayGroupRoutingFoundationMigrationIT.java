@@ -279,6 +279,225 @@ class PayGroupRoutingFoundationMigrationIT {
   }
 
   @Test
+  void v039GrantsOnlyTheBoundedEffectiveEndFunction() throws Exception {
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        setTenant(statement, TENANT_A);
+        try (ResultSet result =
+            statement.executeQuery(
+                """
+                SELECT
+                  has_function_privilege(
+                    current_user,
+                    'organisation.end_date_pay_group_routing_rule(uuid,uuid,date,bigint,varchar,timestamptz)',
+                    'EXECUTE'
+                  ),
+                  has_table_privilege(
+                    current_user,
+                    'organisation.pay_group_routing_rule',
+                    'INSERT'
+                  ) OR
+                  has_table_privilege(
+                    current_user,
+                    'organisation.pay_group_routing_rule',
+                    'UPDATE'
+                  ) OR
+                  has_table_privilege(
+                    current_user,
+                    'organisation.pay_group_routing_rule',
+                    'DELETE'
+                  )
+                """)) {
+          assertThat(result.next()).isTrue();
+          assertThat(result.getBoolean(1)).isTrue();
+          assertThat(result.getBoolean(2)).isFalse();
+        }
+
+        Savepoint directUpdate = connection.setSavepoint();
+        assertSqlState(
+            "42501",
+            () ->
+                statement.execute(
+                    "UPDATE organisation.pay_group_routing_rule "
+                        + "SET effective_to=DATE '2026-07-01'"));
+        connection.rollback(directUpdate);
+      }
+    }
+  }
+
+  @Test
+  void v039EffectiveEndsAnActiveRuleWithOptimisticConcurrency()
+      throws Exception {
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        setTenant(statement, TENANT_A);
+        UUID ruleId = createBoundedRoutingRule(statement);
+
+        assertThat(
+                scalarLong(
+                    statement,
+                    """
+                    SELECT organisation.end_date_pay_group_routing_rule(
+                      '%s','%s',DATE '2026-07-01',0,
+                      'issuer|routing-admin',TIMESTAMPTZ '2026-06-15 10:00:00Z'
+                    )
+                    """
+                        .formatted(TENANT_A, ruleId)))
+            .isEqualTo(1);
+
+        try (ResultSet result =
+            statement.executeQuery(
+                """
+                SELECT effective_to, status, updated_by, version_no,
+                       updated_at = TIMESTAMPTZ '2026-06-15 10:00:00Z'
+                FROM organisation.pay_group_routing_rule
+                WHERE tenant_id='%s' AND id='%s'
+                """
+                    .formatted(TENANT_A, ruleId))) {
+          assertThat(result.next()).isTrue();
+          assertThat(result.getDate(1).toLocalDate().toString())
+              .isEqualTo("2026-07-01");
+          assertThat(result.getString(2)).isEqualTo("ACTIVE");
+          assertThat(result.getString(3)).isEqualTo("issuer|routing-admin");
+          assertThat(result.getLong(4)).isEqualTo(1);
+          assertThat(result.getBoolean(5)).isTrue();
+        }
+
+        assertThat(
+                scalarLong(
+                    statement,
+                    """
+                    SELECT organisation.end_date_pay_group_routing_rule(
+                      '%s','%s',DATE '2026-06-01',0,
+                      'issuer|routing-admin',clock_timestamp()
+                    )
+                    """
+                        .formatted(TENANT_A, ruleId)))
+            .isZero();
+
+        try (ResultSet result =
+            statement.executeQuery(
+                """
+                SELECT routing_rule_id
+                FROM organisation.resolve_pay_group_version_for_assignment(
+                  '%s','%s',DATE '2026-07-01'
+                )
+                """
+                    .formatted(TENANT_A, ASSIGNMENT_VERSION_ID))) {
+          assertThat(result.next()).isFalse();
+        }
+
+        assertThat(
+                scalarUuid(
+                    statement,
+                    """
+                    SELECT organisation.create_pay_group_routing_rule(
+                      '%s','%s','%s','%s',10,
+                      DATE '2026-07-01',DATE '2027-01-01',
+                      'issuer|routing-admin'
+                    )
+                    """
+                        .formatted(
+                            TENANT_A,
+                            PAY_GROUP_VERSION_ID,
+                            PSU_VERSION_ID,
+                            ESTABLISHMENT_VERSION_ID)))
+            .isNotNull();
+      }
+    }
+  }
+
+  @Test
+  void v039RejectsInvalidOrCrossTenantRequestsAndIgnoresInactiveRules()
+      throws Exception {
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        setTenant(statement, TENANT_A);
+        UUID ruleId = createBoundedRoutingRule(statement);
+
+        Savepoint invalidRange = connection.setSavepoint();
+        assertSqlState(
+            "23514",
+            () ->
+                statement.execute(
+                    """
+                    SELECT organisation.end_date_pay_group_routing_rule(
+                      '%s','%s',DATE '2026-01-01',0,
+                      'issuer|routing-admin',clock_timestamp()
+                    )
+                    """
+                        .formatted(TENANT_A, ruleId)));
+        connection.rollback(invalidRange);
+
+        Savepoint blankActor = connection.setSavepoint();
+        assertSqlState(
+            "23514",
+            () ->
+                statement.execute(
+                    """
+                    SELECT organisation.end_date_pay_group_routing_rule(
+                      '%s','%s',DATE '2026-07-01',0,' ',clock_timestamp()
+                    )
+                    """
+                        .formatted(TENANT_A, ruleId)));
+        connection.rollback(blankActor);
+
+        assertThat(
+                scalarLong(
+                    statement,
+                    """
+                    SELECT organisation.retire_pay_group_routing_rule(
+                      '%s','%s',0,'issuer|routing-admin',clock_timestamp()
+                    )
+                    """
+                        .formatted(TENANT_A, ruleId)))
+            .isEqualTo(1);
+        assertThat(
+                scalarLong(
+                    statement,
+                    """
+                    SELECT organisation.end_date_pay_group_routing_rule(
+                      '%s','%s',DATE '2026-07-01',1,
+                      'issuer|routing-admin',clock_timestamp()
+                    )
+                    """
+                        .formatted(TENANT_A, ruleId)))
+            .isZero();
+
+        setTenant(statement, TENANT_B);
+        assertThat(
+                scalarLong(
+                    statement,
+                    """
+                    SELECT organisation.end_date_pay_group_routing_rule(
+                      '%s','%s',DATE '2026-07-01',1,
+                      'issuer|routing-admin',clock_timestamp()
+                    )
+                    """
+                        .formatted(TENANT_B, ruleId)))
+            .isZero();
+
+        Savepoint tenantMismatch = connection.setSavepoint();
+        assertSqlState(
+            "42501",
+            () ->
+                statement.execute(
+                    """
+                    SELECT organisation.end_date_pay_group_routing_rule(
+                      '%s','%s',DATE '2026-07-01',1,
+                      'issuer|routing-admin',clock_timestamp()
+                    )
+                    """
+                        .formatted(TENANT_A, ruleId)));
+        connection.rollback(tenantMismatch);
+      }
+    }
+  }
+
+  @Test
   void wrongPsuRoutingAndAssignmentCompatibilityFailClosed()
       throws Exception {
     UUID otherPsuId =
@@ -653,6 +872,23 @@ class PayGroupRoutingFoundationMigrationIT {
       assertThat(result.next()).isTrue();
       return result.getObject(1, UUID.class);
     }
+  }
+
+  private static UUID createBoundedRoutingRule(Statement statement)
+      throws SQLException {
+    return scalarUuid(
+        statement,
+        """
+        SELECT organisation.create_pay_group_routing_rule(
+          '%s','%s','%s','%s',10,
+          DATE '2026-01-01',DATE '2027-01-01','issuer|routing-admin'
+        )
+        """
+            .formatted(
+                TENANT_A,
+                PAY_GROUP_VERSION_ID,
+                PSU_VERSION_ID,
+                ESTABLISHMENT_VERSION_ID));
   }
 
   private static void setTenant(Statement statement, UUID tenant)
