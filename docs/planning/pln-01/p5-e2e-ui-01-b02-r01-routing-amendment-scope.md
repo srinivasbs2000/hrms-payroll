@@ -1,9 +1,9 @@
 # P5-E2E-UI-01-B02-R01 — Routing Rule Correction/End-Dating Database Contract Amendment
 
-**Status:** ACTIVATION PENDING MERGE — governance only; no product write in activation  
+**Status:** CLOSED — database contract published through PR #66
 **Parent capability:** P5-E2E-UI-01-B02 — Remaining E02 Contract Boundary Amendment  
-**Authority baseline:** backend `36a0ebff90defa1009993e01aa1c12dcb2d2cf75`  
-**Migration position during activation:** V001-V038 immutable; V039 remains unreserved  
+**Authority baseline:** activation merge `3c42d057e4e0bf941af7589d62087721bf88ea81`
+**Migration position after closure:** V001-V039 immutable; V040 remains unreserved
 **P5-A5/E03:** NOT ACTIVATED
 
 ## 1. Trigger
@@ -161,3 +161,32 @@ Activation is complete only when:
 Run R01-G01 database-contract implementation preflight. If V039 is still the
 next unreserved migration, reserve it only for the bounded routing effective-end
 function/grant/tests described above.
+
+<!-- P5-E2E-UI-01-B02-R01-G01-CLOSURE -->
+## 10. R01-G01 closure evidence
+
+The preflight chain closed with v1.1 as the authoritative evidence, superseding
+v1.0. It proved local/remote main at the activation merge, V039 unreserved, and
+the exact bounded migration/function/grant/test contract.
+
+The implementation commit `6d528362b6d9ccb5066f5c033caa8035b0f6ab82`
+merged through PR #66 at `246ca75983b37293b74fdb4baa44e093fa546f8f`.
+Evidence proves:
+
+- successful effective end-dating with optimistic concurrency;
+- deterministic stale, inactive and non-addressable outcomes;
+- invalid-range and tenant-mismatch rejection;
+- replacement routing after the prior range is shortened;
+- actor, timestamp and version audit updates;
+- direct routing-table DML remains unavailable to `payroll_app`;
+- targeted 7/7 migration tests, full Maven verification and all seven hosted
+  backend checks passed.
+
+R01-G01 is CLOSED and owns no further write. V039 is committed and immutable;
+V040 is unreserved. Story totals remain unchanged because this database-only
+amendment does not complete the parent end-to-end UI stories. P5-A5/E03 remains
+inactive.
+
+The parent B02-G01 Java/HTTP implementation may resume only after this closure
+reconciliation merges, using `246ca75983b37293b74fdb4baa44e093fa546f8f` as
+its backend product baseline.

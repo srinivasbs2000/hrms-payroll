@@ -1,20 +1,20 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 14 August 2026 after B02-G01 preflight and B02-R01 routing database-contract amendment activation
+**Updated:** 14 August 2026 after B02-R01-G01 database-contract publication and merge
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
-**Product reconciliation baseline:** P5-A4 backend PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
+**Product reconciliation baseline:** P5-E2E-UI-01-B02-R01-G01 backend PR #66 / `246ca75983b37293b74fdb4baa44e093fa546f8f`; P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-A4 backend PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; no P5-A4 UI product write
+**Latest merged product increment:** P5-E2E-UI-01-B02-R01-G01 backend PR #66 / `246ca75983b37293b74fdb4baa44e093fa546f8f`
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** PR #33
-**Active capability:** P5-E2E-UI-01-B02-R01 — Routing Rule Correction/End-Dating Database Contract Amendment
-**Current state:** B02-G01 preflight proved calendar/readiness/routing read-create paths ready but routing effective-end/correction blocked by the V038 database contract; R01 activation is governance-only
-**Migrations:** V001–V038 committed and immutable after this closure
-**Next migration:** V039 unreserved after this closure
+**Active capability:** P5-E2E-UI-01-B02-G01 — Remaining backend contract exposure continuation
+**Current state:** R01-G01 database contract is merged; B02-G01 Java/HTTP contract exposure may resume after this reconciliation merges
+**Migrations:** V001–V039 committed and immutable after this closure
+**Next migration:** V040 unreserved after this closure
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | P5-E2E-UI-01-B02-R01 after activation merge; routing effective-end database-contract amendment only |
+| Active write owner | P5-E2E-UI-01-B02-G01 after this reconciliation merges; bounded backend Java/HTTP contract exposure only |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | R01 activation governance only; after merge R01-G01 may own only the bounded routing effective-end migration/function/grant/tests |
-| Migration state | V001–V038 immutable after this closure |
-| Next migration | V039 unreserved; no capability owns it |
+| Active path ownership | R01-G01 closed; B02-G01 exact paths must be finalized by a fresh artifact-contract preflight |
+| Migration state | V001–V039 immutable after this closure |
+| Next migration | V040 unreserved; no capability owns it |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -224,3 +224,24 @@ contract after proving the migration slot remains free.
 
 B02-G01 Java/HTTP implementation resumes only after R01 database publication.
 P5-A5/E03 remains inactive.
+
+<!-- P5-E2E-UI-01-B02-R01-G01-CLOSURE -->
+## B02-R01-G01 database-contract closure checkpoint
+
+- activation merge: `3c42d057e4e0bf941af7589d62087721bf88ea81`;
+- authoritative preflight: v1.1, superseding v1.0;
+- implementation commit: `6d528362b6d9ccb5066f5c033caa8035b0f6ab82`;
+- product PR: #66;
+- product merge: `246ca75983b37293b74fdb4baa44e093fa546f8f`;
+- hosted backend CI: exact seven checks GREEN;
+- migration state: V001–V039 committed and immutable;
+- next migration: V040 unreserved;
+- R01-G01 write ownership: NONE after this reconciliation merges;
+- story totals: unchanged at 21 / 155 / 84 / 159 / 31;
+- P5-A5/E03: NOT ACTIVATED.
+
+Next controlled action: run the B02-G01 backend Java/HTTP artifact-contract
+preflight against `246ca75983b37293b74fdb4baa44e093fa546f8f`. Resume calendar
+configuration, routing administration using the published V039 contract, and
+compatibility/readiness exposure. Do not start B02-G03 UI work before B02-G02
+backend publication.
