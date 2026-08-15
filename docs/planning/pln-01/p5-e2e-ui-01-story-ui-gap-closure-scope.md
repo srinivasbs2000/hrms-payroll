@@ -1,6 +1,6 @@
 # P5-E2E-UI-01 — Existing Story UI Gap Closure
 
-**Status:** B02 BACKEND CONTRACT PUBLISHED — 3 stories implemented; 8 remain partial pending B02-G03 UI/browser closure
+**Status:** CLOSED — all 11 selected stories restored to IMPLEMENTED through G05 and B02-G04 evidence reconciliation
 **Execution capability:** P5-E2E-UI-01
 **Program/governance repository:** `srinivasbs2000/hrms-payroll`
 **UI product repository:** `srinivasbs2000/hrms-payroll-web`
@@ -8,7 +8,7 @@
 **UI activation baseline:** `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 **Migration:** V001–V039 immutable; V040 remains unreserved
 **Backend product write authority:** NONE; published backend authority is `d635200523c1685f42ae08c24bd6d7acaa7d68a3`
-**UI product write authority after B02-G02 reconciliation:** P5-E2E-UI-01-B02-G03 only
+**UI product write authority:** NONE after B02-G04 closure
 **Selected-story UI applicability revalidated:** YES
 
 ## 1. Business objective
@@ -230,3 +230,23 @@ applicable workflows through real-browser E2E against the exact merged backend.
 This authority does not promote a story, modify backend code/OpenAPI, reserve a
 migration, create a permission or activate P5-A5/E03. Story promotion remains a
 B02-G04 evidence decision after UI publication.
+
+<!-- P5-E2E-UI-01-B02-G04-FINAL-CLOSURE -->
+## 14. B02-G04 final selected-story outcome
+
+UI PR #16 merged the remaining calendar-configuration, routing,
+compatibility/readiness and consolidated operational journeys at
+`42487de1e99240a99df1ba99742a728671c1636e`. Its exact five hosted checks passed,
+including cross-repository browser E2E against backend main
+`1fcc24024e8fe11631fad91f8a28513e7ba20dbf`.
+
+The story-completion gate now restores the eight G06-partial E02 rows:
+
+- `PLN-E02-002`, `PLN-E02-003`, `PLN-E02-004`, `PLN-E02-006`;
+- `PLN-E02-007`, `PLN-E02-008`, `PLN-E02-009`, `PLN-E02-010`.
+
+Together with the three G06-implemented rows, all 11 selected stories are
+IMPLEMENTED. The detailed ledger is 29 / 147 / 84 / 159 / 31.
+
+P5-E2E-UI-01 and B02 are CLOSED with no remaining write owner. V001-V039 remain
+immutable, V040 remains unreserved, and P5-A5/E03 is not activated.

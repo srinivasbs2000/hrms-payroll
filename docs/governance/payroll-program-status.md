@@ -3,18 +3,18 @@
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
-**Product reconciliation baseline:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`; P5-E2E-UI-01 UI closure evidence PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
+**Product reconciliation baseline:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`; B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
-**Latest merged product increment:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`
-**Latest merged quality increment:** P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`, hosted `payroll-web-ci` all five checks GREEN
+**Latest merged product increment:** P5-E2E-UI-01-B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`
+**Latest merged quality increment:** P5-E2E-UI-01-B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`, hosted `payroll-web-ci` all five checks GREEN
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** P5-E2E-UI-01-B02-G03 after this reconciliation merges; UI repository only
+**Active product write owner:** NONE after B02-G04 closure merges
 **Migration state:** V001–V039 committed and immutable
 **Next migration:** V040 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 15 August 2026 after B02-G01 backend publication and B02-G02 hosted closure
-**Current execution capability:** P5-E2E-UI-01-B02-G03 — Remaining E02 operator/admin UI closure
+**Last reconciled:** 15 August 2026 after B02-G03 UI publication and B02-G04 final evidence reconciliation
+**Current execution capability:** NONE — P5-E2E-UI-01 and B02 are closed
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -583,3 +583,31 @@ write gate in `srinivasbs2000/hrms-payroll-web`. Its backend authority is pinned
 to `d635200523c1685f42ae08c24bd6d7acaa7d68a3`, its UI baseline is
 `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`, and its product branch is
 `feature/p5-e2e-ui-01-b02-g03-ui-closure`.
+
+<!-- P5-E2E-UI-01-B02-G04-FINAL-CLOSURE -->
+## P5-E2E-UI-01-B02-G04 final capability closure
+
+UI implementation commit `221f268f96085fe0d9d3009045cb80ffacb99f9a`
+merged through UI PR #16 at
+`42487de1e99240a99df1ba99742a728671c1636e`. The merge tree
+`d13e3e238ec92a12b1f7b267f16d129e343ac851` is identical to the reviewed
+implementation tree. Lint, 111 unit tests, production build, the targeted G03
+browser project and all five hosted UI checks passed, including the
+cross-repository browser E2E against backend main
+`1fcc24024e8fe11631fad91f8a28513e7ba20dbf`.
+
+Independent G04 reconciliation combines the previously valid V038/V039,
+Java/HTTP/OpenAPI/integration evidence with the G05 and G03 UI/browser evidence.
+The eight remaining E02 rows now satisfy their applicable product,
+authorization, failure-state, build and real-browser boundaries:
+
+- `PLN-E02-002`, `003`, `004`, `006`, `007`, `008`, `009`, `010` -> IMPLEMENTED.
+
+The canonical 450-story ledger is restored to 29 IMPLEMENTED / 147 PARTIALLY
+IMPLEMENTED / 84 NOT EVIDENCED / 159 NOT STARTED / 31 LEGAL/DOMAIN
+REVALIDATION. P5-E2E-UI-01 and B02 are CLOSED and retain no write ownership.
+V001-V039 remain immutable, V040 is unreserved, and P5-A5/E03 remains inactive.
+
+No next product capability is activated by this closure. Any continuation must
+begin with fresh repository/live-GitHub reconciliation and separately governed
+selection/activation authority.

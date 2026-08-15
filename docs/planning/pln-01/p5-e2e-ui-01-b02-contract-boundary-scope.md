@@ -1,6 +1,6 @@
 # P5-E2E-UI-01-B02 — Remaining E02 Contract Boundary Amendment
 
-**Status:** ACTIVE — B02-G01/G02 backend contract published; B02-G03 UI closure is next
+**Status:** CLOSED — backend/UI contracts published and eight remaining E02 stories reconciled to IMPLEMENTED
 **Parent capability:** P5-E2E-UI-01 — Existing Story UI Gap Closure
 **Authority baseline:** backend `981417aaa6fc7f9b141dfcf7433ff0fe2cd515da`; UI `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
 **Migration position:** V001-V039 immutable; V040 remains unreserved
@@ -258,3 +258,24 @@ After this reconciliation merges, section 5 B02-G03 is active with:
 - UI product branch: `feature/p5-e2e-ui-01-b02-g03-ui-closure`;
 - backend/program repository: read-only except later evidence reconciliation;
 - migration and permission mutation: prohibited.
+
+<!-- P5-E2E-UI-01-B02-G04-FINAL-CLOSURE -->
+## 13. B02-G04 final evidence reconciliation
+
+B02-G03 implementation commit `221f268f96085fe0d9d3009045cb80ffacb99f9a`
+merged through UI PR #16 at
+`42487de1e99240a99df1ba99742a728671c1636e`, with reviewed/merged tree
+`d13e3e238ec92a12b1f7b267f16d129e343ac851`.
+
+Local lint, 111 unit tests, production build and targeted calendar/routing
+browser journeys passed. Hosted UI CI passed its exact five checks, including
+cross-repository browser E2E against unchanged backend authority
+`1fcc24024e8fe11631fad91f8a28513e7ba20dbf`.
+
+Applying section 6 to the combined backend, UI and browser evidence promotes
+`PLN-E02-002`, `003`, `004`, `006`, `007`, `008`, `009` and `010` to
+IMPLEMENTED. Program totals are 29 / 147 / 84 / 159 / 31.
+
+B02 is CLOSED. It retains no backend, UI, database, migration, OpenAPI,
+permission or governance write ownership. V001-V039 remain immutable, V040 is
+unreserved and P5-A5/E03 remains inactive.

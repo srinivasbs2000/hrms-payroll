@@ -1,18 +1,18 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 15 August 2026 after B02-G01 backend publication and B02-G02 hosted closure
+**Updated:** 15 August 2026 after B02-G03 UI publication and B02-G04 final capability reconciliation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
-**Product reconciliation baseline:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`; P5-E2E-UI-01 G05 UI PR #15 / `2a42f3909a2ee249ca26be8fb0e14e945f8903a9`
+**Product reconciliation baseline:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`; B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`
+**Latest merged product increment:** P5-E2E-UI-01-B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
-**Latest merged quality increment:** PR #33
-**Active capability:** P5-E2E-UI-01-B02-G03 — Remaining E02 UI/browser closure after this reconciliation merges
-**Current state:** B02-G01 backend PR #68 is merged and all B02-G02 hosted gates are green
+**Latest merged quality increment:** UI PR #16 with exact five hosted checks green
+**Active capability:** NONE — P5-E2E-UI-01 and B02 are closed after this reconciliation
+**Current state:** all 11 selected stories are IMPLEMENTED; no product write owner remains
 **Migrations:** V001–V039 committed and immutable
 **Next migration:** V040 unreserved; no capability owns it
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -268,3 +268,20 @@ B02-G03 UI artifact/route/test preflight against:
 
 Do not modify backend code, OpenAPI, migrations or permissions in B02-G03. Do
 not promote stories until B02-G04 browser-evidence reconciliation.
+
+<!-- P5-E2E-UI-01-B02-G04-FINAL-CLOSURE -->
+## B02-G04 final continuation checkpoint
+
+- backend authority: `1fcc24024e8fe11631fad91f8a28513e7ba20dbf`;
+- UI implementation: `221f268f96085fe0d9d3009045cb80ffacb99f9a`;
+- UI PR #16 merge/main: `42487de1e99240a99df1ba99742a728671c1636e`;
+- UI reviewed/merge tree: `d13e3e238ec92a12b1f7b267f16d129e343ac851`;
+- hosted UI CI: exact five checks GREEN, including cross-repository browser E2E;
+- selected-story result: all 11 IMPLEMENTED;
+- detailed ledger: 29 / 147 / 84 / 159 / 31;
+- P5-E2E-UI-01/B02 write ownership: NONE;
+- V001-V039: immutable; V040: unreserved;
+- P5-A5/E03: NOT ACTIVATED.
+
+No next capability is activated. Continue only after fresh local/remote
+reconciliation and separately governed capability selection/activation.
