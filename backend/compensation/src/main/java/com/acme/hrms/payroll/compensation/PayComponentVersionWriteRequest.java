@@ -2,6 +2,7 @@ package com.acme.hrms.payroll.compensation;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.acme.hrms.payroll.compensation.internal.formula.RestrictedFormulaCompiler;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
@@ -115,6 +116,7 @@ public record PayComponentVersionWriteRequest(
         throw new IllegalArgumentException(
             "Non-FIXED formulaType requires formulaExpression");
       }
+      new RestrictedFormulaCompiler().compile(formulaExpression);
     }
 
     if (roundingScale != null && (roundingScale < 0 || roundingScale > 4)) {
