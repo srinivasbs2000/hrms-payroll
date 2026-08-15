@@ -1,8 +1,10 @@
 package com.acme.hrms.payroll.compensation;
 
+import com.acme.hrms.payroll.compensation.internal.formula.RestrictedFormulaCompiler;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.acme.hrms.payroll.compensation.internal.formula.RestrictedFormulaCompiler;
+import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.StatutoryWageReferenceRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
@@ -13,19 +15,17 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = false)
 public record PayComponentVersionWriteRequest(
-    @NotBlank @Pattern(regexp = "^[A-Z][A-Z0-9_]{1,29}$")
-        String formulaType,
+    @NotBlank @Pattern(regexp = "^[A-Z][A-Z0-9_]{1,29}$") String formulaType,
     @Size(max = 1000) String formulaExpression,
-    @DecimalMin("0.0000") @Digits(integer = 15, fraction = 4)
-        BigDecimal fixedAmount,
+    @DecimalMin("0.0000") @Digits(integer = 15, fraction = 4) BigDecimal fixedAmount,
     @Min(0) @Max(4) Integer roundingScale,
     @NotBlank String componentCategory,
-    @Pattern(regexp = "^[A-Z][A-Z0-9_]{1,59}$")
-        String componentSubcategory,
+    @Pattern(regexp = "^[A-Z][A-Z0-9_]{1,59}$") String componentSubcategory,
     @NotBlank String cashImpact,
     @NotBlank String payeeType,
     @NotBlank String paymentChannel,
@@ -39,7 +39,10 @@ public record PayComponentVersionWriteRequest(
     @NotBlank String taxTreatment,
     @NotBlank String payrollTiming,
     @NotNull LocalDate effectiveFrom,
-    LocalDate effectiveTo) {
+    LocalDate effectiveTo,
+    @Size(max = 32) List<@Valid StatutoryWageReferenceRequest> statutoryWageReferences,
+    String calculationPhase,
+    String resultContract) {
 
   private static final Set<String> FORMULA_TYPES =
       Set.of("FIXED", "PERCENTAGE_OF_COMPONENT", "RESIDUAL");
@@ -47,8 +50,7 @@ public record PayComponentVersionWriteRequest(
       "CASH_EARNING", "EMPLOYEE_DEDUCTION", "EMPLOYER_CONTRIBUTION",
       "EMPLOYER_PROVISION", "REIMBURSEMENT", "BENEFIT",
       "TAXABLE_PERQUISITE", "NOTIONAL", "ACCRUAL");
-  private static final Set<String> CASH_IMPACTS =
-      Set.of("INCREASE", "DECREASE", "NONE");
+  private static final Set<String> CASH_IMPACTS = Set.of("INCREASE", "DECREASE", "NONE");
   private static final Set<String> PAYEES = Set.of(
       "EMPLOYEE", "AUTHORITY", "LENDER", "BENEFIT_PROVIDER", "INTERNAL", "NONE");
   private static final Set<String> PAYMENT_CHANNELS = Set.of(
@@ -57,8 +59,7 @@ public record PayComponentVersionWriteRequest(
       "CURRENT_PERIOD", "DEFERRED", "ACCRUAL", "EXIT", "ANNUAL", "NONE");
   private static final Set<String> PAYSLIP_VISIBILITIES =
       Set.of("SHOW", "SUMMARISE", "HIDE", "CONDITIONAL");
-  private static final Set<String> ZERO_VALUE_VISIBILITIES =
-      Set.of("SHOW", "SUPPRESS");
+  private static final Set<String> ZERO_VALUE_VISIBILITIES = Set.of("SHOW", "SUPPRESS");
   private static final Set<String> NEGATIVE_VALUE_POLICIES =
       Set.of("ALLOW", "PROHIBIT", "REVERSAL_ONLY");
   private static final Set<String> FREQUENCIES = Set.of(
@@ -67,8 +68,7 @@ public record PayComponentVersionWriteRequest(
       "ON_CONFIRMATION", "ON_ANNIVERSARY");
   private static final Set<String> VALUE_NATURES = Set.of(
       "FIXED", "VARIABLE", "DERIVED", "EXTERNAL_INPUT", "EMPLOYEE_ELECTION",
-      "EMPLOYER_DISCRETION", "STATUTORY", "BALANCE_RECOVERY", "PROVISION",
-      "NOTIONAL");
+      "EMPLOYER_DISCRETION", "STATUTORY", "BALANCE_RECOVERY", "PROVISION", "NOTIONAL");
   private static final Set<String> AMOUNT_REPRESENTATIONS = Set.of(
       "ANNUAL_AMOUNT", "MONTHLY_AMOUNT", "DAILY_RATE", "HOURLY_RATE",
       "PER_UNIT_RATE", "PERCENTAGE", "SLAB", "QUANTITY_RATE",
@@ -79,8 +79,57 @@ public record PayComponentVersionWriteRequest(
       "REIMBURSEMENT", "TAX_ONLY_NOTIONAL");
   private static final Set<String> PAYROLL_TIMINGS = Set.of(
       "REGULAR", "OFF_CYCLE_ONLY", "REGULAR_AND_OFF_CYCLE",
-      "FINAL_SETTLEMENT_ONLY", "ANNUAL", "CORRECTION",
-      "NON_PAYROLL_REPORTING");
+      "FINAL_SETTLEMENT_ONLY", "ANNUAL", "CORRECTION", "NON_PAYROLL_REPORTING");
+  private static final Set<String> CALCULATION_PHASES =
+      Set.of("INPUT", "PRE_TAX", "TAX", "POST_TAX", "NET");
+
+  /** Compatibility constructor preserving the pre-G02-B 20-field Java contract. */
+  public PayComponentVersionWriteRequest(
+      String formulaType,
+      String formulaExpression,
+      BigDecimal fixedAmount,
+      Integer roundingScale,
+      String componentCategory,
+      String componentSubcategory,
+      String cashImpact,
+      String payeeType,
+      String paymentChannel,
+      String settlementTiming,
+      String payslipVisibility,
+      String zeroValueVisibility,
+      String negativeValuePolicy,
+      String frequency,
+      String valueNature,
+      String amountRepresentation,
+      String taxTreatment,
+      String payrollTiming,
+      LocalDate effectiveFrom,
+      LocalDate effectiveTo) {
+    this(
+        formulaType,
+        formulaExpression,
+        fixedAmount,
+        roundingScale,
+        componentCategory,
+        componentSubcategory,
+        cashImpact,
+        payeeType,
+        paymentChannel,
+        settlementTiming,
+        payslipVisibility,
+        zeroValueVisibility,
+        negativeValuePolicy,
+        frequency,
+        valueNature,
+        amountRepresentation,
+        taxTreatment,
+        payrollTiming,
+        effectiveFrom,
+        effectiveTo,
+        List.of(),
+        null,
+        null);
+  }
 
   public void validate() {
     requireMember(FORMULA_TYPES, formulaType, "formulaType");
@@ -97,24 +146,35 @@ public record PayComponentVersionWriteRequest(
     requireMember(AMOUNT_REPRESENTATIONS, amountRepresentation, "amountRepresentation");
     requireMember(TAX_TREATMENTS, taxTreatment, "taxTreatment");
     requireMember(PAYROLL_TIMINGS, payrollTiming, "payrollTiming");
+    requireMember(CALCULATION_PHASES, resolvedCalculationPhase(), "calculationPhase");
+    if (!"DECIMAL".equals(resolvedResultContract())) {
+      throw new IllegalArgumentException("resultContract contains an unsupported value");
+    }
+    Set<java.util.UUID> statutoryRuleIds = new java.util.HashSet<>();
+    for (StatutoryWageReferenceRequest reference : resolvedStatutoryWageReferences()) {
+      if (reference == null) {
+        throw new IllegalArgumentException("statutory wage reference is required");
+      }
+      reference.validate();
+      if (!statutoryRuleIds.add(reference.statutoryRuleId())) {
+        throw new IllegalArgumentException(
+            "statutory wage references must use unique statutory rule identities");
+      }
+    }
 
     if ("FIXED".equals(formulaType)) {
       if (fixedAmount == null || fixedAmount.signum() < 0) {
-        throw new IllegalArgumentException(
-            "FIXED formulaType requires a non-negative fixedAmount");
+        throw new IllegalArgumentException("FIXED formulaType requires a non-negative fixedAmount");
       }
       if (formulaExpression != null && !formulaExpression.isBlank()) {
-        throw new IllegalArgumentException(
-            "FIXED formulaType must not contain formulaExpression");
+        throw new IllegalArgumentException("FIXED formulaType must not contain formulaExpression");
       }
     } else {
       if (fixedAmount != null) {
-        throw new IllegalArgumentException(
-            "Non-FIXED formulaType must not contain fixedAmount");
+        throw new IllegalArgumentException("Non-FIXED formulaType must not contain fixedAmount");
       }
       if (formulaExpression == null || formulaExpression.isBlank()) {
-        throw new IllegalArgumentException(
-            "Non-FIXED formulaType requires formulaExpression");
+        throw new IllegalArgumentException("Non-FIXED formulaType requires formulaExpression");
       }
       new RestrictedFormulaCompiler().compile(formulaExpression);
     }
@@ -131,14 +191,29 @@ public record PayComponentVersionWriteRequest(
     return roundingScale == null ? 2 : roundingScale;
   }
 
+  public List<StatutoryWageReferenceRequest> resolvedStatutoryWageReferences() {
+    return statutoryWageReferences == null ? List.of() : List.copyOf(statutoryWageReferences);
+  }
+
+  public String resolvedCalculationPhase() {
+    if (calculationPhase == null || calculationPhase.isBlank()) {
+      return "FIXED".equals(formulaType) ? "INPUT" : "PRE_TAX";
+    }
+    return calculationPhase;
+  }
+
+  public String resolvedResultContract() {
+    return resultContract == null || resultContract.isBlank() ? "DECIMAL" : resultContract;
+  }
+
   private static void requireMember(Set<String> values, String value, String field) {
     if (value == null || value.isBlank() || !values.contains(value)) {
       throw new IllegalArgumentException(field + " contains an unsupported value");
     }
   }
+
   @JsonAnySetter
   public void rejectUnknownProperty(String property, Object value) {
     throw new IllegalArgumentException("Unknown request field: " + property);
   }
-
 }

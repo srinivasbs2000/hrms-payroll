@@ -905,6 +905,571 @@ paths:
     $ref: '#/components/pathItems/PayComponentAudit'
   /pay-components/{identityId}/retirement:
     $ref: '#/components/pathItems/PayComponentRetirement'
+  # P5-CCF-01 G02-B component formula/rate/rounding/proration controls
+  /pay-components/formula-validation:
+    post:
+      tags: [Compensation]
+      summary: Validate and canonicalize a restricted component formula
+      operationId: validatePayComponentFormula
+      x-permission: compensation.component.read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [expression]
+              properties:
+                expression: {type: string, minLength: 1, maxLength: 1000}
+                calculationPhase: {type: string, enum: [INPUT, PRE_TAX, TAX, POST_TAX, NET], default: PRE_TAX}
+                resultContract: {type: string, enum: [DECIMAL], default: DECIMAL}
+      responses:
+        '200':
+          description: Canonical restricted-formula validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [canonicalExpression, dependencies, calculationPhase, resultContract, formulaFingerprint]
+                properties:
+                  canonicalExpression: {type: string}
+                  dependencies: {type: array, items: {type: string}}
+                  calculationPhase: {type: string, enum: [INPUT, PRE_TAX, TAX, POST_TAX, NET]}
+                  resultContract: {type: string, const: DECIMAL}
+                  formulaFingerprint: {type: string, pattern: '^[0-9a-f]{64}$'}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+
+  /pay-components/{identityId}/dependencies:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Inspect persisted exact-version component dependency edges
+      operationId: getPayComponentDependencies
+      x-permission: compensation.component.read
+      responses:
+        '200':
+          description: Persisted formula dependency history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    componentId: {type: string, format: uuid}
+                    componentVersionId: {type: string, format: uuid}
+                    componentCode: {type: string}
+                    calculationPhase: {type: string}
+                    dependencyComponentId: {type: [string, 'null'], format: uuid}
+                    dependencyComponentVersionId: {type: [string, 'null'], format: uuid}
+                    dependencyCode: {type: [string, 'null']}
+                    dependencyPhase: {type: [string, 'null']}
+                    dependencyOrder: {type: integer, minimum: 0}
+                    formulaFingerprint: {type: string}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+
+  /pay-components/{identityId}/statutory-wage-references:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Inspect exact approved statutory rule-version references used for wage classification
+      description: Legal wage interpretation remains owned by the referenced statutory rule version.
+      operationId: getPayComponentStatutoryWageReferences
+      x-permission: compensation.component.read
+      responses:
+        '200':
+          description: Exact statutory wage-classification references for component versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [componentId, componentVersionId, statutoryRuleId, statutoryRuleVersionId, statutoryRuleCode, ruleCategory, ruleEffectiveFrom]
+                  properties:
+                    componentId: {type: string, format: uuid}
+                    componentVersionId: {type: string, format: uuid}
+                    statutoryRuleId: {type: string, format: uuid}
+                    statutoryRuleVersionId: {type: string, format: uuid}
+                    statutoryRuleCode: {type: string}
+                    ruleCategory: {type: string}
+                    ruleEffectiveFrom: {type: string, format: date}
+                    ruleEffectiveTo: {type: [string, 'null'], format: date}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+
+  /component-rate-tables:
+    get:
+      tags: [Compensation]
+      summary: List effective approved component rate tables
+      operationId: listComponentRateTables
+      x-permission: compensation.component.read
+      parameters:
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200':
+          description: Effective component rate tables
+          content:
+            application/json:
+              schema: {type: array, items: {type: object}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Compensation]
+      summary: Create a component rate-table identity and draft version
+      operationId: createComponentRateTable
+      x-permission: compensation.component.create
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [code, name, version]
+              properties:
+                code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,59}$'}
+                name: {type: string, minLength: 1, maxLength: 160}
+                version:
+                  $ref: '#/components/schemas/P5CcfRateTableVersionWrite'
+      responses:
+        '201': {description: Rate table created, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-rate-tables/{identityId}:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Read the effective approved component rate table
+      operationId: getComponentRateTable
+      x-permission: compensation.component.read
+      parameters:
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200': {description: Effective rate table, content: {application/json: {schema: {type: object}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+
+  /component-rate-tables/{identityId}/versions:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Read complete component rate-table version history
+      operationId: getComponentRateTableHistory
+      x-permission: compensation.component.read
+      responses:
+        '200': {description: Rate-table history, content: {application/json: {schema: {type: array, items: {type: object}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Compensation]
+      summary: Add a component rate-table draft version
+      operationId: addComponentRateTableVersion
+      x-permission: compensation.component.version.create
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/P5CcfRateTableVersionWrite'}
+      responses:
+        '201': {description: Rate-table version created, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-rate-tables/{identityId}/versions/{versionId}/end-date:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Compensation]
+      summary: End-date a component rate-table version using optimistic concurrency
+      operationId: endDateComponentRateTableVersion
+      x-permission: compensation.component.version.end-date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [effectiveTo]
+              properties:
+                effectiveTo: {type: string, format: date}
+      responses:
+        '200': {description: Effective end applied, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-rate-tables/{identityId}/versions/{versionId}/approval:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Compensation]
+      summary: Approve a component rate-table version with maker-checker separation
+      operationId: approveComponentRateTableVersion
+      x-permission: compensation.component.approve
+      responses:
+        '200': {description: Approved rate-table version, content: {application/json: {schema: {type: object}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-rate-tables/{identityId}/lookup:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    post:
+      tags: [Compensation]
+      summary: Deterministically resolve an effective rate from exact dimension values
+      operationId: lookupComponentRate
+      x-permission: compensation.component.read
+      parameters:
+      - $ref: '#/components/parameters/AsOf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, minProperties: 1, additionalProperties: {type: string}}
+      responses:
+        '200': {description: Effective rate lookup result, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+
+  /component-rate-tables/{identityId}/audit:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Read component rate-table audit evidence
+      operationId: getComponentRateTableAudit
+      x-permission: audit.read
+      responses:
+        '200': {description: Audit evidence, content: {application/json: {schema: {type: array, items: {type: object}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+
+  /component-rounding-policies:
+    get:
+      tags: [Compensation]
+      summary: List effective approved component rounding policies
+      operationId: listComponentRoundingPolicies
+      x-permission: compensation.component.read
+      parameters:
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200': {description: Effective rounding policies, content: {application/json: {schema: {type: array, items: {type: object}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Compensation]
+      summary: Create a component rounding-policy identity and draft version
+      operationId: createComponentRoundingPolicy
+      x-permission: compensation.component.create
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [componentId, version]
+              properties:
+                componentId: {type: string, format: uuid}
+                version: {$ref: '#/components/schemas/P5CcfRoundingVersionWrite'}
+      responses:
+        '201': {description: Rounding policy created, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-rounding-policies/{identityId}:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Read the effective approved component rounding policy
+      operationId: getComponentRoundingPolicy
+      x-permission: compensation.component.read
+      parameters:
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200': {description: Effective rounding policy, content: {application/json: {schema: {type: object}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+
+  /component-rounding-policies/{identityId}/versions:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Read component rounding-policy history
+      operationId: getComponentRoundingPolicyHistory
+      x-permission: compensation.component.read
+      responses:
+        '200': {description: Rounding-policy history, content: {application/json: {schema: {type: array, items: {type: object}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Compensation]
+      summary: Add a component rounding-policy draft version
+      operationId: addComponentRoundingPolicyVersion
+      x-permission: compensation.component.version.create
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/P5CcfRoundingVersionWrite'}
+      responses:
+        '201': {description: Rounding-policy version created, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-rounding-policies/{identityId}/versions/{versionId}/end-date:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Compensation]
+      summary: End-date a component rounding-policy version using optimistic concurrency
+      operationId: endDateComponentRoundingPolicyVersion
+      x-permission: compensation.component.version.end-date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [effectiveTo]
+              properties:
+                effectiveTo: {type: string, format: date}
+      responses:
+        '200': {description: Effective end applied, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-rounding-policies/{identityId}/versions/{versionId}/approval:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Compensation]
+      summary: Approve a component rounding-policy version
+      operationId: approveComponentRoundingPolicyVersion
+      x-permission: compensation.component.approve
+      responses:
+        '200': {description: Approved rounding-policy version, content: {application/json: {schema: {type: object}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-rounding-policies/{identityId}/audit:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Read component rounding-policy audit evidence
+      operationId: getComponentRoundingPolicyAudit
+      x-permission: audit.read
+      responses:
+        '200': {description: Audit evidence, content: {application/json: {schema: {type: array, items: {type: object}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+
+  /component-proration-policies:
+    get:
+      tags: [Compensation]
+      summary: List effective approved component proration policies
+      operationId: listComponentProrationPolicies
+      x-permission: compensation.component.read
+      parameters:
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200': {description: Effective proration policies, content: {application/json: {schema: {type: array, items: {type: object}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Compensation]
+      summary: Create an event-specific component proration policy
+      operationId: createComponentProrationPolicy
+      x-permission: compensation.component.create
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [componentId, eventType, version]
+              properties:
+                componentId: {type: string, format: uuid}
+                eventType: {type: string, enum: [JOINING, EXIT, UNPAID_LEAVE, TRANSFER, SALARY_REVISION]}
+                version: {$ref: '#/components/schemas/P5CcfProrationVersionWrite'}
+      responses:
+        '201': {description: Proration policy created, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-proration-policies/{identityId}:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Read the effective approved component proration policy
+      operationId: getComponentProrationPolicy
+      x-permission: compensation.component.read
+      parameters:
+      - $ref: '#/components/parameters/AsOf'
+      responses:
+        '200': {description: Effective proration policy, content: {application/json: {schema: {type: object}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+
+  /component-proration-policies/{identityId}/versions:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Read component proration-policy history
+      operationId: getComponentProrationPolicyHistory
+      x-permission: compensation.component.read
+      responses:
+        '200': {description: Proration-policy history, content: {application/json: {schema: {type: array, items: {type: object}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+    post:
+      tags: [Compensation]
+      summary: Add a component proration-policy draft version
+      operationId: addComponentProrationPolicyVersion
+      x-permission: compensation.component.version.create
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/P5CcfProrationVersionWrite'}
+      responses:
+        '201': {description: Proration-policy version created, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-proration-policies/{identityId}/versions/{versionId}/end-date:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Compensation]
+      summary: End-date a component proration-policy version using optimistic concurrency
+      operationId: endDateComponentProrationPolicyVersion
+      x-permission: compensation.component.version.end-date
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [effectiveTo]
+              properties:
+                effectiveTo: {type: string, format: date}
+      responses:
+        '200': {description: Effective end applied, content: {application/json: {schema: {type: object}}}}
+        '400': {$ref: '#/components/responses/Problem'}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-proration-policies/{identityId}/versions/{versionId}/approval:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    - $ref: '#/components/parameters/VersionId'
+    - $ref: '#/components/parameters/IdempotencyKey'
+    - $ref: '#/components/parameters/IfMatch'
+    post:
+      tags: [Compensation]
+      summary: Approve a component proration-policy version
+      operationId: approveComponentProrationPolicyVersion
+      x-permission: compensation.component.approve
+      responses:
+        '200': {description: Approved proration-policy version, content: {application/json: {schema: {type: object}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
+        '404': {$ref: '#/components/responses/Problem'}
+        '409': {$ref: '#/components/responses/Problem'}
+
+  /component-proration-policies/{identityId}/audit:
+    parameters:
+    - $ref: '#/components/parameters/IdentityId'
+    get:
+      tags: [Compensation]
+      summary: Read component proration-policy audit evidence
+      operationId: getComponentProrationPolicyAudit
+      x-permission: audit.read
+      responses:
+        '200': {description: Audit evidence, content: {application/json: {schema: {type: array, items: {type: object}}}}}
+        '401': {$ref: '#/components/responses/Problem'}
+        '403': {$ref: '#/components/responses/Problem'}
   /payroll-bases:
     $ref: '#/components/pathItems/PayrollBaseCollection'
   /payroll-bases/{identityId}:
@@ -5308,6 +5873,64 @@ components:
         approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
         supersedesVersionId: {type: [string, 'null'], format: uuid}
         superseded: {type: boolean}
+    # P5-CCF-01 G02-B component-control request schemas
+    P5CcfStatutoryWageReference:
+      type: object
+      additionalProperties: false
+      required: [statutoryRuleId, statutoryRuleVersionId]
+      properties:
+        statutoryRuleId: {type: string, format: uuid}
+        statutoryRuleVersionId: {type: string, format: uuid}
+    P5CcfRateTableVersionWrite:
+      type: object
+      additionalProperties: false
+      required: [effectiveFrom, dimensions, cells]
+      properties:
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+        dimensions:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            type: object
+            additionalProperties: false
+            required: [code, name, dataType]
+            properties:
+              code: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,39}$'}
+              name: {type: string, minLength: 1, maxLength: 120}
+              dataType: {type: string, enum: [TEXT, NUMBER, BOOLEAN, DATE]}
+        cells:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            type: object
+            additionalProperties: false
+            required: [dimensionValues, rateValue]
+            properties:
+              dimensionValues: {type: object, minProperties: 1, additionalProperties: {type: string}}
+              rateValue: {type: number}
+    P5CcfRoundingVersionWrite:
+      type: object
+      additionalProperties: false
+      required: [method, scale, stage, negativeTreatment, effectiveFrom]
+      properties:
+        method: {type: string, enum: [HALF_UP, HALF_EVEN, HALF_DOWN, UP, DOWN, CEILING, FLOOR]}
+        scale: {type: integer, minimum: 0, maximum: 10}
+        stage: {type: string, enum: [COMPONENT, INTERMEDIATE, FINAL]}
+        negativeTreatment: {type: string, enum: [SYMMETRIC, TOWARD_ZERO, AWAY_FROM_ZERO, PROHIBIT]}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
+    P5CcfProrationVersionWrite:
+      type: object
+      additionalProperties: false
+      required: [method, basis, effectiveFrom]
+      properties:
+        method: {type: string, enum: [CALENDAR_DAYS, WORKING_DAYS, ACTUAL_DAYS, NONE]}
+        basis: {type: string, enum: [PAY_PERIOD, MONTH, ANNUAL, DAILY_RATE]}
+        effectiveFrom: {type: string, format: date}
+        effectiveTo: {type: [string, 'null'], format: date}
     PayComponentVersionWrite:
       type: object
       additionalProperties: false
@@ -5333,6 +5956,12 @@ components:
         payrollTiming: {type: string, enum: [REGULAR, OFF_CYCLE_ONLY, REGULAR_AND_OFF_CYCLE, FINAL_SETTLEMENT_ONLY, ANNUAL, CORRECTION, NON_PAYROLL_REPORTING]}
         effectiveFrom: {type: string, format: date}
         effectiveTo: {type: [string, 'null'], format: date}
+        statutoryWageReferences:
+          type: array
+          maxItems: 32
+          items: {$ref: '#/components/schemas/P5CcfStatutoryWageReference'}
+        calculationPhase: {type: string, enum: [INPUT, PRE_TAX, TAX, POST_TAX, NET]}
+        resultContract: {type: string, enum: [DECIMAL]}
     PayComponentCreate:
       type: object
       additionalProperties: false

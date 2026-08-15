@@ -31,6 +31,7 @@ public class PayComponentService {
   private static final String OBJECT_TYPE = "PAY_COMPONENT";
 
   private final PayComponentRepository repository;
+  private final ComponentCatalogueControlService controls;
   private final TenantTransactionExecutor transactions;
   private final AuthenticatedActor actor;
   private final Clock clock;
@@ -44,6 +45,7 @@ public class PayComponentService {
 
   public PayComponentService(
       PayComponentRepository repository,
+      ComponentCatalogueControlService controls,
       TenantTransactionExecutor transactions,
       AuthenticatedActor actor,
       Clock clock,
@@ -55,6 +57,7 @@ public class PayComponentService {
       CanonicalJsonHasher canonical,
       ObjectMapper objectMapper) {
     this.repository = repository;
+    this.controls = controls;
     this.transactions = transactions;
     this.actor = actor;
     this.clock = clock;
@@ -75,6 +78,7 @@ public class PayComponentService {
         request,
         () -> {
           PayComponentView created = repository.create(request, actor.require());
+          controls.captureFormula(created, request.version());
           record("CREATED", created, null);
           return created;
         });
@@ -90,8 +94,8 @@ public class PayComponentService {
         key,
         request,
         () -> {
-          PayComponentView created =
-              repository.addVersion(identityId, request, null, actor.require());
+          PayComponentView created = repository.addVersion(identityId, request, null, actor.require());
+          controls.captureFormula(created, request);
           record("VERSION_CREATED", created, null);
           return created;
         });
@@ -120,6 +124,7 @@ public class PayComponentService {
 
           PayComponentView corrected = repository.addVersion(
               identityId, request, versionId, actor.require());
+          controls.captureFormula(corrected, request);
           record("VERSION_CORRECTED", corrected, previous);
           return corrected;
         });
@@ -133,8 +138,8 @@ public class PayComponentService {
         () -> {
           PayComponentView before = repository.version(versionId);
           requireIdentity(before, identityId);
-          PayComponentView approved =
-              repository.approve(versionId, actor.require(), clock.instant());
+          controls.ensureFormulaReady(before);
+          PayComponentView approved = repository.approve(versionId, actor.require(), clock.instant());
           record("VERSION_APPROVED", approved, before);
           return approved;
         });
@@ -199,8 +204,7 @@ public class PayComponentService {
   }
 
   public PayComponentView current(UUID identityId, LocalDate asOf) {
-    return transactions.read(
-        () -> repository.current(identityId, effectiveDate(asOf)));
+    return transactions.read(() -> repository.current(identityId, effectiveDate(asOf)));
   }
 
   public List<PayComponentView> history(UUID identityId) {
@@ -224,7 +228,7 @@ public class PayComponentService {
 
     var event = events.create(
         "PayComponent" + action,
-        2,
+        3,
         TenantContext.require(),
         null,
         OBJECT_TYPE,
@@ -269,6 +273,7 @@ public class PayComponentService {
     state.put("formulaExpression", view.formulaExpression());
     state.put("fixedAmount", view.fixedAmount());
     state.put("roundingScale", view.roundingScale());
+    state.putAll(controls.formulaEvidence(view.versionId()));
     state.put("effectiveFrom", view.effectiveFrom());
     state.put("effectiveTo", view.effectiveTo());
     state.put("approvalStatus", view.approvalStatus());
@@ -291,8 +296,7 @@ public class PayComponentService {
       var saved = idempotency.find(operation, key);
       if (saved.isPresent()) {
         if (!saved.get().requestHash().equals(requestHash)) {
-          throw new ConflictException(
-              "Idempotency-Key was already used with a different request");
+          throw new ConflictException("Idempotency-Key was already used with a different request");
         }
         if (!saved.get().completed()) {
           throw new ConflictException("Idempotent operation is still in progress");
@@ -300,8 +304,7 @@ public class PayComponentService {
         try {
           return objectMapper.readValue(saved.get().body(), PayComponentView.class);
         } catch (JsonProcessingException exception) {
-          throw new IllegalStateException(
-              "Stored idempotent response is invalid", exception);
+          throw new IllegalStateException("Stored idempotent response is invalid", exception);
         }
       }
 
@@ -327,8 +330,7 @@ public class PayComponentService {
 
   private void requireIdentity(PayComponentView version, UUID identityId) {
     if (!version.identityId().equals(identityId)) {
-      throw new IllegalArgumentException(
-          "Version does not belong to pay-component identity");
+      throw new IllegalArgumentException("Version does not belong to pay-component identity");
     }
   }
 }
