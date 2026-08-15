@@ -77,6 +77,13 @@ class PayComponentContractTest {
     assertThatThrownBy(invalidCategory::validate)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("componentCategory");
+
+    PayComponentVersionWriteRequest unsafeFormula = version(
+        "PERCENTAGE_OF_COMPONENT", "EVAL(BASIC)", null,
+        LocalDate.of(2027, 1, 1), null);
+    assertThatThrownBy(unsafeFormula::validate)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("UNSUPPORTED_FUNCTION");
   }
 
   private PayComponentVersionWriteRequest version(
