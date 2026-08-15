@@ -1,13 +1,15 @@
 # P5-CCF-01 — Component Catalogue Formula, Rate and Control Completion
 
-**Status:** ACTIVATED FOR READ-ONLY G01 PREFLIGHT
+**Status:** G01 COMPLETE — R01 APPROVED FOR G02 BACKEND/API IMPLEMENTATION
 **Execution identity:** P5-CCF-01
 **Original program mapping:** P5-A5 / E03 Component Catalogue
 **Activation backend baseline:** 6e8355e80a7cf719fa3a7fc6766f4d486879d1d4
 **Activation UI baseline:** 42487de1e99240a99df1ba99742a728671c1636e
-**Product write owner:** NONE
-**Migration owner:** NONE; V040 remains unreserved
-**Recommended reasoning:** R3 for G01 architecture/schema verdict; R2 only after separately governed product-write authority
+**Backend product write owner:** P5-CCF-01-G02
+**UI product write owner:** NONE
+**Migration owner:** P5-CCF-01-G02; V040 reserved
+**R3 verdict:** SCHEMA_AMENDMENT_REQUIRED
+**Recommended reasoning:** R2 for bounded G02 implementation; R3 for independent review and G03/G04 gates
 
 ## 1. Purpose
 
@@ -96,7 +98,7 @@ proven by G01 before UI product write is authorized.
 - Tenant-aware foreign keys, forced RLS, NOBYPASSRLS runtime access,
   maker-checker controls, append-only audit/outbox evidence and immutable
   approved history remain mandatory.
-- V001–V039 are immutable. V040 is not reserved by activation.
+- V001–V039 are immutable. R01 reserves V040 exclusively for P5-CCF-01-G02.
 - Existing E03 behavior and existing API compatibility are preserved unless a
   later approved amendment explicitly versions the change.
 
@@ -150,12 +152,16 @@ reserves no migration and promotes no story.
 6. G04 — independent critical review, ordered publication, hosted CI, exact-head
    merges, story reconciliation and final capability closure.
 
-## 9. Activation exit state
+## 9. G01/R01 exit state
 
-- Capability: P5-CCF-01 ACTIVATED FOR READ-ONLY G01 PREFLIGHT.
-- Backend product write owner: NONE.
+- G01 evidence: PASS; product mutation NONE.
+- R3 verdict: SCHEMA_AMENDMENT_REQUIRED.
+- Capability: P5-CCF-01 ACTIVATED FOR G02 BACKEND/API IMPLEMENTATION.
+- Backend product write owner: P5-CCF-01-G02.
 - UI product write owner: NONE.
-- Migration owner: NONE; V040 unreserved.
-- Authorized next action: G01 read-only artifact and contract preflight.
-- Prohibited next action: any product, schema, migration, permission, story
-  status, push, PR or merge action not separately authorized.
+- Migration owner: P5-CCF-01-G02; V040 reserved.
+- Authorized next action: bounded G02 backend/API implementation within the R3 allow-list.
+- Prohibited next action: UI mutation, story promotion, or changes outside the
+  exact G02 allow-list without separate authority.
+
+`P5_CCF_01_R01: APPROVED`

@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-E2E-UI-01-B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`, hosted `payroll-web-ci` all five checks GREEN
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** NONE — P5-CCF-01 activation authorizes read-only G01 only
+**Active product write owner:** P5-CCF-01-G02 backend/API only after R01 publication
 **Migration state:** V001–V039 committed and immutable
-**Next migration:** V040 unreserved; no capability owns it
+**Next migration:** V040 reserved exclusively for P5-CCF-01-G02
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
 **Last reconciled:** 15 August 2026 at P5-CCF-01 governance-only activation
-**Current execution capability:** P5-CCF-01 — ACTIVATED FOR READ-ONLY G01 PREFLIGHT
+**Current execution capability:** P5-CCF-01 — G01 complete; R01 approves G02 backend/API implementation
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -637,3 +637,21 @@ The next controlled action after activation publication is G01 read-only
 backend/database/API/UI artifact and contract preflight. G01 must issue an
 evidence-backed schema verdict before any product write or V040 reservation.
 <!-- P5-CCF-01-ACTIVATION:END -->
+
+<!-- P5-CCF-01-R01:START -->
+## P5-CCF-01 G01/R01 schema-amendment authority
+
+G01 passed against backend `dfc25a45c22c36be20df733c866cbd5ac0151c61`
+and UI `42487de1e99240a99df1ba99742a728671c1636e` with no product mutation.
+The R3 binary verdict is `SCHEMA_AMENDMENT_REQUIRED`.
+
+R01 authorizes P5-CCF-01-G02 as the sole bounded backend/API write owner and
+reserves V040 exclusively for component formula, dependency, rate-table,
+rounding and proration control completion. V001–V039 remain immutable. UI write
+ownership remains NONE. P5-E2E-UI-01/B02 remains closed.
+
+Canonical story statuses and totals remain unchanged until merged executable
+backend, UI and browser evidence is reconciled at G04.
+
+`P5_CCF_01_R01: APPROVED`
+<!-- P5-CCF-01-R01:END -->
