@@ -1,7 +1,7 @@
 package com.acme.hrms.payroll.compensation;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -12,6 +12,9 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Currency;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,6 +28,8 @@ public final class ComponentCatalogueControls {
       Set.of("INPUT", "PRE_TAX", "TAX", "POST_TAX", "NET");
   private static final Set<String> RATE_TYPES =
       Set.of("TEXT", "NUMBER", "BOOLEAN", "DATE");
+  private static final Set<String> RATE_VALUE_TYPES =
+      Set.of("AMOUNT", "PERCENTAGE", "FACTOR", "QUANTITY");
   private static final Set<String> ROUNDING_METHODS =
       Set.of("HALF_UP", "HALF_EVEN", "HALF_DOWN", "UP", "DOWN", "CEILING", "FLOOR");
   private static final Set<String> ROUNDING_STAGES =
@@ -76,6 +81,23 @@ public final class ComponentCatalogueControls {
       int dependencyOrder,
       String formulaFingerprint) {}
 
+  public record FormulaDependantView(
+      UUID dependantComponentId,
+      UUID dependantComponentVersionId,
+      String dependantComponentCode,
+      UUID dependencyComponentVersionId,
+      int dependencyOrder,
+      String formulaFingerprint) {}
+
+  public record ComponentImpactView(
+      UUID componentId,
+      List<FormulaDependencyView> outgoingDependencies,
+      List<FormulaDependantView> formulaDependants,
+      List<UUID> payrollBaseIds,
+      List<UUID> salaryStructureIds,
+      List<UUID> roundingPolicyIds,
+      List<UUID> prorationPolicyIds) {}
+
   /** Exact approved statutory rule-version reference; legal interpretation remains in the statutory context. */
   public record StatutoryWageReferenceRequest(
       @NotNull UUID statutoryRuleId,
@@ -109,16 +131,22 @@ public final class ComponentCatalogueControls {
       if (name == null || name.isBlank()) {
         throw new IllegalArgumentException("name is required");
       }
+      if (version == null) {
+        throw new IllegalArgumentException("version is required");
+      }
       version.validate();
     }
   }
 
   public record RateTableVersionWriteRequest(
+      @NotBlank String valueType,
+      @NotBlank @Pattern(regexp = "^[A-Z][A-Z0-9_]{1,19}$") String unitCode,
       @NotNull LocalDate effectiveFrom,
       LocalDate effectiveTo,
       @NotEmpty @Size(max = 8) List<@Valid RateDimensionRequest> dimensions,
       @NotEmpty @Size(max = 500) List<@Valid RateCellRequest> cells) {
     public void validate() {
+      requireRateValueContract(valueType, unitCode);
       requireRange(effectiveFrom, effectiveTo);
       if (dimensions == null || dimensions.isEmpty()) {
         throw new IllegalArgumentException("at least one rate-table dimension is required");
@@ -126,13 +154,13 @@ public final class ComponentCatalogueControls {
       if (cells == null || cells.isEmpty()) {
         throw new IllegalArgumentException("at least one rate-table cell is required");
       }
-      Set<String> dimensionCodes = new java.util.LinkedHashSet<>();
+      Map<String, String> dimensionTypes = new LinkedHashMap<>();
       for (RateDimensionRequest dimension : dimensions) {
         if (dimension == null) {
           throw new IllegalArgumentException("rate-table dimension is required");
         }
         dimension.validate();
-        if (!dimensionCodes.add(dimension.code())) {
+        if (dimensionTypes.putIfAbsent(dimension.code(), dimension.dataType()) != null) {
           throw new IllegalArgumentException("rate-table dimension codes must be unique");
         }
       }
@@ -141,7 +169,7 @@ public final class ComponentCatalogueControls {
         if (cell == null) {
           throw new IllegalArgumentException("rate-table cell is required");
         }
-        cell.validate(dimensionCodes);
+        cell.validate(dimensionTypes);
         if (!uniqueKeys.add(Map.copyOf(cell.dimensionValues()))) {
           throw new IllegalArgumentException("rate-table cell dimension values must be unique");
         }
@@ -160,20 +188,22 @@ public final class ComponentCatalogueControls {
 
   public record RateCellRequest(
       @NotNull Map<@NotBlank String, @NotBlank String> dimensionValues,
-      @NotNull @Digits(integer = 19, fraction = 10) BigDecimal rateValue) {
-    public void validate(Set<String> dimensionCodes) {
+      @NotNull @Digits(integer = 19, fraction = 10)
+      @JsonFormat(shape = JsonFormat.Shape.STRING) BigDecimal rateValue) {
+    public void validate(Map<String, String> dimensionTypes) {
       if (dimensionValues == null || dimensionValues.isEmpty()) {
         throw new IllegalArgumentException("dimensionValues are required");
       }
-      if (!dimensionValues.keySet().equals(dimensionCodes)) {
+      if (!dimensionValues.keySet().equals(dimensionTypes.keySet())) {
         throw new IllegalArgumentException(
             "each rate-table cell must provide exactly the configured dimensions");
       }
-      if (dimensionValues.values().stream().anyMatch(value -> value == null || value.isBlank())) {
-        throw new IllegalArgumentException("rate-table dimension values must be non-blank");
-      }
+      validateDimensionValues(dimensionTypes, dimensionValues);
       if (rateValue == null) {
         throw new IllegalArgumentException("rateValue is required");
+      }
+      if (rateValue.precision() > 29 || Math.max(rateValue.scale(), 0) > 10) {
+        throw new IllegalArgumentException("rateValue exceeds precision 29 / scale 10");
       }
     }
   }
@@ -181,7 +211,10 @@ public final class ComponentCatalogueControls {
   public record RateDimensionView(UUID id, int sequence, String code, String name, String dataType) {}
 
   public record RateCellView(
-      UUID id, int sequence, Map<String, String> dimensionValues, BigDecimal rateValue) {}
+      UUID id,
+      int sequence,
+      Map<String, String> dimensionValues,
+      @JsonFormat(shape = JsonFormat.Shape.STRING) BigDecimal rateValue) {}
 
   public record RateTableView(
       UUID identityId,
@@ -189,9 +222,13 @@ public final class ComponentCatalogueControls {
       String name,
       String lifecycleStatus,
       long identityVersionNo,
+      LocalDate retirementEffectiveDate,
+      String retirementReason,
       UUID versionId,
       int versionSequence,
       long versionNo,
+      String valueType,
+      String unitCode,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
       String approvalStatus,
@@ -203,8 +240,10 @@ public final class ComponentCatalogueControls {
   public record RateLookupView(
       UUID identityId,
       UUID versionId,
+      String valueType,
+      String unitCode,
       Map<String, String> dimensionValues,
-      BigDecimal rateValue,
+      @JsonFormat(shape = JsonFormat.Shape.STRING) BigDecimal rateValue,
       LocalDate effectiveFrom,
       LocalDate effectiveTo) {}
 
@@ -243,6 +282,8 @@ public final class ComponentCatalogueControls {
       String componentCode,
       String lifecycleStatus,
       long identityVersionNo,
+      LocalDate retirementEffectiveDate,
+      String retirementReason,
       UUID versionId,
       int versionSequence,
       long versionNo,
@@ -288,6 +329,8 @@ public final class ComponentCatalogueControls {
       String eventType,
       String lifecycleStatus,
       long identityVersionNo,
+      LocalDate retirementEffectiveDate,
+      String retirementReason,
       UUID versionId,
       int versionSequence,
       long versionNo,
@@ -307,12 +350,112 @@ public final class ComponentCatalogueControls {
     }
   }
 
+  public record RetirementRequest(
+      @NotNull LocalDate effectiveDate,
+      @NotBlank @Size(max = 500) String reason) {
+    public void validate() {
+      if (effectiveDate == null || reason == null || reason.isBlank()) {
+        throw new IllegalArgumentException("effectiveDate and reason are required");
+      }
+    }
+  }
+
   public record ApprovalRequest(@NotNull Long expectedVersion) {
     public long resolvedExpectedVersion() {
       if (expectedVersion == null || expectedVersion < 0) {
         throw new IllegalArgumentException("expectedVersion must be non-negative");
       }
       return expectedVersion;
+    }
+  }
+
+  public static void validateRateDimensionValues(
+      List<RateDimensionView> dimensions, Map<String, String> values) {
+    Map<String, String> types = new LinkedHashMap<>();
+    for (RateDimensionView dimension : dimensions) {
+      types.put(dimension.code(), dimension.dataType());
+    }
+    if (values == null || !values.keySet().equals(types.keySet())) {
+      throw new IllegalArgumentException(
+          "rate lookup must provide exactly the configured dimensions");
+    }
+    validateDimensionValues(types, values);
+  }
+
+  private static void validateDimensionValues(
+      Map<String, String> dimensionTypes, Map<String, String> values) {
+    for (Map.Entry<String, String> dimension : dimensionTypes.entrySet()) {
+      String value = values.get(dimension.getKey());
+      if (value == null || value.isBlank() || !value.equals(value.trim())) {
+        throw new IllegalArgumentException(
+            "rate-table dimension values must be non-blank canonical strings");
+      }
+      switch (dimension.getValue()) {
+        case "TEXT" -> {
+          // The trim/non-blank rule above is the complete TEXT canonical form.
+        }
+        case "NUMBER" -> {
+          BigDecimal parsed;
+          try {
+            parsed = new BigDecimal(value);
+          } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(
+                "NUMBER rate-table dimensions require canonical decimal values", exception);
+          }
+          String canonical = parsed.signum() == 0
+              ? "0"
+              : parsed.stripTrailingZeros().toPlainString();
+          if (!canonical.equals(value)) {
+            throw new IllegalArgumentException(
+                "NUMBER rate-table dimensions require canonical decimal values");
+          }
+        }
+        case "BOOLEAN" -> {
+          if (!"true".equals(value) && !"false".equals(value)) {
+            throw new IllegalArgumentException(
+                "BOOLEAN rate-table dimensions require true or false");
+          }
+        }
+        case "DATE" -> {
+          try {
+            if (!LocalDate.parse(value).toString().equals(value)) {
+              throw new IllegalArgumentException(
+                  "DATE rate-table dimensions require ISO-8601 dates");
+            }
+          } catch (DateTimeParseException exception) {
+            throw new IllegalArgumentException(
+                "DATE rate-table dimensions require ISO-8601 dates", exception);
+          }
+        }
+        default -> throw new IllegalArgumentException("unsupported rate-table dimension type");
+      }
+    }
+  }
+
+  private static void requireRateValueContract(String valueType, String unitCode) {
+    requireMember(RATE_VALUE_TYPES, valueType, "valueType");
+    if (unitCode == null || !unitCode.matches("^[A-Z][A-Z0-9_]{1,19}$")) {
+      throw new IllegalArgumentException("unitCode contains an unsupported value");
+    }
+    boolean valid = switch (valueType) {
+      case "AMOUNT" -> {
+        if (!unitCode.matches("^[A-Z]{3}$")) {
+          yield false;
+        }
+        try {
+          Currency.getInstance(unitCode);
+          yield true;
+        } catch (IllegalArgumentException exception) {
+          yield false;
+        }
+      }
+      case "PERCENTAGE" -> "PERCENT".equals(unitCode);
+      case "FACTOR" -> "FACTOR".equals(unitCode);
+      case "QUANTITY" -> !"PERCENT".equals(unitCode) && !"FACTOR".equals(unitCode);
+      default -> false;
+    };
+    if (!valid) {
+      throw new IllegalArgumentException("valueType and unitCode are inconsistent");
     }
   }
 

@@ -484,6 +484,9 @@ BEGIN
    WHERE v.tenant_id=p_tenant_id AND v.id=p_version_id
      AND v.version_no=p_expected_version AND v.approval_status='DRAFT'
      AND v.created_by<>p_actor
+     AND EXISTS (SELECT 1 FROM compensation.component_rate_table i
+                  WHERE i.tenant_id=v.tenant_id AND i.id=v.rate_table_id
+                    AND i.lifecycle_status<>'RETIRED')
      AND EXISTS (SELECT 1 FROM compensation.component_rate_dimension d
                   WHERE d.tenant_id=v.tenant_id AND d.rate_table_version_id=v.id)
      AND EXISTS (SELECT 1 FROM compensation.component_rate_cell c
@@ -527,6 +530,9 @@ BEGIN
    WHERE v.tenant_id=p_tenant_id AND v.id=p_version_id
      AND v.version_no=p_expected_version AND v.approval_status='DRAFT'
      AND v.created_by<>p_actor
+     AND EXISTS (SELECT 1 FROM compensation.component_rounding_policy i
+                  WHERE i.tenant_id=v.tenant_id AND i.id=v.policy_id
+                    AND i.lifecycle_status<>'RETIRED')
      AND NOT EXISTS (SELECT 1 FROM compensation.component_rounding_policy_version s
                       WHERE s.tenant_id=v.tenant_id AND s.supersedes_version_id=v.id)
   RETURNING v.policy_id INTO target_id;
@@ -566,6 +572,9 @@ BEGIN
    WHERE v.tenant_id=p_tenant_id AND v.id=p_version_id
      AND v.version_no=p_expected_version AND v.approval_status='DRAFT'
      AND v.created_by<>p_actor
+     AND EXISTS (SELECT 1 FROM compensation.component_proration_policy i
+                  WHERE i.tenant_id=v.tenant_id AND i.id=v.policy_id
+                    AND i.lifecycle_status<>'RETIRED')
      AND NOT EXISTS (SELECT 1 FROM compensation.component_proration_policy_version s
                       WHERE s.tenant_id=v.tenant_id AND s.supersedes_version_id=v.id)
   RETURNING v.policy_id INTO target_id;
@@ -692,6 +701,293 @@ BEGIN
   GET DIAGNOSTICS affected=ROW_COUNT;
   RETURN affected;
 END $$;
+
+-- G02 critical-review hardening: complete lifecycle, typed rates and dependency effectivity.
+ALTER TABLE compensation.component_rate_table
+  ADD COLUMN retirement_effective_date date,
+  ADD COLUMN retirement_reason varchar(500),
+  ADD COLUMN retired_at timestamptz,
+  ADD COLUMN retired_by varchar(160),
+  ADD CONSTRAINT component_rate_table_retirement_metadata_ck CHECK (
+    (lifecycle_status='RETIRED'
+      AND retirement_effective_date IS NOT NULL
+      AND retirement_reason IS NOT NULL AND btrim(retirement_reason)<>''
+      AND retired_at IS NOT NULL
+      AND retired_by IS NOT NULL AND btrim(retired_by)<>'')
+    OR
+    (lifecycle_status<>'RETIRED'
+      AND retirement_effective_date IS NULL
+      AND retirement_reason IS NULL
+      AND retired_at IS NULL
+      AND retired_by IS NULL)
+  );
+
+ALTER TABLE compensation.component_rounding_policy
+  ADD COLUMN retirement_effective_date date,
+  ADD COLUMN retirement_reason varchar(500),
+  ADD COLUMN retired_at timestamptz,
+  ADD COLUMN retired_by varchar(160),
+  ADD CONSTRAINT component_rounding_policy_retirement_metadata_ck CHECK (
+    (lifecycle_status='RETIRED'
+      AND retirement_effective_date IS NOT NULL
+      AND retirement_reason IS NOT NULL AND btrim(retirement_reason)<>''
+      AND retired_at IS NOT NULL
+      AND retired_by IS NOT NULL AND btrim(retired_by)<>'')
+    OR
+    (lifecycle_status<>'RETIRED'
+      AND retirement_effective_date IS NULL
+      AND retirement_reason IS NULL
+      AND retired_at IS NULL
+      AND retired_by IS NULL)
+  );
+
+ALTER TABLE compensation.component_proration_policy
+  ADD COLUMN retirement_effective_date date,
+  ADD COLUMN retirement_reason varchar(500),
+  ADD COLUMN retired_at timestamptz,
+  ADD COLUMN retired_by varchar(160),
+  ADD CONSTRAINT component_proration_policy_retirement_metadata_ck CHECK (
+    (lifecycle_status='RETIRED'
+      AND retirement_effective_date IS NOT NULL
+      AND retirement_reason IS NOT NULL AND btrim(retirement_reason)<>''
+      AND retired_at IS NOT NULL
+      AND retired_by IS NOT NULL AND btrim(retired_by)<>'')
+    OR
+    (lifecycle_status<>'RETIRED'
+      AND retirement_effective_date IS NULL
+      AND retirement_reason IS NULL
+      AND retired_at IS NULL
+      AND retired_by IS NULL)
+  );
+
+ALTER TABLE compensation.component_rate_table_version
+  ADD COLUMN value_type varchar(20) NOT NULL DEFAULT 'FACTOR',
+  ADD COLUMN unit_code varchar(20) NOT NULL DEFAULT 'FACTOR',
+  ADD CONSTRAINT component_rate_table_value_type_ck
+    CHECK (value_type IN ('AMOUNT','PERCENTAGE','FACTOR','QUANTITY')),
+  ADD CONSTRAINT component_rate_table_unit_code_ck
+    CHECK (unit_code ~ '^[A-Z][A-Z0-9_]{1,19}$'),
+  ADD CONSTRAINT component_rate_table_value_unit_ck CHECK (
+    (value_type='AMOUNT' AND unit_code ~ '^[A-Z]{3}$')
+    OR (value_type='PERCENTAGE' AND unit_code='PERCENT')
+    OR (value_type='FACTOR' AND unit_code='FACTOR')
+    OR (value_type='QUANTITY' AND unit_code NOT IN ('PERCENT','FACTOR'))
+  );
+
+CREATE OR REPLACE FUNCTION compensation.assert_component_rate_cell_dimensions()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path=pg_catalog,compensation AS $$
+DECLARE
+  dimension_record record;
+  dimension_value text;
+  parsed_date date;
+BEGIN
+  IF EXISTS (
+    SELECT d.code
+      FROM compensation.component_rate_dimension d
+     WHERE d.tenant_id=NEW.tenant_id AND d.rate_table_version_id=NEW.rate_table_version_id
+    EXCEPT
+    SELECT jsonb_object_keys(NEW.dimension_values)
+  ) OR EXISTS (
+    SELECT jsonb_object_keys(NEW.dimension_values)
+    EXCEPT
+    SELECT d.code
+      FROM compensation.component_rate_dimension d
+     WHERE d.tenant_id=NEW.tenant_id AND d.rate_table_version_id=NEW.rate_table_version_id
+  ) THEN
+    RAISE EXCEPTION 'rate-table cell must provide exactly the configured dimensions'
+      USING ERRCODE='23514';
+  END IF;
+
+  FOR dimension_record IN
+    SELECT code,data_type
+      FROM compensation.component_rate_dimension
+     WHERE tenant_id=NEW.tenant_id AND rate_table_version_id=NEW.rate_table_version_id
+     ORDER BY dimension_sequence
+  LOOP
+    dimension_value := NEW.dimension_values ->> dimension_record.code;
+    IF dimension_value IS NULL OR btrim(dimension_value)='' OR btrim(dimension_value)<>dimension_value THEN
+      RAISE EXCEPTION 'rate-table dimension values must be non-blank canonical strings'
+        USING ERRCODE='23514';
+    END IF;
+    IF dimension_record.data_type='NUMBER' THEN
+      IF dimension_value !~ '^-?(0|[1-9][0-9]*)(\.[0-9]+)?$'
+         OR ((dimension_value::numeric)=0 AND dimension_value<>'0')
+         OR ((dimension_value::numeric)<>0 AND (dimension_value::numeric)::text<>dimension_value) THEN
+        RAISE EXCEPTION 'NUMBER rate-table dimensions require canonical decimal values'
+          USING ERRCODE='23514';
+      END IF;
+    ELSIF dimension_record.data_type='BOOLEAN' THEN
+      IF dimension_value NOT IN ('true','false') THEN
+        RAISE EXCEPTION 'BOOLEAN rate-table dimensions require true or false'
+          USING ERRCODE='23514';
+      END IF;
+    ELSIF dimension_record.data_type='DATE' THEN
+      BEGIN
+        parsed_date := dimension_value::date;
+        IF to_char(parsed_date,'YYYY-MM-DD')<>dimension_value THEN
+          RAISE EXCEPTION 'DATE rate-table dimensions require ISO dates' USING ERRCODE='23514';
+        END IF;
+      EXCEPTION WHEN others THEN
+        RAISE EXCEPTION 'DATE rate-table dimensions require ISO dates' USING ERRCODE='23514';
+      END;
+    END IF;
+  END LOOP;
+  RETURN NEW;
+END $$;
+
+CREATE OR REPLACE FUNCTION compensation.end_date_pay_component_version(
+  p_tenant_id uuid,
+  p_version_id uuid,
+  p_effective_to date,
+  p_expected_version bigint,
+  p_actor varchar,
+  p_changed_at timestamptz
+) RETURNS bigint
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path=pg_catalog,compensation,platform AS $$
+DECLARE
+  v_from date;
+  affected bigint;
+BEGIN
+  IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
+    RAISE EXCEPTION 'tenant context mismatch' USING ERRCODE='42501';
+  END IF;
+  IF p_effective_to IS NULL OR p_actor IS NULL OR btrim(p_actor)='' OR p_changed_at IS NULL THEN
+    RAISE EXCEPTION 'effective-to date, actor and change timestamp are required' USING ERRCODE='23514';
+  END IF;
+  SELECT effective_from INTO v_from
+    FROM compensation.pay_component_version
+   WHERE tenant_id=p_tenant_id AND id=p_version_id AND version_no=p_expected_version
+   FOR UPDATE;
+  IF NOT FOUND THEN RETURN 0; END IF;
+  IF p_effective_to<=v_from THEN
+    RAISE EXCEPTION 'pay-component effective-to must be after effective-from' USING ERRCODE='23514';
+  END IF;
+  IF EXISTS (
+    SELECT 1
+      FROM compensation.component_formula_dependency d
+      JOIN compensation.pay_component_version source
+        ON source.tenant_id=d.tenant_id AND source.id=d.component_version_id
+     WHERE d.tenant_id=p_tenant_id
+       AND d.dependency_component_version_id=p_version_id
+       AND source.approval_status<>'REJECTED'
+       AND (source.effective_to IS NULL OR source.effective_to>p_effective_to)
+       AND NOT EXISTS (
+         SELECT 1 FROM compensation.pay_component_version successor
+          WHERE successor.tenant_id=source.tenant_id
+            AND successor.supersedes_version_id=source.id)
+  ) THEN
+    RAISE EXCEPTION 'pay-component dependency version cannot end before a dependant formula range'
+      USING ERRCODE='23514';
+  END IF;
+  UPDATE compensation.pay_component_version
+     SET effective_to=p_effective_to,updated_at=p_changed_at,updated_by=p_actor,
+         version_no=version_no+1
+   WHERE tenant_id=p_tenant_id AND id=p_version_id AND version_no=p_expected_version
+     AND (effective_to IS NULL OR effective_to>p_effective_to);
+  GET DIAGNOSTICS affected=ROW_COUNT;
+  RETURN affected;
+END $$;
+
+CREATE FUNCTION compensation.retire_component_rate_table(
+  p_tenant_id uuid,p_identity_id uuid,p_effective_date date,p_expected_version bigint,
+  p_reason varchar,p_actor varchar,p_changed_at timestamptz
+) RETURNS bigint
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=pg_catalog,compensation,platform AS $$
+DECLARE affected bigint;
+BEGIN
+  IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
+    RAISE EXCEPTION 'tenant context mismatch' USING ERRCODE='42501';
+  END IF;
+  IF p_effective_date IS NULL OR p_reason IS NULL OR length(btrim(p_reason)) NOT BETWEEN 1 AND 500
+     OR p_actor IS NULL OR length(btrim(p_actor)) NOT BETWEEN 1 AND 160 OR p_changed_at IS NULL THEN
+    RAISE EXCEPTION 'retirement date, reason, actor and timestamp are required' USING ERRCODE='23514';
+  END IF;
+  IF EXISTS (SELECT 1 FROM compensation.component_rate_table_version v
+              WHERE v.tenant_id=p_tenant_id AND v.rate_table_id=p_identity_id
+                AND v.approval_status='APPROVED'
+                AND (v.effective_to IS NULL OR v.effective_to>p_effective_date)) THEN
+    RAISE EXCEPTION 'rate table has active or future approved versions' USING ERRCODE='23514';
+  END IF;
+  UPDATE compensation.component_rate_table
+     SET lifecycle_status='RETIRED',retirement_effective_date=p_effective_date,
+         retirement_reason=btrim(p_reason),retired_at=p_changed_at,retired_by=p_actor,
+         updated_at=p_changed_at,updated_by=p_actor,version_no=version_no+1
+   WHERE tenant_id=p_tenant_id AND id=p_identity_id AND lifecycle_status<>'RETIRED'
+     AND version_no=p_expected_version;
+  GET DIAGNOSTICS affected=ROW_COUNT; RETURN affected;
+END $$;
+
+CREATE FUNCTION compensation.retire_component_rounding_policy(
+  p_tenant_id uuid,p_identity_id uuid,p_effective_date date,p_expected_version bigint,
+  p_reason varchar,p_actor varchar,p_changed_at timestamptz
+) RETURNS bigint
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=pg_catalog,compensation,platform AS $$
+DECLARE affected bigint;
+BEGIN
+  IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
+    RAISE EXCEPTION 'tenant context mismatch' USING ERRCODE='42501';
+  END IF;
+  IF p_effective_date IS NULL OR p_reason IS NULL OR length(btrim(p_reason)) NOT BETWEEN 1 AND 500
+     OR p_actor IS NULL OR length(btrim(p_actor)) NOT BETWEEN 1 AND 160 OR p_changed_at IS NULL THEN
+    RAISE EXCEPTION 'retirement date, reason, actor and timestamp are required' USING ERRCODE='23514';
+  END IF;
+  IF EXISTS (SELECT 1 FROM compensation.component_rounding_policy_version v
+              WHERE v.tenant_id=p_tenant_id AND v.policy_id=p_identity_id
+                AND v.approval_status='APPROVED'
+                AND (v.effective_to IS NULL OR v.effective_to>p_effective_date)) THEN
+    RAISE EXCEPTION 'rounding policy has active or future approved versions' USING ERRCODE='23514';
+  END IF;
+  UPDATE compensation.component_rounding_policy
+     SET lifecycle_status='RETIRED',retirement_effective_date=p_effective_date,
+         retirement_reason=btrim(p_reason),retired_at=p_changed_at,retired_by=p_actor,
+         updated_at=p_changed_at,updated_by=p_actor,version_no=version_no+1
+   WHERE tenant_id=p_tenant_id AND id=p_identity_id AND lifecycle_status<>'RETIRED'
+     AND version_no=p_expected_version;
+  GET DIAGNOSTICS affected=ROW_COUNT; RETURN affected;
+END $$;
+
+CREATE FUNCTION compensation.retire_component_proration_policy(
+  p_tenant_id uuid,p_identity_id uuid,p_effective_date date,p_expected_version bigint,
+  p_reason varchar,p_actor varchar,p_changed_at timestamptz
+) RETURNS bigint
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=pg_catalog,compensation,platform AS $$
+DECLARE affected bigint;
+BEGIN
+  IF p_tenant_id IS DISTINCT FROM platform.current_tenant_id() THEN
+    RAISE EXCEPTION 'tenant context mismatch' USING ERRCODE='42501';
+  END IF;
+  IF p_effective_date IS NULL OR p_reason IS NULL OR length(btrim(p_reason)) NOT BETWEEN 1 AND 500
+     OR p_actor IS NULL OR length(btrim(p_actor)) NOT BETWEEN 1 AND 160 OR p_changed_at IS NULL THEN
+    RAISE EXCEPTION 'retirement date, reason, actor and timestamp are required' USING ERRCODE='23514';
+  END IF;
+  IF EXISTS (SELECT 1 FROM compensation.component_proration_policy_version v
+              WHERE v.tenant_id=p_tenant_id AND v.policy_id=p_identity_id
+                AND v.approval_status='APPROVED'
+                AND (v.effective_to IS NULL OR v.effective_to>p_effective_date)) THEN
+    RAISE EXCEPTION 'proration policy has active or future approved versions' USING ERRCODE='23514';
+  END IF;
+  UPDATE compensation.component_proration_policy
+     SET lifecycle_status='RETIRED',retirement_effective_date=p_effective_date,
+         retirement_reason=btrim(p_reason),retired_at=p_changed_at,retired_by=p_actor,
+         updated_at=p_changed_at,updated_by=p_actor,version_no=version_no+1
+   WHERE tenant_id=p_tenant_id AND id=p_identity_id AND lifecycle_status<>'RETIRED'
+     AND version_no=p_expected_version;
+  GET DIAGNOSTICS affected=ROW_COUNT; RETURN affected;
+END $$;
+
+REVOKE ALL ON FUNCTION compensation.retire_component_rate_table(uuid,uuid,date,bigint,varchar,varchar,timestamptz) FROM PUBLIC;
+REVOKE ALL ON FUNCTION compensation.retire_component_rounding_policy(uuid,uuid,date,bigint,varchar,varchar,timestamptz) FROM PUBLIC;
+REVOKE ALL ON FUNCTION compensation.retire_component_proration_policy(uuid,uuid,date,bigint,varchar,varchar,timestamptz) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION compensation.retire_component_rate_table(uuid,uuid,date,bigint,varchar,varchar,timestamptz) TO payroll_app;
+GRANT EXECUTE ON FUNCTION compensation.retire_component_rounding_policy(uuid,uuid,date,bigint,varchar,varchar,timestamptz) TO payroll_app;
+GRANT EXECUTE ON FUNCTION compensation.retire_component_proration_policy(uuid,uuid,date,bigint,varchar,varchar,timestamptz) TO payroll_app;
 
 REVOKE ALL ON FUNCTION compensation.reject_component_control_child_mutation() FROM PUBLIC;
 REVOKE ALL ON FUNCTION compensation.assert_component_rate_cell_dimensions() FROM PUBLIC;

@@ -1,5 +1,6 @@
 package com.acme.hrms.payroll.compensation;
 
+import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.ComponentImpactView;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.EffectiveEndRequest;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.FormulaDependencyView;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.FormulaValidationRequest;
@@ -14,6 +15,7 @@ import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.RateTableVi
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.RoundingPolicyCreateRequest;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.RoundingPolicyVersionWriteRequest;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.RoundingPolicyView;
+import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.RetirementRequest;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.StatutoryWageReferenceView;
 import com.acme.hrms.payroll.compensation.internal.application.ComponentCatalogueControlService;
 import com.acme.hrms.payroll.platform.AuditReader;
@@ -56,6 +58,12 @@ public class ComponentCatalogueControlController {
   @PreAuthorize("hasAuthority('compensation.component.read')")
   public List<FormulaDependencyView> dependencies(@PathVariable UUID identityId) {
     return service.dependencies(identityId);
+  }
+
+  @GetMapping("/pay-components/{identityId}/impact")
+  @PreAuthorize("hasAuthority('compensation.component.read')")
+  public ComponentImpactView impact(@PathVariable UUID identityId) {
+    return service.impact(identityId);
   }
 
   @GetMapping("/pay-components/{identityId}/statutory-wage-references")
@@ -115,6 +123,18 @@ public class ComponentCatalogueControlController {
         .body(result);
   }
 
+  @PostMapping("/component-rate-tables/{identityId}/versions/{versionId}/corrections")
+  @PreAuthorize("hasAuthority('compensation.component.version.correct')")
+  public ResponseEntity<RateTableView> correctRateTableVersion(
+      @PathVariable UUID identityId,
+      @PathVariable UUID versionId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody RateTableVersionWriteRequest request) {
+    RateTableView result = service.correctFutureRateTableVersion(
+        identityId, versionId, idempotencyKey, request);
+    return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
+  }
+
   @PostMapping("/component-rate-tables/{identityId}/versions/{versionId}/approval")
   @PreAuthorize("hasAuthority('compensation.component.approve')")
   public ResponseEntity<RateTableView> approveRateTable(
@@ -139,6 +159,20 @@ public class ComponentCatalogueControlController {
     RateTableView result = service.endDateRateTable(
         identityId, versionId, idempotencyKey, request.effectiveTo(), expectedVersion(ifMatch));
     return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
+  }
+
+  @PostMapping("/component-rate-tables/{identityId}/retirement")
+  @PreAuthorize("hasAuthority('compensation.component.retire')")
+  public ResponseEntity<RateTableView> retireRateTable(
+      @PathVariable UUID identityId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @RequestHeader("If-Match") String ifMatch,
+      @Valid @RequestBody RetirementRequest request) {
+    request.validate();
+    RateTableView result = service.retireRateTable(
+        identityId, idempotencyKey, request.effectiveDate(),
+        expectedVersion(ifMatch), request.reason());
+    return ResponseEntity.ok().eTag(Long.toString(result.identityVersionNo())).body(result);
   }
 
   @PostMapping("/component-rate-tables/{identityId}/lookup")
@@ -207,6 +241,18 @@ public class ComponentCatalogueControlController {
         .body(result);
   }
 
+  @PostMapping("/component-rounding-policies/{identityId}/versions/{versionId}/corrections")
+  @PreAuthorize("hasAuthority('compensation.component.version.correct')")
+  public ResponseEntity<RoundingPolicyView> correctRoundingPolicyVersion(
+      @PathVariable UUID identityId,
+      @PathVariable UUID versionId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody RoundingPolicyVersionWriteRequest request) {
+    RoundingPolicyView result = service.correctFutureRoundingPolicyVersion(
+        identityId, versionId, idempotencyKey, request);
+    return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
+  }
+
   @PostMapping("/component-rounding-policies/{identityId}/versions/{versionId}/approval")
   @PreAuthorize("hasAuthority('compensation.component.approve')")
   public ResponseEntity<RoundingPolicyView> approveRoundingPolicy(
@@ -231,6 +277,20 @@ public class ComponentCatalogueControlController {
     RoundingPolicyView result = service.endDateRoundingPolicy(
         identityId, versionId, idempotencyKey, request.effectiveTo(), expectedVersion(ifMatch));
     return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
+  }
+
+  @PostMapping("/component-rounding-policies/{identityId}/retirement")
+  @PreAuthorize("hasAuthority('compensation.component.retire')")
+  public ResponseEntity<RoundingPolicyView> retireRoundingPolicy(
+      @PathVariable UUID identityId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @RequestHeader("If-Match") String ifMatch,
+      @Valid @RequestBody RetirementRequest request) {
+    request.validate();
+    RoundingPolicyView result = service.retireRoundingPolicy(
+        identityId, idempotencyKey, request.effectiveDate(),
+        expectedVersion(ifMatch), request.reason());
+    return ResponseEntity.ok().eTag(Long.toString(result.identityVersionNo())).body(result);
   }
 
   @GetMapping("/component-rounding-policies/{identityId}/audit")
@@ -289,6 +349,18 @@ public class ComponentCatalogueControlController {
         .body(result);
   }
 
+  @PostMapping("/component-proration-policies/{identityId}/versions/{versionId}/corrections")
+  @PreAuthorize("hasAuthority('compensation.component.version.correct')")
+  public ResponseEntity<ProrationPolicyView> correctProrationPolicyVersion(
+      @PathVariable UUID identityId,
+      @PathVariable UUID versionId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @Valid @RequestBody ProrationPolicyVersionWriteRequest request) {
+    ProrationPolicyView result = service.correctFutureProrationPolicyVersion(
+        identityId, versionId, idempotencyKey, request);
+    return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
+  }
+
   @PostMapping("/component-proration-policies/{identityId}/versions/{versionId}/approval")
   @PreAuthorize("hasAuthority('compensation.component.approve')")
   public ResponseEntity<ProrationPolicyView> approveProrationPolicy(
@@ -313,6 +385,20 @@ public class ComponentCatalogueControlController {
     ProrationPolicyView result = service.endDateProrationPolicy(
         identityId, versionId, idempotencyKey, request.effectiveTo(), expectedVersion(ifMatch));
     return ResponseEntity.ok().eTag(Long.toString(result.versionNo())).body(result);
+  }
+
+  @PostMapping("/component-proration-policies/{identityId}/retirement")
+  @PreAuthorize("hasAuthority('compensation.component.retire')")
+  public ResponseEntity<ProrationPolicyView> retireProrationPolicy(
+      @PathVariable UUID identityId,
+      @RequestHeader("Idempotency-Key") String idempotencyKey,
+      @RequestHeader("If-Match") String ifMatch,
+      @Valid @RequestBody RetirementRequest request) {
+    request.validate();
+    ProrationPolicyView result = service.retireProrationPolicy(
+        identityId, idempotencyKey, request.effectiveDate(),
+        expectedVersion(ifMatch), request.reason());
+    return ResponseEntity.ok().eTag(Long.toString(result.identityVersionNo())).body(result);
   }
 
   @GetMapping("/component-proration-policies/{identityId}/audit")

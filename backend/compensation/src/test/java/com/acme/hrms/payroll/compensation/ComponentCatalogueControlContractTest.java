@@ -43,12 +43,19 @@ class ComponentCatalogueControlContractTest {
     assertThat(paths)
         .containsEntry("validateFormula", "/pay-components/formula-validation")
         .containsEntry("dependencies", "/pay-components/{identityId}/dependencies")
+        .containsEntry("impact", "/pay-components/{identityId}/impact")
         .containsEntry(
             "statutoryWageReferences",
             "/pay-components/{identityId}/statutory-wage-references")
         .containsEntry("createRateTable", "/component-rate-tables")
         .containsEntry("createRoundingPolicy", "/component-rounding-policies")
-        .containsEntry("createProrationPolicy", "/component-proration-policies");
+        .containsEntry("createProrationPolicy", "/component-proration-policies")
+        .containsEntry("correctRateTableVersion", "/component-rate-tables/{identityId}/versions/{versionId}/corrections")
+        .containsEntry("retireRateTable", "/component-rate-tables/{identityId}/retirement")
+        .containsEntry("correctRoundingPolicyVersion", "/component-rounding-policies/{identityId}/versions/{versionId}/corrections")
+        .containsEntry("retireRoundingPolicy", "/component-rounding-policies/{identityId}/retirement")
+        .containsEntry("correctProrationPolicyVersion", "/component-proration-policies/{identityId}/versions/{versionId}/corrections")
+        .containsEntry("retireProrationPolicy", "/component-proration-policies/{identityId}/retirement");
 
     Map<String, String> permissions = Arrays.stream(
             ComponentCatalogueControlController.class.getDeclaredMethods())
@@ -72,7 +79,13 @@ class ComponentCatalogueControlContractTest {
             "hasAuthority('compensation.component.version.end-date')")
         .containsEntry(
             "endDateProrationPolicy",
-            "hasAuthority('compensation.component.version.end-date')");
+            "hasAuthority('compensation.component.version.end-date')")
+        .containsEntry("correctRateTableVersion", "hasAuthority('compensation.component.version.correct')")
+        .containsEntry("correctRoundingPolicyVersion", "hasAuthority('compensation.component.version.correct')")
+        .containsEntry("correctProrationPolicyVersion", "hasAuthority('compensation.component.version.correct')")
+        .containsEntry("retireRateTable", "hasAuthority('compensation.component.retire')")
+        .containsEntry("retireRoundingPolicy", "hasAuthority('compensation.component.retire')")
+        .containsEntry("retireProrationPolicy", "hasAuthority('compensation.component.retire')");
   }
 
   @Test
@@ -103,7 +116,7 @@ class ComponentCatalogueControlContractTest {
   @Test
   void rateTableRequiresExactDeterministicDimensionKeys() {
     RateTableVersionWriteRequest valid = new RateTableVersionWriteRequest(
-        LocalDate.of(2027, 1, 1),
+        "AMOUNT", "USD", LocalDate.of(2027, 1, 1),
         null,
         List.of(
             new RateDimensionRequest("GRADE", "Grade", "TEXT"),
@@ -113,13 +126,29 @@ class ComponentCatalogueControlContractTest {
     valid.validate();
 
     RateTableVersionWriteRequest missingDimension = new RateTableVersionWriteRequest(
-        LocalDate.of(2027, 1, 1),
+        "AMOUNT", "USD", LocalDate.of(2027, 1, 1),
         null,
         valid.dimensions(),
         List.of(new RateCellRequest(Map.of("GRADE", "A"), BigDecimal.ONE)));
     assertThatThrownBy(missingDimension::validate)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("exactly the configured dimensions");
+
+    RateTableVersionWriteRequest nonCanonicalNumber = new RateTableVersionWriteRequest(
+        "PERCENTAGE", "PERCENT", LocalDate.of(2027, 1, 1), null,
+        valid.dimensions(),
+        List.of(new RateCellRequest(
+            Map.of("GRADE", "A", "LEVEL", "01"), new BigDecimal("12.5"))));
+    assertThatThrownBy(nonCanonicalNumber::validate)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("canonical decimal");
+
+    RateTableVersionWriteRequest badUnit = new RateTableVersionWriteRequest(
+        "AMOUNT", "PERCENT", LocalDate.of(2027, 1, 1), null,
+        valid.dimensions(), valid.cells());
+    assertThatThrownBy(badUnit::validate)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("inconsistent");
   }
 
   @Test

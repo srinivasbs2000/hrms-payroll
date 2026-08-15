@@ -1,6 +1,8 @@
 package com.acme.hrms.payroll.compensation.internal.infrastructure;
 
+import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.ComponentImpactView;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.FormulaDependencyView;
+import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.FormulaDependantView;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.ProrationPolicyCreateRequest;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.ProrationPolicyVersionWriteRequest;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.ProrationPolicyView;
@@ -44,8 +46,10 @@ import org.springframework.stereotype.Repository;
 public class ComponentCatalogueControlRepository {
   private static final String RATE_SELECT = """
       select i.id identity_id, i.code, i.name, i.lifecycle_status,
-             i.version_no identity_version_no,
+             i.version_no identity_version_no, i.retirement_effective_date,
+             i.retirement_reason,
              v.id version_id, v.version_sequence, v.version_no,
+             v.value_type, v.unit_code,
              v.effective_from, v.effective_to, v.approval_status,
              v.supersedes_version_id,
              exists(select 1 from compensation.component_rate_table_version s
@@ -58,6 +62,7 @@ public class ComponentCatalogueControlRepository {
   private static final String ROUNDING_SELECT = """
       select i.id identity_id, i.component_id, c.code::text component_code,
              i.lifecycle_status, i.version_no identity_version_no,
+             i.retirement_effective_date, i.retirement_reason,
              v.id version_id, v.version_sequence, v.version_no,
              v.rounding_method, v.rounding_scale, v.rounding_stage,
              v.negative_treatment, v.effective_from, v.effective_to,
@@ -74,6 +79,7 @@ public class ComponentCatalogueControlRepository {
   private static final String PRORATION_SELECT = """
       select i.id identity_id, i.component_id, c.code::text component_code,
              i.event_type, i.lifecycle_status, i.version_no identity_version_no,
+             i.retirement_effective_date, i.retirement_reason,
              v.id version_id, v.version_sequence, v.version_no,
              v.proration_method, v.proration_basis, v.effective_from, v.effective_to,
              v.approval_status, v.supersedes_version_id,
@@ -157,41 +163,51 @@ public class ComponentCatalogueControlRepository {
     }
   }
 
-  public DependencyTarget resolveApprovedDependency(String code, LocalDate asOf) {
+  public DependencyTarget resolveApprovedDependency(
+      String code, LocalDate sourceFrom, LocalDate sourceTo) {
+    String rangeClause = sourceTo == null
+        ? "v.effective_to is null"
+        : "(v.effective_to is null or ?<=v.effective_to)";
+    String sql = """
+        select i.id component_id, v.id component_version_id, i.code::text code,
+               coalesce(m.calculation_phase,
+                 case when v.formula_type='FIXED' then 'INPUT' else 'PRE_TAX' end) calculation_phase
+          from compensation.pay_component i
+          join compensation.pay_component_version v
+            on v.tenant_id=i.tenant_id and v.component_id=i.id
+          left join compensation.component_formula_metadata m
+            on m.tenant_id=v.tenant_id and m.component_version_id=v.id
+         where i.tenant_id=? and i.code=?
+           and i.lifecycle_status='ACTIVE'
+           and v.approval_status='APPROVED'
+           and v.effective_from<=?
+           and %s
+           and not exists (
+             select 1 from compensation.pay_component_version s
+              where s.tenant_id=v.tenant_id and s.supersedes_version_id=v.id)
+         order by v.version_sequence desc
+         limit 1
+        """.formatted(rangeClause);
+    List<Object> arguments = new ArrayList<>();
+    arguments.add(TenantContext.require());
+    arguments.add(code);
+    arguments.add(Date.valueOf(sourceFrom));
+    if (sourceTo != null) {
+      arguments.add(Date.valueOf(sourceTo));
+    }
     return jdbc.query(
-            """
-            select i.id component_id, v.id component_version_id, i.code::text code,
-                   coalesce(m.calculation_phase,
-                     case when v.formula_type='FIXED' then 'INPUT' else 'PRE_TAX' end) calculation_phase
-              from compensation.pay_component i
-              join compensation.pay_component_version v
-                on v.tenant_id=i.tenant_id and v.component_id=i.id
-              left join compensation.component_formula_metadata m
-                on m.tenant_id=v.tenant_id and m.component_version_id=v.id
-             where i.tenant_id=? and i.code=?
-               and i.lifecycle_status='ACTIVE'
-               and v.approval_status='APPROVED'
-               and v.effective_from<=?
-               and (v.effective_to is null or v.effective_to>?)
-               and not exists (
-                 select 1 from compensation.pay_component_version s
-                  where s.tenant_id=v.tenant_id and s.supersedes_version_id=v.id)
-             order by v.version_sequence desc
-             limit 1
-            """,
+            sql,
             (result, row) -> new DependencyTarget(
                 result.getObject("component_id", UUID.class),
                 result.getObject("component_version_id", UUID.class),
                 result.getString("code"),
                 result.getString("calculation_phase")),
-            TenantContext.require(),
-            code,
-            Date.valueOf(asOf),
-            Date.valueOf(asOf))
+            arguments.toArray())
         .stream()
         .findFirst()
         .orElseThrow(() -> new IllegalArgumentException(
-            "UNKNOWN_DEPENDENCY: no approved component version is effective for " + code));
+            "UNKNOWN_DEPENDENCY: no approved component version covers the full source range for "
+                + code));
   }
 
   public Map<String, Object> formulaEvidence(UUID componentVersionId) {
@@ -339,6 +355,59 @@ public class ComponentCatalogueControlRepository {
         componentId);
   }
 
+  public ComponentImpactView impact(UUID componentId) {
+    ensureComponentIdentity(componentId);
+    List<FormulaDependantView> dependants = jdbc.query(
+        """
+        select d.component_id dependant_component_id,
+               d.component_version_id dependant_component_version_id,
+               source.code::text dependant_component_code,
+               d.dependency_component_version_id, d.dependency_order,
+               m.formula_fingerprint
+          from compensation.component_formula_dependency d
+          join compensation.component_formula_metadata m
+            on m.tenant_id=d.tenant_id and m.id=d.formula_metadata_id
+          join compensation.pay_component source
+            on source.tenant_id=d.tenant_id and source.id=d.component_id
+         where d.tenant_id=? and d.dependency_component_id=?
+         order by source.code, d.dependency_order
+        """,
+        (result, row) -> new FormulaDependantView(
+            result.getObject("dependant_component_id", UUID.class),
+            result.getObject("dependant_component_version_id", UUID.class),
+            result.getString("dependant_component_code"),
+            result.getObject("dependency_component_version_id", UUID.class),
+            result.getInt("dependency_order"),
+            result.getString("formula_fingerprint")),
+        TenantContext.require(), componentId);
+    List<UUID> bases = jdbc.query(
+        "select distinct payroll_base_id from compensation.component_base_membership "
+            + "where tenant_id=? and component_id=? order by payroll_base_id",
+        (result, row) -> result.getObject(1, UUID.class), TenantContext.require(), componentId);
+    List<UUID> structures = jdbc.query(
+        """
+        select distinct v.salary_structure_id
+          from compensation.salary_structure_line line
+          join compensation.salary_structure_version v
+            on v.tenant_id=line.tenant_id and v.id=line.salary_structure_version_id
+          join compensation.pay_component_version cv
+            on cv.tenant_id=line.tenant_id and cv.id=line.component_version_id
+         where line.tenant_id=? and cv.component_id=?
+         order by v.salary_structure_id
+        """,
+        (result, row) -> result.getObject(1, UUID.class), TenantContext.require(), componentId);
+    List<UUID> rounding = jdbc.query(
+        "select id from compensation.component_rounding_policy "
+            + "where tenant_id=? and component_id=? order by id",
+        (result, row) -> result.getObject(1, UUID.class), TenantContext.require(), componentId);
+    List<UUID> proration = jdbc.query(
+        "select id from compensation.component_proration_policy "
+            + "where tenant_id=? and component_id=? order by event_type,id",
+        (result, row) -> result.getObject(1, UUID.class), TenantContext.require(), componentId);
+    return new ComponentImpactView(
+        componentId, dependencies(componentId), dependants, bases, structures, rounding, proration);
+  }
+
   public List<PlanningRow> planningRows() {
     return jdbc.query(
         """
@@ -400,14 +469,16 @@ public class ComponentCatalogueControlRepository {
     jdbc.update(
         """
         insert into compensation.component_rate_table_version(
-          id,tenant_id,rate_table_id,version_sequence,effective_from,effective_to,
+          id,tenant_id,rate_table_id,version_sequence,value_type,unit_code,effective_from,effective_to,
           approval_status,supersedes_version_id,created_by,updated_by)
-        values (?,?,?,?,?,?,'DRAFT',?,?,?)
+        values (?,?,?,?,?,?,?,?,'DRAFT',?,?,?)
         """,
         versionId,
         TenantContext.require(),
         identityId,
         next == null ? 1 : next,
+        request.valueType(),
+        request.unitCode(),
         request.effectiveFrom(),
         request.effectiveTo(),
         supersedes,
@@ -452,7 +523,7 @@ public class ComponentCatalogueControlRepository {
     return jdbc.query(
             RATE_SELECT
                 + """
-                  where i.tenant_id=? and i.id=? and i.lifecycle_status='ACTIVE'
+                  where i.tenant_id=? and i.id=? and (i.lifecycle_status='ACTIVE' or (i.lifecycle_status='RETIRED' and i.retirement_effective_date>?))
                     and v.approval_status='APPROVED' and v.effective_from<=?
                     and (v.effective_to is null or v.effective_to>?)
                     and not exists (select 1 from compensation.component_rate_table_version s
@@ -460,7 +531,7 @@ public class ComponentCatalogueControlRepository {
                   order by v.version_sequence desc limit 1
                   """,
             this::mapRateShell,
-            TenantContext.require(), identityId, Date.valueOf(asOf), Date.valueOf(asOf))
+            TenantContext.require(), identityId, Date.valueOf(asOf), Date.valueOf(asOf), Date.valueOf(asOf))
         .stream().findFirst().map(this::withRateChildren)
         .orElseThrow(() -> new ResourceNotFoundException(
             "No approved component rate-table version is effective on " + asOf));
@@ -470,7 +541,7 @@ public class ComponentCatalogueControlRepository {
     List<RateTableView> shells = jdbc.query(
         RATE_SELECT
             + """
-              where i.tenant_id=? and i.lifecycle_status='ACTIVE'
+              where i.tenant_id=? and (i.lifecycle_status='ACTIVE' or (i.lifecycle_status='RETIRED' and i.retirement_effective_date>?))
                 and v.approval_status='APPROVED' and v.effective_from<=?
                 and (v.effective_to is null or v.effective_to>?)
                 and not exists (select 1 from compensation.component_rate_table_version s
@@ -478,7 +549,7 @@ public class ComponentCatalogueControlRepository {
               order by i.code
               """,
         this::mapRateShell,
-        TenantContext.require(), Date.valueOf(asOf), Date.valueOf(asOf));
+        TenantContext.require(), Date.valueOf(asOf), Date.valueOf(asOf), Date.valueOf(asOf));
     return shells.stream().map(this::withRateChildren).toList();
   }
 
@@ -531,8 +602,8 @@ public class ComponentCatalogueControlRepository {
         .stream().findFirst()
         .orElseThrow(() -> new ResourceNotFoundException("No rate-table cell matches the supplied dimensions"));
     return new RateLookupView(
-        identityId, version.versionId(), cell.dimensionValues(), cell.rateValue(),
-        version.effectiveFrom(), version.effectiveTo());
+        identityId, version.versionId(), version.valueType(), version.unitCode(),
+        cell.dimensionValues(), cell.rateValue(), version.effectiveFrom(), version.effectiveTo());
   }
 
   public RoundingPolicyView createRoundingPolicy(RoundingPolicyCreateRequest request, String actor) {
@@ -585,7 +656,7 @@ public class ComponentCatalogueControlRepository {
     return jdbc.query(
             ROUNDING_SELECT
                 + """
-                  where i.tenant_id=? and i.id=? and i.lifecycle_status='ACTIVE'
+                  where i.tenant_id=? and i.id=? and (i.lifecycle_status='ACTIVE' or (i.lifecycle_status='RETIRED' and i.retirement_effective_date>?))
                     and v.approval_status='APPROVED' and v.effective_from<=?
                     and (v.effective_to is null or v.effective_to>?)
                     and not exists (select 1 from compensation.component_rounding_policy_version s
@@ -593,7 +664,7 @@ public class ComponentCatalogueControlRepository {
                   order by v.version_sequence desc limit 1
                   """,
             this::mapRounding,
-            TenantContext.require(), identityId, Date.valueOf(asOf), Date.valueOf(asOf))
+            TenantContext.require(), identityId, Date.valueOf(asOf), Date.valueOf(asOf), Date.valueOf(asOf))
         .stream().findFirst()
         .orElseThrow(() -> new ResourceNotFoundException(
             "No approved component rounding policy is effective on " + asOf));
@@ -603,7 +674,7 @@ public class ComponentCatalogueControlRepository {
     return jdbc.query(
         ROUNDING_SELECT
             + """
-              where i.tenant_id=? and i.lifecycle_status='ACTIVE'
+              where i.tenant_id=? and (i.lifecycle_status='ACTIVE' or (i.lifecycle_status='RETIRED' and i.retirement_effective_date>?))
                 and v.approval_status='APPROVED' and v.effective_from<=?
                 and (v.effective_to is null or v.effective_to>?)
                 and not exists (select 1 from compensation.component_rounding_policy_version s
@@ -611,7 +682,7 @@ public class ComponentCatalogueControlRepository {
               order by c.code
               """,
         this::mapRounding,
-        TenantContext.require(), Date.valueOf(asOf), Date.valueOf(asOf));
+        TenantContext.require(), Date.valueOf(asOf), Date.valueOf(asOf), Date.valueOf(asOf));
   }
 
   public List<RoundingPolicyView> roundingHistory(UUID identityId) {
@@ -697,7 +768,7 @@ public class ComponentCatalogueControlRepository {
     return jdbc.query(
             PRORATION_SELECT
                 + """
-                  where i.tenant_id=? and i.id=? and i.lifecycle_status='ACTIVE'
+                  where i.tenant_id=? and i.id=? and (i.lifecycle_status='ACTIVE' or (i.lifecycle_status='RETIRED' and i.retirement_effective_date>?))
                     and v.approval_status='APPROVED' and v.effective_from<=?
                     and (v.effective_to is null or v.effective_to>?)
                     and not exists (select 1 from compensation.component_proration_policy_version s
@@ -705,7 +776,7 @@ public class ComponentCatalogueControlRepository {
                   order by v.version_sequence desc limit 1
                   """,
             this::mapProration,
-            TenantContext.require(), identityId, Date.valueOf(asOf), Date.valueOf(asOf))
+            TenantContext.require(), identityId, Date.valueOf(asOf), Date.valueOf(asOf), Date.valueOf(asOf))
         .stream().findFirst()
         .orElseThrow(() -> new ResourceNotFoundException(
             "No approved component proration policy is effective on " + asOf));
@@ -715,7 +786,7 @@ public class ComponentCatalogueControlRepository {
     return jdbc.query(
         PRORATION_SELECT
             + """
-              where i.tenant_id=? and i.lifecycle_status='ACTIVE'
+              where i.tenant_id=? and (i.lifecycle_status='ACTIVE' or (i.lifecycle_status='RETIRED' and i.retirement_effective_date>?))
                 and v.approval_status='APPROVED' and v.effective_from<=?
                 and (v.effective_to is null or v.effective_to>?)
                 and not exists (select 1 from compensation.component_proration_policy_version s
@@ -723,7 +794,7 @@ public class ComponentCatalogueControlRepository {
               order by c.code,i.event_type
               """,
         this::mapProration,
-        TenantContext.require(), Date.valueOf(asOf), Date.valueOf(asOf));
+        TenantContext.require(), Date.valueOf(asOf), Date.valueOf(asOf), Date.valueOf(asOf));
   }
 
   public List<ProrationPolicyView> prorationHistory(UUID identityId) {
@@ -760,6 +831,48 @@ public class ComponentCatalogueControlRepository {
     return prorationVersion(versionId);
   }
 
+  public RateTableView retireRateTable(
+      UUID identityId, LocalDate effectiveDate, long expectedVersion, String reason,
+      String actor, Instant now) {
+    Long affected = jdbc.queryForObject(
+        "select compensation.retire_component_rate_table(?,?,?,?,?,?,?)",
+        Long.class, TenantContext.require(), identityId, Date.valueOf(effectiveDate),
+        expectedVersion, reason, actor, Timestamp.from(now));
+    if (affected == null || affected != 1) {
+      throw new ConflictException(
+          "Component rate table changed, is retired, or has active/future approved versions");
+    }
+    return rateTableHistory(identityId).getLast();
+  }
+
+  public RoundingPolicyView retireRoundingPolicy(
+      UUID identityId, LocalDate effectiveDate, long expectedVersion, String reason,
+      String actor, Instant now) {
+    Long affected = jdbc.queryForObject(
+        "select compensation.retire_component_rounding_policy(?,?,?,?,?,?,?)",
+        Long.class, TenantContext.require(), identityId, Date.valueOf(effectiveDate),
+        expectedVersion, reason, actor, Timestamp.from(now));
+    if (affected == null || affected != 1) {
+      throw new ConflictException(
+          "Component rounding policy changed, is retired, or has active/future approved versions");
+    }
+    return roundingHistory(identityId).getLast();
+  }
+
+  public ProrationPolicyView retireProrationPolicy(
+      UUID identityId, LocalDate effectiveDate, long expectedVersion, String reason,
+      String actor, Instant now) {
+    Long affected = jdbc.queryForObject(
+        "select compensation.retire_component_proration_policy(?,?,?,?,?,?,?)",
+        Long.class, TenantContext.require(), identityId, Date.valueOf(effectiveDate),
+        expectedVersion, reason, actor, Timestamp.from(now));
+    if (affected == null || affected != 1) {
+      throw new ConflictException(
+          "Component proration policy changed, is retired, or has active/future approved versions");
+    }
+    return prorationHistory(identityId).getLast();
+  }
+
   private RateTableView withRateChildren(RateTableView shell) {
     List<RateDimensionView> dimensions = jdbc.query(
         """
@@ -781,7 +894,8 @@ public class ComponentCatalogueControlRepository {
         TenantContext.require(), shell.versionId());
     return new RateTableView(
         shell.identityId(), shell.code(), shell.name(), shell.lifecycleStatus(),
-        shell.identityVersionNo(), shell.versionId(), shell.versionSequence(), shell.versionNo(),
+        shell.identityVersionNo(), shell.retirementEffectiveDate(), shell.retirementReason(),
+        shell.versionId(), shell.versionSequence(), shell.versionNo(), shell.valueType(), shell.unitCode(),
         shell.effectiveFrom(), shell.effectiveTo(), shell.approvalStatus(),
         shell.supersedesVersionId(), shell.superseded(), dimensions, cells);
   }
@@ -790,8 +904,10 @@ public class ComponentCatalogueControlRepository {
     return new RateTableView(
         result.getObject("identity_id", UUID.class), result.getString("code"),
         result.getString("name"), result.getString("lifecycle_status"),
-        result.getLong("identity_version_no"), result.getObject("version_id", UUID.class),
-        result.getInt("version_sequence"), result.getLong("version_no"),
+        result.getLong("identity_version_no"),
+        result.getObject("retirement_effective_date", LocalDate.class), result.getString("retirement_reason"),
+        result.getObject("version_id", UUID.class), result.getInt("version_sequence"),
+        result.getLong("version_no"), result.getString("value_type"), result.getString("unit_code"),
         result.getObject("effective_from", LocalDate.class),
         result.getObject("effective_to", LocalDate.class), result.getString("approval_status"),
         result.getObject("supersedes_version_id", UUID.class), result.getBoolean("superseded"),
@@ -808,7 +924,9 @@ public class ComponentCatalogueControlRepository {
     return new RoundingPolicyView(
         result.getObject("identity_id", UUID.class), result.getObject("component_id", UUID.class),
         result.getString("component_code"), result.getString("lifecycle_status"),
-        result.getLong("identity_version_no"), result.getObject("version_id", UUID.class),
+        result.getLong("identity_version_no"),
+        result.getObject("retirement_effective_date", LocalDate.class), result.getString("retirement_reason"),
+        result.getObject("version_id", UUID.class),
         result.getInt("version_sequence"), result.getLong("version_no"),
         result.getString("rounding_method"), result.getInt("rounding_scale"),
         result.getString("rounding_stage"), result.getString("negative_treatment"),
@@ -822,11 +940,21 @@ public class ComponentCatalogueControlRepository {
         result.getObject("identity_id", UUID.class), result.getObject("component_id", UUID.class),
         result.getString("component_code"), result.getString("event_type"),
         result.getString("lifecycle_status"), result.getLong("identity_version_no"),
+        result.getObject("retirement_effective_date", LocalDate.class), result.getString("retirement_reason"),
         result.getObject("version_id", UUID.class), result.getInt("version_sequence"),
         result.getLong("version_no"), result.getString("proration_method"),
         result.getString("proration_basis"), result.getObject("effective_from", LocalDate.class),
         result.getObject("effective_to", LocalDate.class), result.getString("approval_status"),
         result.getObject("supersedes_version_id", UUID.class), result.getBoolean("superseded"));
+  }
+
+  private void ensureComponentIdentity(UUID componentId) {
+    Integer count = jdbc.queryForObject(
+        "select count(*) from compensation.pay_component where tenant_id=? and id=?",
+        Integer.class, TenantContext.require(), componentId);
+    if (count == null || count == 0) {
+      throw new ResourceNotFoundException("Pay-component identity was not found");
+    }
   }
 
   private void ensureComponent(UUID componentId) {
@@ -867,7 +995,7 @@ public class ComponentCatalogueControlRepository {
 
   private void lockRateTable(UUID identityId) {
     List<String> values = jdbc.query(
-        "select lifecycle_status from compensation.component_rate_table where tenant_id=? and id=?",
+        "select lifecycle_status from compensation.component_rate_table where tenant_id=? and id=? for update",
         (result, row) -> result.getString(1), TenantContext.require(), identityId);
     if (values.isEmpty()) {
       throw new ResourceNotFoundException("Component rate-table identity was not found");
@@ -879,19 +1007,25 @@ public class ComponentCatalogueControlRepository {
 
   private void lockRoundingPolicy(UUID identityId) {
     List<String> values = jdbc.query(
-        "select lifecycle_status from compensation.component_rounding_policy where tenant_id=? and id=?",
+        "select lifecycle_status from compensation.component_rounding_policy where tenant_id=? and id=? for update",
         (result, row) -> result.getString(1), TenantContext.require(), identityId);
     if (values.isEmpty()) {
       throw new ResourceNotFoundException("Component rounding-policy identity was not found");
+    }
+    if ("RETIRED".equals(values.get(0))) {
+      throw new ConflictException("Retired component rounding policies cannot accept new versions");
     }
   }
 
   private void lockProrationPolicy(UUID identityId) {
     List<String> values = jdbc.query(
-        "select lifecycle_status from compensation.component_proration_policy where tenant_id=? and id=?",
+        "select lifecycle_status from compensation.component_proration_policy where tenant_id=? and id=? for update",
         (result, row) -> result.getString(1), TenantContext.require(), identityId);
     if (values.isEmpty()) {
       throw new ResourceNotFoundException("Component proration-policy identity was not found");
+    }
+    if ("RETIRED".equals(values.get(0))) {
+      throw new ConflictException("Retired component proration policies cannot accept new versions");
     }
   }
 

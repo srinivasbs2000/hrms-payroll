@@ -1,5 +1,7 @@
 package com.acme.hrms.payroll.compensation.internal.application;
 
+import com.acme.hrms.payroll.compensation.ComponentCatalogueControls;
+import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.ComponentImpactView;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.FormulaDependencyView;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.FormulaValidationRequest;
 import com.acme.hrms.payroll.compensation.ComponentCatalogueControls.FormulaValidationView;
@@ -150,6 +152,10 @@ public class ComponentCatalogueControlService {
     return transactions.read(() -> repository.dependencies(componentId));
   }
 
+  public ComponentImpactView impact(UUID componentId) {
+    return transactions.read(() -> repository.impact(componentId));
+  }
+
   public List<StatutoryWageReferenceView> statutoryWageReferences(UUID componentId) {
     return transactions.read(() -> repository.statutoryWageReferences(componentId));
   }
@@ -177,6 +183,27 @@ public class ComponentCatalogueControlService {
           RateTableView created = repository.addRateTableVersion(identityId, request, null, actor.require());
           recordRate("VERSION_CREATED", created, null);
           return created;
+        });
+  }
+
+  public RateTableView correctFutureRateTableVersion(
+      UUID identityId, UUID versionId, String key, RateTableVersionWriteRequest request) {
+    request.validate();
+    return idempotent(
+        "component-rate-table:version-correct:" + versionId, key, request, RateTableView.class,
+        () -> {
+          RateTableView previous = repository.rateTableVersion(versionId);
+          requireIdentity(previous.identityId(), identityId);
+          if (!"DRAFT".equals(previous.approvalStatus())
+              || previous.superseded()
+              || !previous.effectiveFrom().isAfter(LocalDate.now(clock))) {
+            throw new ConflictException(
+                "Only a non-superseded future draft rate-table version can be corrected");
+          }
+          RateTableView corrected = repository.addRateTableVersion(
+              identityId, request, versionId, actor.require());
+          recordRate("VERSION_CORRECTED", corrected, previous);
+          return corrected;
         });
   }
 
@@ -217,6 +244,22 @@ public class ComponentCatalogueControlService {
         });
   }
 
+  public RateTableView retireRateTable(
+      UUID identityId, String key, LocalDate effectiveDate, long expectedVersion, String reason) {
+    validateRetirement(effectiveDate, expectedVersion, reason);
+    return idempotent(
+        "component-rate-table:retire:" + identityId, key,
+        Map.of("effectiveDate", effectiveDate, "expectedVersion", expectedVersion, "reason", reason),
+        RateTableView.class,
+        () -> {
+          RateTableView before = repository.rateTableHistory(identityId).getLast();
+          RateTableView retired = repository.retireRateTable(
+              identityId, effectiveDate, expectedVersion, reason, actor.require(), clock.instant());
+          recordRate("RETIRED", retired, before);
+          return retired;
+        });
+  }
+
   public List<RateTableView> listRateTables(LocalDate asOf) {
     return transactions.read(() -> repository.listRateTables(effectiveDate(asOf)));
   }
@@ -233,8 +276,12 @@ public class ComponentCatalogueControlService {
     if (dimensions == null || dimensions.isEmpty()) {
       throw new IllegalArgumentException("dimensions are required");
     }
-    return transactions.read(
-        () -> repository.lookupRate(identityId, effectiveDate(asOf), new LinkedHashMap<>(dimensions)));
+    return transactions.read(() -> {
+      LocalDate date = effectiveDate(asOf);
+      RateTableView current = repository.currentRateTable(identityId, date);
+      ComponentCatalogueControls.validateRateDimensionValues(current.dimensions(), dimensions);
+      return repository.lookupRate(identityId, date, new LinkedHashMap<>(dimensions));
+    });
   }
 
   public RoundingPolicyView createRoundingPolicy(String key, RoundingPolicyCreateRequest request) {
@@ -261,6 +308,28 @@ public class ComponentCatalogueControlService {
               identityId, request, null, actor.require());
           recordRounding("VERSION_CREATED", created, null);
           return created;
+        });
+  }
+
+  public RoundingPolicyView correctFutureRoundingPolicyVersion(
+      UUID identityId, UUID versionId, String key, RoundingPolicyVersionWriteRequest request) {
+    request.validate();
+    return idempotent(
+        "component-rounding-policy:version-correct:" + versionId, key, request,
+        RoundingPolicyView.class,
+        () -> {
+          RoundingPolicyView previous = repository.roundingVersion(versionId);
+          requireIdentity(previous.identityId(), identityId);
+          if (!"DRAFT".equals(previous.approvalStatus())
+              || previous.superseded()
+              || !previous.effectiveFrom().isAfter(LocalDate.now(clock))) {
+            throw new ConflictException(
+                "Only a non-superseded future draft rounding-policy version can be corrected");
+          }
+          RoundingPolicyView corrected = repository.addRoundingPolicyVersion(
+              identityId, request, versionId, actor.require());
+          recordRounding("VERSION_CORRECTED", corrected, previous);
+          return corrected;
         });
   }
 
@@ -298,6 +367,22 @@ public class ComponentCatalogueControlService {
               versionId, effectiveTo, expectedVersion, actor.require(), clock.instant());
           recordRounding("VERSION_END_DATED", ended, before);
           return ended;
+        });
+  }
+
+  public RoundingPolicyView retireRoundingPolicy(
+      UUID identityId, String key, LocalDate effectiveDate, long expectedVersion, String reason) {
+    validateRetirement(effectiveDate, expectedVersion, reason);
+    return idempotent(
+        "component-rounding-policy:retire:" + identityId, key,
+        Map.of("effectiveDate", effectiveDate, "expectedVersion", expectedVersion, "reason", reason),
+        RoundingPolicyView.class,
+        () -> {
+          RoundingPolicyView before = repository.roundingHistory(identityId).getLast();
+          RoundingPolicyView retired = repository.retireRoundingPolicy(
+              identityId, effectiveDate, expectedVersion, reason, actor.require(), clock.instant());
+          recordRounding("RETIRED", retired, before);
+          return retired;
         });
   }
 
@@ -340,6 +425,28 @@ public class ComponentCatalogueControlService {
         });
   }
 
+  public ProrationPolicyView correctFutureProrationPolicyVersion(
+      UUID identityId, UUID versionId, String key, ProrationPolicyVersionWriteRequest request) {
+    request.validate();
+    return idempotent(
+        "component-proration-policy:version-correct:" + versionId, key, request,
+        ProrationPolicyView.class,
+        () -> {
+          ProrationPolicyView previous = repository.prorationVersion(versionId);
+          requireIdentity(previous.identityId(), identityId);
+          if (!"DRAFT".equals(previous.approvalStatus())
+              || previous.superseded()
+              || !previous.effectiveFrom().isAfter(LocalDate.now(clock))) {
+            throw new ConflictException(
+                "Only a non-superseded future draft proration-policy version can be corrected");
+          }
+          ProrationPolicyView corrected = repository.addProrationPolicyVersion(
+              identityId, request, versionId, actor.require());
+          recordProration("VERSION_CORRECTED", corrected, previous);
+          return corrected;
+        });
+  }
+
   public ProrationPolicyView approveProrationPolicy(
       UUID identityId, UUID versionId, String key, long expectedVersion) {
     return idempotent(
@@ -374,6 +481,22 @@ public class ComponentCatalogueControlService {
               versionId, effectiveTo, expectedVersion, actor.require(), clock.instant());
           recordProration("VERSION_END_DATED", ended, before);
           return ended;
+        });
+  }
+
+  public ProrationPolicyView retireProrationPolicy(
+      UUID identityId, String key, LocalDate effectiveDate, long expectedVersion, String reason) {
+    validateRetirement(effectiveDate, expectedVersion, reason);
+    return idempotent(
+        "component-proration-policy:retire:" + identityId, key,
+        Map.of("effectiveDate", effectiveDate, "expectedVersion", expectedVersion, "reason", reason),
+        ProrationPolicyView.class,
+        () -> {
+          ProrationPolicyView before = repository.prorationHistory(identityId).getLast();
+          ProrationPolicyView retired = repository.retireProrationPolicy(
+              identityId, effectiveDate, expectedVersion, reason, actor.require(), clock.instant());
+          recordProration("RETIRED", retired, before);
+          return retired;
         });
   }
 
@@ -426,7 +549,7 @@ public class ComponentCatalogueControlService {
     List<DependencyTarget> dependencies = new ArrayList<>();
     for (String dependencyCode : dependencyCodes) {
       DependencyTarget dependency = repository.resolveApprovedDependency(
-          dependencyCode, component.effectiveFrom());
+          dependencyCode, component.effectiveFrom(), component.effectiveTo());
       if (dependency.componentId().equals(component.identityId())) {
         throw new IllegalArgumentException("SELF_DEPENDENCY: " + component.code());
       }
@@ -552,6 +675,10 @@ public class ComponentCatalogueControlService {
     state.put("code", view.code());
     state.put("name", view.name());
     state.put("lifecycleStatus", view.lifecycleStatus());
+    state.put("retirementEffectiveDate", view.retirementEffectiveDate());
+    state.put("retirementReason", view.retirementReason());
+    state.put("valueType", view.valueType());
+    state.put("unitCode", view.unitCode());
     state.put("effectiveFrom", view.effectiveFrom());
     state.put("effectiveTo", view.effectiveTo());
     state.put("approvalStatus", view.approvalStatus());
@@ -572,6 +699,8 @@ public class ComponentCatalogueControlService {
     state.put("scale", view.scale());
     state.put("stage", view.stage());
     state.put("negativeTreatment", view.negativeTreatment());
+    state.put("retirementEffectiveDate", view.retirementEffectiveDate());
+    state.put("retirementReason", view.retirementReason());
     state.put("effectiveFrom", view.effectiveFrom());
     state.put("effectiveTo", view.effectiveTo());
     state.put("approvalStatus", view.approvalStatus());
@@ -589,6 +718,8 @@ public class ComponentCatalogueControlService {
     state.put("versionId", view.versionId());
     state.put("method", view.method());
     state.put("basis", view.basis());
+    state.put("retirementEffectiveDate", view.retirementEffectiveDate());
+    state.put("retirementReason", view.retirementReason());
     state.put("effectiveFrom", view.effectiveFrom());
     state.put("effectiveTo", view.effectiveTo());
     state.put("approvalStatus", view.approvalStatus());
@@ -630,6 +761,18 @@ public class ComponentCatalogueControlService {
       idempotency.complete(operation, key, 200, response);
       return response;
     });
+  }
+
+  private void validateRetirement(LocalDate effectiveDate, long expectedVersion, String reason) {
+    if (effectiveDate == null) {
+      throw new IllegalArgumentException("effectiveDate is required");
+    }
+    if (expectedVersion < 0) {
+      throw new IllegalArgumentException("expectedVersion must be non-negative");
+    }
+    if (reason == null || reason.isBlank() || reason.trim().length() > 500) {
+      throw new IllegalArgumentException("reason must contain between 1 and 500 characters");
+    }
   }
 
   private LocalDate effectiveDate(LocalDate asOf) {

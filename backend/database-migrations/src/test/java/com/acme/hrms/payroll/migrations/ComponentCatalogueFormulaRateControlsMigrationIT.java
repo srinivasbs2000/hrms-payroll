@@ -128,6 +128,7 @@ class ComponentCatalogueFormulaRateControlsMigrationIT {
         UUID tableId = UUID.randomUUID();
         UUID version1 = UUID.randomUUID();
         UUID version2 = UUID.randomUUID();
+        UUID version3 = UUID.randomUUID();
         statement.execute(
             "INSERT INTO compensation.component_rate_table(id,tenant_id,code,name,created_by,updated_by) "
                 + "VALUES ('" + tableId + "','" + TENANT_A + "','GENERIC_RATE','Generic rate','maker','maker')");
@@ -153,6 +154,24 @@ class ComponentCatalogueFormulaRateControlsMigrationIT {
         assertThat(approve(
             statement, "approve_component_rate_table_version", version2, 0, "checker-2"))
             .isOne();
+        assertThat(endDate(
+            statement, "end_date_component_rate_table_version", version2, "2027-12-31", 1,
+            "end-checker-2")).isOne();
+        insertRateVersion(statement, tableId, version3, 3, "2028-02-01", null, "maker-3");
+        assertThat(retire(
+            statement, "retire_component_rate_table", tableId, "2028-01-01", 1,
+            "retire-checker")).isOne();
+        assertThat(approve(
+            statement, "approve_component_rate_table_version", version3, 0,
+            "checker-3")).isZero();
+        try (ResultSet retired = statement.executeQuery(
+            "SELECT lifecycle_status,retirement_effective_date FROM compensation.component_rate_table "
+                + "WHERE id='" + tableId + "'")) {
+          assertThat(retired.next()).isTrue();
+          assertThat(retired.getString("lifecycle_status")).isEqualTo("RETIRED");
+          assertThat(retired.getDate("retirement_effective_date").toLocalDate())
+              .isEqualTo(java.time.LocalDate.of(2028, 1, 1));
+        }
       }
       connection.rollback();
     }
@@ -233,6 +252,69 @@ class ComponentCatalogueFormulaRateControlsMigrationIT {
           assertThat(result.next()).isTrue();
           assertThat(result.getInt(1)).isEqualTo(5);
         }
+      }
+      connection.rollback();
+    }
+  }
+
+  @Test
+  void typedRateDimensionsRejectNonCanonicalDatabaseValues() throws Exception {
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        statement.execute("SET LOCAL app.tenant_id='" + TENANT_A + "'");
+        UUID tableId = UUID.randomUUID();
+        UUID versionId = UUID.randomUUID();
+        statement.execute(
+            "INSERT INTO compensation.component_rate_table(id,tenant_id,code,name,created_by,updated_by) "
+                + "VALUES ('" + tableId + "','" + TENANT_A + "','TYPED_RATE','Typed rate','maker','maker')");
+        statement.execute(
+            "INSERT INTO compensation.component_rate_table_version("
+                + "id,tenant_id,rate_table_id,version_sequence,value_type,unit_code,effective_from,created_by,updated_by) VALUES ('"
+                + versionId + "','" + TENANT_A + "','" + tableId
+                + "',1,'PERCENTAGE','PERCENT','2027-01-01','maker','maker')");
+        statement.execute(
+            "INSERT INTO compensation.component_rate_dimension("
+                + "tenant_id,rate_table_version_id,dimension_sequence,code,name,data_type,created_by) VALUES ('"
+                + TENANT_A + "','" + versionId + "',1,'LEVEL','Level','NUMBER','maker')");
+        assertThatThrownBy(() -> statement.execute(
+            "INSERT INTO compensation.component_rate_cell("
+                + "tenant_id,rate_table_version_id,cell_sequence,dimension_values,rate_value,created_by) VALUES ('"
+                + TENANT_A + "','" + versionId
+                + "',1,'{\"LEVEL\":\"01\"}'::jsonb,12.5,'maker')"))
+            .isInstanceOf(SQLException.class);
+      }
+      connection.rollback();
+    }
+  }
+
+  @Test
+  void dependencyVersionCannotBeShortenedBelowDependantFormulaRange() throws Exception {
+    Component dependency = seedApprovedComponent("DEP_TARGET");
+    Component source = seedApprovedComponent("DEP_SOURCE");
+    try (Connection connection = app()) {
+      connection.setAutoCommit(false);
+      try (Statement statement = connection.createStatement()) {
+        statement.execute("SET LOCAL app.tenant_id='" + TENANT_A + "'");
+        UUID metadataId = UUID.randomUUID();
+        statement.execute(
+            "INSERT INTO compensation.component_formula_metadata("
+                + "id,tenant_id,component_id,component_version_id,formula_type,calculation_phase,"
+                + "result_contract,canonical_expression,formula_fingerprint,dependency_count,created_by) VALUES ('"
+                + metadataId + "','" + TENANT_A + "','" + source.identityId + "','" + source.versionId
+                + "','PERCENTAGE_OF_COMPONENT','PRE_TAX','DECIMAL','DEP_TARGET*0.1',"
+                + "'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',1,'maker')");
+        statement.execute(
+            "INSERT INTO compensation.component_formula_dependency("
+                + "tenant_id,formula_metadata_id,component_id,component_version_id,dependency_component_id,"
+                + "dependency_component_version_id,dependency_code,dependency_order,dependency_phase,created_by) VALUES ('"
+                + TENANT_A + "','" + metadataId + "','" + source.identityId + "','" + source.versionId
+                + "','" + dependency.identityId + "','" + dependency.versionId
+                + "','DEP_TARGET',1,'INPUT','maker')");
+        assertThatThrownBy(() -> endDate(
+            statement, "end_date_pay_component_version", dependency.versionId,
+            "2028-01-01", 1, "end-checker"))
+            .isInstanceOf(SQLException.class);
       }
       connection.rollback();
     }
@@ -400,6 +482,22 @@ class ComponentCatalogueFormulaRateControlsMigrationIT {
     try (ResultSet result = statement.executeQuery(
         "SELECT compensation." + function + "('" + TENANT_A + "','" + versionId + "','"
             + effectiveTo + "'," + expected + ",'" + actor + "','2026-08-16T00:06:00Z')")) {
+      assertThat(result.next()).isTrue();
+      return result.getLong(1);
+    }
+  }
+
+  private static long retire(
+      Statement statement,
+      String function,
+      UUID identityId,
+      String effectiveDate,
+      long expected,
+      String actor) throws Exception {
+    try (ResultSet result = statement.executeQuery(
+        "SELECT compensation." + function + "('" + TENANT_A + "','" + identityId + "','"
+            + effectiveDate + "'," + expected + ",'test retirement','" + actor
+            + "','2026-08-16T00:07:00Z')")) {
       assertThat(result.next()).isTrue();
       return result.getLong(1);
     }
