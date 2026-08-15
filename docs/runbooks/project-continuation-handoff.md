@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 15 August 2026 after B02-G03 UI publication and B02-G04 final capability reconciliation
+**Updated:** 15 August 2026 at P5-CCF-01 governance-only activation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** UI PR #16 with exact five hosted checks green
-**Active capability:** NONE — P5-E2E-UI-01 and B02 are closed after this reconciliation
-**Current state:** all 11 selected stories are IMPLEMENTED; no product write owner remains
+**Active capability:** P5-CCF-01 — ACTIVATED FOR READ-ONLY G01 PREFLIGHT
+**Current state:** P5-CCF-01 G01 read-only preflight authorized; no product write owner
 **Migrations:** V001–V039 committed and immutable
 **Next migration:** V040 unreserved; no capability owns it
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -32,9 +32,9 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | P5-E2E-UI-01-B02-G03 after this reconciliation merges; UI repository only |
+| Active write owner | NONE; P5-CCF-01 G01 is read-only |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | Backend B02-G01/G02 closed; B02-G03 exact UI paths require fresh read-only preflight |
+| Active path ownership | Governance activation only; G01 must propose exact backend/UI allow-lists before product write |
 | Migration state | V001–V039 immutable after this closure |
 | Next migration | V040 unreserved; no capability owns it |
 | Product deployment | Greenfield; no evidenced production deployment |
@@ -285,3 +285,30 @@ not promote stories until B02-G04 browser-evidence reconciliation.
 
 No next capability is activated. Continue only after fresh local/remote
 reconciliation and separately governed capability selection/activation.
+
+<!-- P5-CCF-01-ACTIVATION:START -->
+## P5-CCF-01 activation checkpoint
+
+- execution identity: P5-CCF-01;
+- capability: Component Catalogue Formula, Rate and Control Completion;
+- original mapping: P5-A5 / E03;
+- backend activation baseline: `6e8355e80a7cf719fa3a7fc6766f4d486879d1d4`;
+- UI activation baseline: `42487de1e99240a99df1ba99742a728671c1636e`;
+- preserved implemented stories: PLN-E03-001..003;
+- selected completion stories: PLN-E03-004..018;
+- selected-story UI applicability revalidated: YES;
+- backend product write owner: NONE;
+- UI product write owner: NONE;
+- migration owner: NONE; V040 unreserved;
+- canonical ledger unchanged: 29 / 147 / 84 / 159 / 31 = 450;
+- P5-E2E-UI-01/B02: CLOSED; do not reopen;
+- next controlled action after activation publication: G01 read-only
+  backend/database/API/UI artifact and contract preflight;
+- G01 prohibited actions: product, API, database, migration, permission,
+  Keycloak, story-status, push, PR and merge mutation.
+
+G01 must return the exact reusable-artifact/gap map, restricted formula and
+dependency contract, rate/rounding/proration model verdict, backend/UI
+allow-lists, test/E2E plan and binary schema-amendment verdict before any
+product-write authority is created.
+<!-- P5-CCF-01-ACTIVATION:END -->

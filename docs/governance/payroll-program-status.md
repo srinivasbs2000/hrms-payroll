@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-E2E-UI-01-B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`, hosted `payroll-web-ci` all five checks GREEN
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** NONE after B02-G04 closure merges
+**Active product write owner:** NONE — P5-CCF-01 activation authorizes read-only G01 only
 **Migration state:** V001–V039 committed and immutable
 **Next migration:** V040 unreserved; no capability owns it
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 15 August 2026 after B02-G03 UI publication and B02-G04 final evidence reconciliation
-**Current execution capability:** NONE — P5-E2E-UI-01 and B02 are closed
+**Last reconciled:** 15 August 2026 at P5-CCF-01 governance-only activation
+**Current execution capability:** P5-CCF-01 — ACTIVATED FOR READ-ONLY G01 PREFLIGHT
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -611,3 +611,29 @@ V001-V039 remain immutable, V040 is unreserved, and P5-A5/E03 remains inactive.
 No next product capability is activated by this closure. Any continuation must
 begin with fresh repository/live-GitHub reconciliation and separately governed
 selection/activation authority.
+
+<!-- P5-CCF-01-ACTIVATION:START -->
+## P5-CCF-01 activation authority
+
+P5-CCF-01 — Component Catalogue Formula, Rate and Control Completion is
+activated against backend `6e8355e80a7cf719fa3a7fc6766f4d486879d1d4`
+and UI `42487de1e99240a99df1ba99742a728671c1636e` for the bounded completion of
+PLN-E03-004 through PLN-E03-018. PLN-E03-001 through PLN-E03-003 remain
+IMPLEMENTED and are not reopened.
+
+Selected-story UI applicability is revalidated YES. PLN-E03-004..012 require
+product UI, PLN-E03-015 requires admin/security UI and PLN-E03-016 requires
+audit UI. PLN-E03-013, PLN-E03-014, PLN-E03-017 and PLN-E03-018 are
+NOT_REQUIRED_DIRECTLY; their technical evidence remains linked to the required
+human-facing journeys.
+
+Activation is governance-only. Product write owners remain NONE. V001–V039
+remain immutable; V040 remains unreserved. Story statuses and canonical totals
+remain 29 / 147 / 84 / 159 / 31 = 450.
+
+The exact capability authority is
+`docs/planning/pln-01/p5-ccf-01-component-catalogue-formula-rate-control-completion-scope.md`.
+The next controlled action after activation publication is G01 read-only
+backend/database/API/UI artifact and contract preflight. G01 must issue an
+evidence-backed schema verdict before any product write or V040 reservation.
+<!-- P5-CCF-01-ACTIVATION:END -->
