@@ -11,10 +11,10 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** UI PR #16 with exact five hosted checks green
-**Active capability:** P5-CCF-01 — ACTIVATED FOR READ-ONLY G01 PREFLIGHT
-**Current state:** P5-CCF-01 G01 read-only preflight authorized; no product write owner
+**Active capability:** P5-CCF-01 — G01 complete; R01 approves G02 backend/API implementation
+**Current state:** P5-CCF-01-G02 owns bounded backend/API product writes and V040
 **Migrations:** V001–V039 committed and immutable
-**Next migration:** V040 unreserved; no capability owns it
+**Next migration:** V040 reserved exclusively for P5-CCF-01-G02
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -312,3 +312,19 @@ dependency contract, rate/rounding/proration model verdict, backend/UI
 allow-lists, test/E2E plan and binary schema-amendment verdict before any
 product-write authority is created.
 <!-- P5-CCF-01-ACTIVATION:END -->
+
+<!-- P5-CCF-01-R01:START -->
+## P5-CCF-01 G01/R01 continuation checkpoint
+
+- G01 evidence: PASS; no product mutation;
+- R3 verdict: `SCHEMA_AMENDMENT_REQUIRED`;
+- backend/API write owner: P5-CCF-01-G02;
+- UI write owner: NONE;
+- migration owner: P5-CCF-01-G02; V040 reserved;
+- V001–V039: immutable;
+- P5-E2E-UI-01/B02: CLOSED; do not reopen;
+- next action: G02-A restricted formula/dependency foundation followed by G02-B
+  V040 persistence, API, security, audit/outbox and executable verification.
+
+`P5_CCF_01_R01: APPROVED`
+<!-- P5-CCF-01-R01:END -->
