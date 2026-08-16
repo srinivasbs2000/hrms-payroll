@@ -138,7 +138,8 @@ public class SalaryStructureSupplementalPlanService {
   }
 
   public List<AuditReader.AuditEventView> audit(UUID identityId) {
-    return transactions.read(() -> auditReader.forObject(PLAN_OBJECT, identityId));
+    return transactions.read(
+        () -> auditReader.forObject(PLAN_OBJECT, identityId));
   }
 
   public SupplementalPlanBindingView bind(
@@ -148,7 +149,8 @@ public class SalaryStructureSupplementalPlanService {
       SupplementalPlanBindingWriteRequest request) {
     request.validate();
     return idempotent(
-        "salary-structure:supplemental-plan-bind:" + salaryStructureVersionId,
+        "salary-structure:supplemental-plan-bind:"
+            + salaryStructureVersionId,
         key,
         request,
         SupplementalPlanBindingView.class,
@@ -168,7 +170,9 @@ public class SalaryStructureSupplementalPlanService {
       UUID salaryStructureId,
       UUID salaryStructureVersionId) {
     return transactions.read(
-        () -> repository.bindings(salaryStructureId, salaryStructureVersionId));
+        () -> repository.bindings(
+            salaryStructureId,
+            salaryStructureVersionId));
   }
 
   private void recordPlan(
@@ -208,12 +212,17 @@ public class SalaryStructureSupplementalPlanService {
     String principal = actor.require();
     Map<String, Object> state = new LinkedHashMap<>();
     state.put("bindingId", binding.bindingId());
-    state.put("salaryStructureVersionId", binding.salaryStructureVersionId());
+    state.put(
+        "salaryStructureVersionId",
+        binding.salaryStructureVersionId());
     state.put("supplementalPlanId", binding.supplementalPlanId());
-    state.put("supplementalPlanVersionId", binding.supplementalPlanVersionId());
+    state.put(
+        "supplementalPlanVersionId",
+        binding.supplementalPlanVersionId());
     state.put("sequenceNo", binding.sequenceNo());
     state.put("effectiveFrom", binding.effectiveFrom());
     state.put("effectiveTo", binding.effectiveTo());
+    state.put("compositionRevision", binding.compositionRevision());
 
     audit.append(
         "SUPPLEMENTAL_PLAN_BOUND",
@@ -224,6 +233,8 @@ public class SalaryStructureSupplementalPlanService {
         Map.of(
             "salaryStructureVersionId",
             binding.salaryStructureVersionId(),
+            "compositionRevision",
+            binding.compositionRevision(),
             "configurationHash",
             canonical.hash(state)),
         principal);
@@ -235,7 +246,7 @@ public class SalaryStructureSupplementalPlanService {
         null,
         STRUCTURE_OBJECT,
         binding.salaryStructureId(),
-        binding.sequenceNo(),
+        binding.compositionRevision(),
         state);
     outbox.append(event);
   }
@@ -257,9 +268,31 @@ public class SalaryStructureSupplementalPlanService {
     state.put("approvalStatus", view.approvalStatus());
     state.put("lineCount", view.lines().size());
     state.put(
-        "componentVersionIds",
+        "lines",
         view.lines().stream()
-            .map(line -> line.componentVersionId())
+            .map(line -> {
+              Map<String, Object> lineState = new LinkedHashMap<>();
+              lineState.put("lineId", line.lineId());
+              lineState.put(
+                  "componentVersionId",
+                  line.componentVersionId());
+              lineState.put("sequenceNo", line.sequenceNo());
+              lineState.put("defaultAmount", line.defaultAmount());
+              lineState.put(
+                  "defaultPercentage",
+                  line.defaultPercentage());
+              lineState.put(
+                  "percentageBaseComponentVersionId",
+                  line.percentageBaseComponentVersionId());
+              lineState.put("minimumAmount", line.minimumAmount());
+              lineState.put("maximumAmount", line.maximumAmount());
+              lineState.put(
+                  "employeeOverrideAllowed",
+                  line.employeeOverrideAllowed());
+              lineState.put("effectiveFrom", line.effectiveFrom());
+              lineState.put("effectiveTo", line.effectiveTo());
+              return lineState;
+            })
             .toList());
     return state;
   }
@@ -287,7 +320,9 @@ public class SalaryStructureSupplementalPlanService {
               "Idempotent operation is still in progress");
         }
         try {
-          return objectMapper.readValue(saved.get().body(), responseType);
+          return objectMapper.readValue(
+              saved.get().body(),
+              responseType);
         } catch (JsonProcessingException exception) {
           throw new IllegalStateException(
               "Stored idempotent response is invalid",

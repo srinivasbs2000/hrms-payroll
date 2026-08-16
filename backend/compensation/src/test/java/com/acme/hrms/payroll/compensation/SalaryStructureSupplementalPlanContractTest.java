@@ -23,8 +23,8 @@ class SalaryStructureSupplementalPlanContractTest {
         LocalDate.of(2027, 1, 1),
         null,
         List.of(
-            line(UUID.randomUUID(), 1),
-            line(UUID.randomUUID(), 2)));
+            fixedLine(UUID.randomUUID(), 1),
+            fixedLine(UUID.randomUUID(), 2)));
 
     request.validate();
 
@@ -40,8 +40,8 @@ class SalaryStructureSupplementalPlanContractTest {
         LocalDate.of(2027, 1, 1),
         null,
         List.of(
-            line(component, 1),
-            line(component, 2)));
+            fixedLine(component, 1),
+            fixedLine(component, 2)));
 
     assertThatThrownBy(duplicateComponent::validate)
         .isInstanceOf(IllegalArgumentException.class)
@@ -53,8 +53,8 @@ class SalaryStructureSupplementalPlanContractTest {
         LocalDate.of(2027, 1, 1),
         null,
         List.of(
-            line(UUID.randomUUID(), 1),
-            line(UUID.randomUUID(), 1)));
+            fixedLine(UUID.randomUUID(), 1),
+            fixedLine(UUID.randomUUID(), 1)));
 
     assertThatThrownBy(duplicateSequence::validate)
         .isInstanceOf(IllegalArgumentException.class)
@@ -62,12 +62,31 @@ class SalaryStructureSupplementalPlanContractTest {
   }
 
   @Test
-  void lineRejectsAmbiguousDefaultsAndInvalidBounds() {
+  void lineRequiresExactlyOneCalculationValue() {
+    var empty = new SupplementalPlanLineWriteRequest(
+        UUID.randomUUID(),
+        1,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        null,
+        null);
+
+    assertThatThrownBy(() -> empty.validate(
+        LocalDate.of(2027, 1, 1),
+        null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Exactly one");
+
     var ambiguous = new SupplementalPlanLineWriteRequest(
         UUID.randomUUID(),
         1,
         BigDecimal.TEN,
         BigDecimal.ONE,
+        UUID.randomUUID(),
         null,
         null,
         true,
@@ -78,11 +97,68 @@ class SalaryStructureSupplementalPlanContractTest {
         LocalDate.of(2027, 1, 1),
         null))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("mutually exclusive");
+        .hasMessageContaining("Exactly one");
+  }
 
+  @Test
+  void percentageDefaultRequiresExplicitNonSelfBase() {
+    UUID component = UUID.randomUUID();
+    var missingBase = new SupplementalPlanLineWriteRequest(
+        component,
+        1,
+        null,
+        BigDecimal.TEN,
+        null,
+        null,
+        null,
+        false,
+        null,
+        null);
+
+    assertThatThrownBy(() -> missingBase.validate(
+        LocalDate.of(2027, 1, 1),
+        null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("percentageBaseComponentVersionId");
+
+    var selfBase = new SupplementalPlanLineWriteRequest(
+        component,
+        1,
+        null,
+        BigDecimal.TEN,
+        component,
+        null,
+        null,
+        false,
+        null,
+        null);
+
+    assertThatThrownBy(() -> selfBase.validate(
+        LocalDate.of(2027, 1, 1),
+        null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("cannot calculate from itself");
+
+    var percentage = new SupplementalPlanLineWriteRequest(
+        component,
+        1,
+        null,
+        BigDecimal.TEN,
+        UUID.randomUUID(),
+        BigDecimal.ZERO,
+        BigDecimal.valueOf(5000),
+        false,
+        null,
+        null);
+    percentage.validate(LocalDate.of(2027, 1, 1), null);
+  }
+
+  @Test
+  void lineRejectsInvalidBounds() {
     var bounds = new SupplementalPlanLineWriteRequest(
         UUID.randomUUID(),
         1,
+        BigDecimal.ONE,
         null,
         null,
         BigDecimal.TEN,
@@ -117,43 +193,60 @@ class SalaryStructureSupplementalPlanContractTest {
   }
 
   @Test
-  void controllerReusesSalaryStructureLeastPrivilegeAuthorities()
+  void controllersUseExistingSalaryStructureAuthorities()
       throws Exception {
     assertPermission(
+        SalaryStructureSupplementalPlanController.class,
         "create",
         "compensation.structure.create",
         String.class,
         SalaryStructureSupplementalPlanControls
             .SupplementalPlanCreateRequest.class);
     assertPermission(
+        SalaryStructureSupplementalPlanController.class,
         "addVersion",
         "compensation.structure.version.create",
         UUID.class,
         String.class,
         SupplementalPlanVersionWriteRequest.class);
     assertPermission(
+        SalaryStructureSupplementalPlanController.class,
         "approve",
         "compensation.structure.approve",
         UUID.class,
         UUID.class,
         String.class);
     assertPermission(
+        SalaryStructureSupplementalPlanController.class,
         "bind",
         "compensation.structure.version.create",
         UUID.class,
         UUID.class,
         String.class,
         SupplementalPlanBindingWriteRequest.class);
-    assertPermission("audit", "audit.read", UUID.class);
+    assertPermission(
+        SalaryStructureSupplementalPlanController.class,
+        "audit",
+        "audit.read",
+        UUID.class);
+    assertPermission(
+        SalaryStructureCompositionController.class,
+        "simulate",
+        "compensation.structure.simulate",
+        UUID.class,
+        UUID.class,
+        String.class,
+        SalaryStructureSimulationRequest.class);
   }
 
-  private SupplementalPlanLineWriteRequest line(
+  private SupplementalPlanLineWriteRequest fixedLine(
       UUID componentVersionId,
       int sequenceNo) {
     return new SupplementalPlanLineWriteRequest(
         componentVersionId,
         sequenceNo,
         BigDecimal.valueOf(1000),
+        null,
         null,
         BigDecimal.ZERO,
         BigDecimal.valueOf(5000),
@@ -163,12 +256,14 @@ class SalaryStructureSupplementalPlanContractTest {
   }
 
   private void assertPermission(
+      Class<?> controller,
       String methodName,
       String authority,
       Class<?>... parameterTypes)
       throws Exception {
-    Method method = SalaryStructureSupplementalPlanController.class
-        .getDeclaredMethod(methodName, parameterTypes);
+    Method method = controller.getDeclaredMethod(
+        methodName,
+        parameterTypes);
     PreAuthorize preAuthorize = method.getAnnotation(PreAuthorize.class);
     assertThat(preAuthorize).isNotNull();
     assertThat(preAuthorize.value()).contains(authority);

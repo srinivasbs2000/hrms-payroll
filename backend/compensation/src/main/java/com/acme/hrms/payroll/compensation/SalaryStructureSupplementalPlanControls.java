@@ -82,12 +82,15 @@ public final class SalaryStructureSupplementalPlanControls {
       int sequenceNo,
       BigDecimal defaultAmount,
       BigDecimal defaultPercentage,
+      UUID percentageBaseComponentVersionId,
       BigDecimal minimumAmount,
       BigDecimal maximumAmount,
       boolean employeeOverrideAllowed,
       LocalDate effectiveFrom,
       LocalDate effectiveTo) {
-    public void validate(LocalDate parentEffectiveFrom, LocalDate parentEffectiveTo) {
+    public void validate(
+        LocalDate parentEffectiveFrom,
+        LocalDate parentEffectiveTo) {
       if (componentVersionId == null) {
         throw new IllegalArgumentException("componentVersionId is required");
       }
@@ -103,10 +106,26 @@ public final class SalaryStructureSupplementalPlanControls {
         throw new IllegalArgumentException(
             "defaultPercentage must be greater than 0 and at most 100");
       }
-      if (defaultAmount != null && defaultPercentage != null) {
+
+      boolean fixed = defaultAmount != null;
+      boolean percentage = defaultPercentage != null;
+      if (fixed == percentage) {
         throw new IllegalArgumentException(
-            "defaultAmount and defaultPercentage are mutually exclusive");
+            "Exactly one of defaultAmount or defaultPercentage is required");
       }
+      if (percentage && percentageBaseComponentVersionId == null) {
+        throw new IllegalArgumentException(
+            "percentageBaseComponentVersionId is required for percentage defaults");
+      }
+      if (fixed && percentageBaseComponentVersionId != null) {
+        throw new IllegalArgumentException(
+            "percentageBaseComponentVersionId is allowed only for percentage defaults");
+      }
+      if (componentVersionId.equals(percentageBaseComponentVersionId)) {
+        throw new IllegalArgumentException(
+            "A supplemental line cannot calculate from itself");
+      }
+
       if (minimumAmount != null && minimumAmount.signum() < 0) {
         throw new IllegalArgumentException("minimumAmount cannot be negative");
       }
@@ -120,8 +139,10 @@ public final class SalaryStructureSupplementalPlanControls {
             "maximumAmount cannot be below minimumAmount");
       }
 
-      LocalDate from = effectiveFrom == null ? parentEffectiveFrom : effectiveFrom;
-      LocalDate to = effectiveTo == null ? parentEffectiveTo : effectiveTo;
+      LocalDate from =
+          effectiveFrom == null ? parentEffectiveFrom : effectiveFrom;
+      LocalDate to =
+          effectiveTo == null ? parentEffectiveTo : effectiveTo;
       if (from.isBefore(parentEffectiveFrom)) {
         throw new IllegalArgumentException(
             "Line effectiveFrom cannot precede the plan");
@@ -155,6 +176,7 @@ public final class SalaryStructureSupplementalPlanControls {
       int sequenceNo,
       BigDecimal defaultAmount,
       BigDecimal defaultPercentage,
+      UUID percentageBaseComponentVersionId,
       BigDecimal minimumAmount,
       BigDecimal maximumAmount,
       boolean employeeOverrideAllowed,
@@ -216,5 +238,6 @@ public final class SalaryStructureSupplementalPlanControls {
       int sequenceNo,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
-      long versionNo) {}
+      long versionNo,
+      long compositionRevision) {}
 }

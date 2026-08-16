@@ -223,41 +223,81 @@ public class SalaryStructureSupplementalPlanRepository {
       SupplementalPlanBindingWriteRequest request,
       String actor) {
     UUID bindingId = UUID.randomUUID();
-
-    int inserted = jdbc.update(
+    Long revision = jdbc.queryForObject(
         """
-        insert into compensation.salary_structure_supplemental_plan_binding(
-          id,tenant_id,salary_structure_id,salary_structure_version_id,
-          supplemental_plan_id,supplemental_plan_version_id,sequence_no,
-          effective_from,effective_to,created_by
+        select compensation.bind_salary_structure_supplemental_plan(
+          ?,?,?,?,?,?,?,?,?
         )
-        select ?,?,?,?,v.supplemental_plan_id,v.id,?,?,?,?
-          from compensation.salary_supplemental_plan_version v
-         where v.tenant_id=? and v.id=?
         """,
-        bindingId,
+        Long.class,
         TenantContext.require(),
+        bindingId,
         salaryStructureId,
         salaryStructureVersionId,
+        request.supplementalPlanVersionId(),
         request.sequenceNo(),
-        request.effectiveFrom(),
-        request.effectiveTo(),
-        actor,
-        TenantContext.require(),
-        request.supplementalPlanVersionId());
+        Date.valueOf(request.effectiveFrom()),
+        request.effectiveTo() == null
+            ? null : Date.valueOf(request.effectiveTo()),
+        actor);
 
-    if (inserted != 1) {
-      throw new ResourceNotFoundException(
-          "Supplemental-plan version was not found");
+    if (revision == null || revision < 1) {
+      throw new ConflictException(
+          "Supplemental-plan binding was not created");
     }
     return binding(bindingId);
+  }
+
+  public long compositionRevision(UUID salaryStructureVersionId) {
+    List<Long> revisions = jdbc.query(
+        """
+        select composition_revision
+          from compensation.salary_structure_version
+         where tenant_id=? and id=?
+        """,
+        (result, row) -> result.getLong(1),
+        TenantContext.require(),
+        salaryStructureVersionId);
+    return revisions.stream()
+        .findFirst()
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Salary-structure version was not found"));
   }
 
   public List<SupplementalPlanBindingView> bindings(
       UUID salaryStructureId,
       UUID salaryStructureVersionId) {
     return jdbc.query(
-        """
+        bindingSelect()
+            + """
+               where b.tenant_id=?
+                 and b.salary_structure_id=?
+                 and b.salary_structure_version_id=?
+               order by b.sequence_no
+              """,
+        (result, row) -> binding(result),
+        TenantContext.require(),
+        salaryStructureId,
+        salaryStructureVersionId);
+  }
+
+  private SupplementalPlanBindingView binding(UUID bindingId) {
+    return jdbc.query(
+            bindingSelect()
+                + """
+                   where b.tenant_id=? and b.id=?
+                  """,
+            (result, row) -> binding(result),
+            TenantContext.require(),
+            bindingId)
+        .stream()
+        .findFirst()
+        .orElseThrow(() -> new ResourceNotFoundException(
+            "Salary-structure supplemental binding was not found"));
+  }
+
+  private String bindingSelect() {
+    return """
         select b.id binding_id,
                b.salary_structure_id,
                b.salary_structure_version_id,
@@ -269,7 +309,8 @@ public class SalaryStructureSupplementalPlanRepository {
                b.sequence_no,
                b.effective_from,
                b.effective_to,
-               b.version_no
+               b.version_no,
+               structure.composition_revision
           from compensation.salary_structure_supplemental_plan_binding b
           join compensation.salary_supplemental_plan p
             on p.tenant_id=b.tenant_id
@@ -277,48 +318,10 @@ public class SalaryStructureSupplementalPlanRepository {
           join compensation.salary_supplemental_plan_version v
             on v.tenant_id=b.tenant_id
            and v.id=b.supplemental_plan_version_id
-         where b.tenant_id=?
-           and b.salary_structure_id=?
-           and b.salary_structure_version_id=?
-         order by b.sequence_no
-        """,
-        (result, row) -> binding(result),
-        TenantContext.require(),
-        salaryStructureId,
-        salaryStructureVersionId);
-  }
-
-  private SupplementalPlanBindingView binding(UUID bindingId) {
-    return jdbc.query(
-            """
-            select b.id binding_id,
-                   b.salary_structure_id,
-                   b.salary_structure_version_id,
-                   b.supplemental_plan_id,
-                   b.supplemental_plan_version_id,
-                   p.code supplemental_plan_code,
-                   v.name supplemental_plan_name,
-                   v.plan_type,
-                   b.sequence_no,
-                   b.effective_from,
-                   b.effective_to,
-                   b.version_no
-              from compensation.salary_structure_supplemental_plan_binding b
-              join compensation.salary_supplemental_plan p
-                on p.tenant_id=b.tenant_id
-               and p.id=b.supplemental_plan_id
-              join compensation.salary_supplemental_plan_version v
-                on v.tenant_id=b.tenant_id
-               and v.id=b.supplemental_plan_version_id
-             where b.tenant_id=? and b.id=?
-            """,
-            (result, row) -> binding(result),
-            TenantContext.require(),
-            bindingId)
-        .stream()
-        .findFirst()
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "Salary-structure supplemental binding was not found"));
+          join compensation.salary_structure_version structure
+            on structure.tenant_id=b.tenant_id
+           and structure.id=b.salary_structure_version_id
+        """;
   }
 
   private void insertVersion(
@@ -364,13 +367,19 @@ public class SalaryStructureSupplementalPlanRepository {
         insert into compensation.salary_supplemental_plan_line(
           id,tenant_id,supplemental_plan_id,supplemental_plan_version_id,
           component_id,component_version_id,sequence_no,default_amount,
-          default_percentage,minimum_amount,maximum_amount,
+          default_percentage,percentage_base_component_id,
+          percentage_base_component_version_id,minimum_amount,maximum_amount,
           employee_override_allowed,effective_from,effective_to,
           created_by,updated_by
         )
-        select ?,?,?,?,component.component_id,component.id,?,?,?,?,?,?,?,?,?,?
+        select ?,?,?,?,component.component_id,component.id,?,?,?,
+               base.component_id,base.id,?,?,?,?,?,?,?
           from compensation.pay_component_version component
+          left join compensation.pay_component_version base
+            on base.tenant_id=component.tenant_id
+           and base.id=?
          where component.tenant_id=? and component.id=?
+           and (cast(? as uuid) is null or base.id is not null)
         """,
         UUID.randomUUID(),
         TenantContext.require(),
@@ -386,12 +395,14 @@ public class SalaryStructureSupplementalPlanRepository {
         line.resolvedEffectiveTo(version.effectiveTo()),
         actor,
         actor,
+        line.percentageBaseComponentVersionId(),
         TenantContext.require(),
-        line.componentVersionId());
+        line.componentVersionId(),
+        line.percentageBaseComponentVersionId());
 
     if (inserted != 1) {
       throw new ResourceNotFoundException(
-          "Supplemental-plan component version was not found");
+          "Supplemental-plan component or percentage-base version was not found");
     }
   }
 
@@ -406,6 +417,7 @@ public class SalaryStructureSupplementalPlanRepository {
                line.sequence_no,
                line.default_amount,
                line.default_percentage,
+               line.percentage_base_component_version_id,
                line.minimum_amount,
                line.maximum_amount,
                line.employee_override_allowed,
@@ -429,6 +441,9 @@ public class SalaryStructureSupplementalPlanRepository {
             result.getInt("sequence_no"),
             result.getBigDecimal("default_amount"),
             result.getBigDecimal("default_percentage"),
+            result.getObject(
+                "percentage_base_component_version_id",
+                UUID.class),
             result.getBigDecimal("minimum_amount"),
             result.getBigDecimal("maximum_amount"),
             result.getBoolean("employee_override_allowed"),
@@ -474,7 +489,8 @@ public class SalaryStructureSupplementalPlanRepository {
         result.getInt("sequence_no"),
         result.getObject("effective_from", LocalDate.class),
         result.getObject("effective_to", LocalDate.class),
-        result.getLong("version_no"));
+        result.getLong("version_no"),
+        result.getLong("composition_revision"));
   }
 
   private void ensureIdentity(UUID identityId) {
