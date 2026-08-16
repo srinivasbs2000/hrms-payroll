@@ -1,13 +1,13 @@
 # P5-CCF-01 — Component Catalogue Formula, Rate and Control Completion
 
-**Status:** G01 COMPLETE — R01 APPROVED FOR G02 BACKEND/API IMPLEMENTATION
+**Status:** CLOSED — G04 FINAL CAPABILITY CLOSURE
 **Execution identity:** P5-CCF-01
 **Original program mapping:** P5-A5 / E03 Component Catalogue
 **Activation backend baseline:** 6e8355e80a7cf719fa3a7fc6766f4d486879d1d4
 **Activation UI baseline:** 42487de1e99240a99df1ba99742a728671c1636e
-**Backend product write owner:** P5-CCF-01-G02
+**Backend product write owner:** NONE
 **UI product write owner:** NONE
-**Migration owner:** P5-CCF-01-G02; V040 reserved
+**Migration owner:** NONE; V040/V041 immutable; V042 unreserved
 **R3 verdict:** SCHEMA_AMENDMENT_REQUIRED
 **Recommended reasoning:** R2 for bounded G02 implementation; R3 for independent review and G03/G04 gates
 
@@ -165,3 +165,64 @@ reserves no migration and promotes no story.
   exact G02 allow-list without separate authority.
 
 `P5_CCF_01_R01: APPROVED`
+
+<!-- P5-CCF-01-G04-FINAL-CLOSURE:START -->
+## P5-CCF-01 G04 final capability closure
+
+P5-CCF-01 product completion is reconciled from the merged evidence boundary:
+
+- G02 backend/API product merge: PR #74 / `e9e598fdae6c14968a4ec1b3a0e5c7026a06ea37`;
+- bounded runtime-lock defect correction: PR #75 / `65269a42008f31c0ec116a3fccb9f996826c621e`
+  from reviewed commit `f711c2045fe49a02901821485ed32d89906cf981`;
+- G03 UI product merge: UI PR #17 / `8e77bcf5a9a773cc9726eec4e87c0859cdb24543`
+  from reviewed commit `ffc9d261a7bca447fe6a8c4b1bb1469c5954ac64`;
+- backend hosted CI: exact seven checks GREEN;
+- UI hosted CI: exact five checks GREEN, including cross-repository browser E2E;
+- local backend evidence: V041 migration IT 2/2, compensation regression 41/41,
+  full 14-module reactor, Flyway migrate/validate and six least-privilege runtime assertions PASS;
+- local UI evidence: focused component-controls tests 8/8, lint, production build,
+  full UI suite 119/119 and real-backend admin/read-only browser journeys PASS.
+
+All fifteen selected canonical Component Catalogue stories are promoted:
+
+- `PLN-E03-004` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-005` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-006` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-007` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-008` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-009` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-010` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-011` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-012` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-013` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-014` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-015` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-016` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-017` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-018` -> IMPLEMENTED in the canonical 450-story ledger.
+
+The UI applicability authority contains all fifteen Component Catalogue rows.
+The eleven UI-required stories are reconciled to COMPLETE, while the four
+NOT_REQUIRED_DIRECTLY technical stories retain their linked-business-story
+tracking contract. The technical evidence boundary is:
+
+- `PLN-E03-013` API contract: merged versioned API/OpenAPI evidence.
+- `PLN-E03-014` event contract: merged reliable outbox/domain-event evidence.
+- `PLN-E03-015` security/SoD: maker-checker, least privilege, read-only denial and V041 runtime-lock authority evidence.
+- `PLN-E03-016` audit/lineage: merged audit APIs plus operator audit inspection evidence.
+- `PLN-E03-017` functional/edge tests: focused, compensation and full-reactor evidence.
+- `PLN-E03-018` persistence/tenant/concurrency/integration: migration/RLS, runtime privilege, hosted CI and real-backend browser evidence.
+
+The canonical 450-story ledger is therefore reconciled to
+**44 IMPLEMENTED / 136 PARTIALLY IMPLEMENTED / 80 NOT EVIDENCED /
+159 NOT STARTED / 31 LEGAL/DOMAIN REVALIDATION = 450**.
+
+P5-CCF-01 is **CLOSED** and retains no backend or UI product write ownership.
+V001-V041 are immutable. V042 is unreserved. The legal/statutory boundary
+remains unchanged: component wage treatment references separately approved
+effective statutory rule versions and this capability encodes no legal conclusion.
+
+No next product capability is activated by this closure. Any continuation must
+start with fresh repository/live-GitHub reconciliation and separately governed
+capability selection/activation.
+<!-- P5-CCF-01-G04-FINAL-CLOSURE:END -->

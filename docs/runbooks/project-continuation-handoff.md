@@ -1,20 +1,20 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 15 August 2026 at P5-CCF-01 governance-only activation
+**Updated:** 16 August 2026 at P5-CCF-01 G04 final capability closure
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
 **Product reconciliation baseline:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`; B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-E2E-UI-01-B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`
+**Latest merged product increment:** P5-CCF-01 G03 UI PR #17 / `8e77bcf5a9a773cc9726eec4e87c0859cdb24543`; backend PR #75 / `65269a42008f31c0ec116a3fccb9f996826c621e`
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
-**Latest merged quality increment:** UI PR #16 with exact five hosted checks green
-**Active capability:** P5-CCF-01 — G01 complete; R01 approves G02 backend/API implementation
-**Current state:** P5-CCF-01-G02 owns bounded backend/API product writes and V040
-**Migrations:** V001–V039 committed and immutable
-**Next migration:** V040 reserved exclusively for P5-CCF-01-G02
+**Latest merged quality increment:** P5-CCF-01 backend exact seven hosted checks GREEN; UI exact five hosted checks GREEN including cross-repository browser E2E
+**Active capability:** NONE — P5-CCF-01 CLOSED
+**Current state:** P5-CCF-01 G04 closure complete; backend/UI product merges reconciled; no active product write owner
+**Migrations:** V001–V041 committed and immutable
+**Next migration:** V042 unreserved
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | NONE; P5-CCF-01 G01 is read-only |
+| Active write owner | NONE; P5-CCF-01 CLOSED |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | Governance activation only; G01 must propose exact backend/UI allow-lists before product write |
-| Migration state | V001–V039 immutable after this closure |
-| Next migration | V040 unreserved; no capability owns it |
+| Active path ownership | NONE; fresh capability selection/activation required before new product mutation |
+| Migration state | V001–V041 immutable |
+| Next migration | V042 unreserved |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -44,9 +44,9 @@ live read-only GitHub evidence before starting write-capable work.
 
 The 450 detailed stories reconcile to:
 
-- 21 implemented;
-- 155 partially implemented;
-- 84 not evidenced;
+- 44 implemented;
+- 136 partially implemented;
+- 80 not evidenced;
 - 159 not started;
 - 31 requiring legal/domain revalidation.
 
@@ -328,3 +328,64 @@ product-write authority is created.
 
 `P5_CCF_01_R01: APPROVED`
 <!-- P5-CCF-01-R01:END -->
+
+<!-- P5-CCF-01-G04-FINAL-CLOSURE:START -->
+## P5-CCF-01 G04 final capability closure
+
+P5-CCF-01 product completion is reconciled from the merged evidence boundary:
+
+- G02 backend/API product merge: PR #74 / `e9e598fdae6c14968a4ec1b3a0e5c7026a06ea37`;
+- bounded runtime-lock defect correction: PR #75 / `65269a42008f31c0ec116a3fccb9f996826c621e`
+  from reviewed commit `f711c2045fe49a02901821485ed32d89906cf981`;
+- G03 UI product merge: UI PR #17 / `8e77bcf5a9a773cc9726eec4e87c0859cdb24543`
+  from reviewed commit `ffc9d261a7bca447fe6a8c4b1bb1469c5954ac64`;
+- backend hosted CI: exact seven checks GREEN;
+- UI hosted CI: exact five checks GREEN, including cross-repository browser E2E;
+- local backend evidence: V041 migration IT 2/2, compensation regression 41/41,
+  full 14-module reactor, Flyway migrate/validate and six least-privilege runtime assertions PASS;
+- local UI evidence: focused component-controls tests 8/8, lint, production build,
+  full UI suite 119/119 and real-backend admin/read-only browser journeys PASS.
+
+All fifteen selected canonical Component Catalogue stories are promoted:
+
+- `PLN-E03-004` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-005` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-006` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-007` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-008` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-009` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-010` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-011` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-012` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-013` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-014` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-015` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-016` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-017` -> IMPLEMENTED in the canonical 450-story ledger.
+- `PLN-E03-018` -> IMPLEMENTED in the canonical 450-story ledger.
+
+The UI applicability authority contains all fifteen Component Catalogue rows.
+The eleven UI-required stories are reconciled to COMPLETE, while the four
+NOT_REQUIRED_DIRECTLY technical stories retain their linked-business-story
+tracking contract. The technical evidence boundary is:
+
+- `PLN-E03-013` API contract: merged versioned API/OpenAPI evidence.
+- `PLN-E03-014` event contract: merged reliable outbox/domain-event evidence.
+- `PLN-E03-015` security/SoD: maker-checker, least privilege, read-only denial and V041 runtime-lock authority evidence.
+- `PLN-E03-016` audit/lineage: merged audit APIs plus operator audit inspection evidence.
+- `PLN-E03-017` functional/edge tests: focused, compensation and full-reactor evidence.
+- `PLN-E03-018` persistence/tenant/concurrency/integration: migration/RLS, runtime privilege, hosted CI and real-backend browser evidence.
+
+The canonical 450-story ledger is therefore reconciled to
+**44 IMPLEMENTED / 136 PARTIALLY IMPLEMENTED / 80 NOT EVIDENCED /
+159 NOT STARTED / 31 LEGAL/DOMAIN REVALIDATION = 450**.
+
+P5-CCF-01 is **CLOSED** and retains no backend or UI product write ownership.
+V001-V041 are immutable. V042 is unreserved. The legal/statutory boundary
+remains unchanged: component wage treatment references separately approved
+effective statutory rule versions and this capability encodes no legal conclusion.
+
+No next product capability is activated by this closure. Any continuation must
+start with fresh repository/live-GitHub reconciliation and separately governed
+capability selection/activation.
+<!-- P5-CCF-01-G04-FINAL-CLOSURE:END -->
