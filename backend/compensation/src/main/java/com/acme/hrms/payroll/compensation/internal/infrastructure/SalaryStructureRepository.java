@@ -235,6 +235,7 @@ public class SalaryStructureRepository {
             + """
                where identity.tenant_id=?
                  and version.approval_status='APPROVED'
+                 and version.workflow_status='PUBLISHED'
                  and version.effective_from<=?
                  and (version.effective_to is null or version.effective_to>?)
                  and not exists (
