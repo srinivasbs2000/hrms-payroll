@@ -994,37 +994,37 @@ public class ComponentCatalogueControlRepository {
   }
 
   private void lockRateTable(UUID identityId) {
-    List<String> values = jdbc.query(
-        "select lifecycle_status from compensation.component_rate_table where tenant_id=? and id=? for update",
-        (result, row) -> result.getString(1), TenantContext.require(), identityId);
-    if (values.isEmpty()) {
+    String lifecycleStatus = jdbc.queryForObject(
+        "select compensation.lock_component_rate_table(?,?)",
+        String.class, TenantContext.require(), identityId);
+    if (lifecycleStatus == null) {
       throw new ResourceNotFoundException("Component rate-table identity was not found");
     }
-    if ("RETIRED".equals(values.get(0))) {
+    if ("RETIRED".equals(lifecycleStatus)) {
       throw new ConflictException("Retired component rate tables cannot accept new versions");
     }
   }
 
   private void lockRoundingPolicy(UUID identityId) {
-    List<String> values = jdbc.query(
-        "select lifecycle_status from compensation.component_rounding_policy where tenant_id=? and id=? for update",
-        (result, row) -> result.getString(1), TenantContext.require(), identityId);
-    if (values.isEmpty()) {
+    String lifecycleStatus = jdbc.queryForObject(
+        "select compensation.lock_component_rounding_policy(?,?)",
+        String.class, TenantContext.require(), identityId);
+    if (lifecycleStatus == null) {
       throw new ResourceNotFoundException("Component rounding-policy identity was not found");
     }
-    if ("RETIRED".equals(values.get(0))) {
+    if ("RETIRED".equals(lifecycleStatus)) {
       throw new ConflictException("Retired component rounding policies cannot accept new versions");
     }
   }
 
   private void lockProrationPolicy(UUID identityId) {
-    List<String> values = jdbc.query(
-        "select lifecycle_status from compensation.component_proration_policy where tenant_id=? and id=? for update",
-        (result, row) -> result.getString(1), TenantContext.require(), identityId);
-    if (values.isEmpty()) {
+    String lifecycleStatus = jdbc.queryForObject(
+        "select compensation.lock_component_proration_policy(?,?)",
+        String.class, TenantContext.require(), identityId);
+    if (lifecycleStatus == null) {
       throw new ResourceNotFoundException("Component proration-policy identity was not found");
     }
-    if ("RETIRED".equals(values.get(0))) {
+    if ("RETIRED".equals(lifecycleStatus)) {
       throw new ConflictException("Retired component proration policies cannot accept new versions");
     }
   }
