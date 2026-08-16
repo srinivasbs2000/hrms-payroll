@@ -11,10 +11,10 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-CCF-01 backend exact seven hosted checks GREEN; UI exact five hosted checks GREEN including cross-repository browser E2E
-**Active capability:** P5-SSC-01 — ACTIVATED FOR READ-ONLY G01 PREFLIGHT
-**Current state:** P5-SSC-01 governance activation; no product write owner; G01 read-only preflight authorized
-**Migrations:** V001–V041 committed and immutable
-**Next migration:** V042 unreserved
+**Active capability:** P5-SSC-01 — G02A SUPPLEMENTAL-PLAN COMPOSITION IMPLEMENTATION
+**Current state:** G01 schema verdict is SCHEMA_AMENDMENT_REQUIRED; G02A product implementation owns V042 supplemental-plan composition
+**Migrations:** V001–V041 committed and immutable; V042 reserved to P5-SSC-01 G02A
+**Next migration:** V042 reserved — salary-structure supplemental-plan composition
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | NONE; P5-SSC-01 G01 is read-only |
+| Active write owner | `feature/p5-ssc-01-g02a-supplemental-composition` |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | Governance activation only; product paths unowned until G01 verdict and later authority |
-| Migration state | V001–V041 immutable |
-| Next migration | V042 unreserved |
+| Active path ownership | P5-SSC-01 G02A supplemental-plan schema/backend/test paths plus three active governance authorities |
+| Migration state | V001–V041 immutable; V042 reserved to P5-SSC-01 G02A |
+| Next migration | V042 salary-structure supplemental-plan composition |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
