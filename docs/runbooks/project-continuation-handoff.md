@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 16 August 2026 at P5-CCF-01 G04 final capability closure
+**Updated:** 16 August 2026 at P5-SSC-01 governance-only activation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-CCF-01 backend exact seven hosted checks GREEN; UI exact five hosted checks GREEN including cross-repository browser E2E
-**Active capability:** NONE — P5-CCF-01 CLOSED
-**Current state:** P5-CCF-01 G04 closure complete; backend/UI product merges reconciled; no active product write owner
+**Active capability:** P5-SSC-01 — ACTIVATED FOR READ-ONLY G01 PREFLIGHT
+**Current state:** P5-SSC-01 governance activation; no product write owner; G01 read-only preflight authorized
 **Migrations:** V001–V041 committed and immutable
 **Next migration:** V042 unreserved
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -32,9 +32,9 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | NONE; P5-CCF-01 CLOSED |
+| Active write owner | NONE; P5-SSC-01 G01 is read-only |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | NONE; fresh capability selection/activation required before new product mutation |
+| Active path ownership | Governance activation only; product paths unowned until G01 verdict and later authority |
 | Migration state | V001–V041 immutable |
 | Next migration | V042 unreserved |
 | Product deployment | Greenfield; no evidenced production deployment |
@@ -389,3 +389,17 @@ No next product capability is activated by this closure. Any continuation must
 start with fresh repository/live-GitHub reconciliation and separately governed
 capability selection/activation.
 <!-- P5-CCF-01-G04-FINAL-CLOSURE:END -->
+<!-- P5-SSC-01-ACTIVATION:START -->
+## P5-SSC-01 activation checkpoint
+
+- backend activation baseline: `dcf140701588345a5189637a2eb9037731e2fa32`;
+- UI activation baseline: `8e77bcf5a9a773cc9726eec4e87c0859cdb24543`;
+- preserved E04 stories: 001, 004, 007, 008 IMPLEMENTED;
+- selected residual stories: 002,003,005,006,009,010,011,012..017;
+- canonical totals unchanged: 44 / 136 / 80 / 159 / 31 = 450;
+- E04-017 UI applicability: NOT_REQUIRED_DIRECTLY;
+- product write owner: NONE;
+- V001–V041 immutable;
+- V042 unreserved;
+- next: G01 read-only artifact/contract/schema preflight.
+<!-- P5-SSC-01-ACTIVATION:END -->

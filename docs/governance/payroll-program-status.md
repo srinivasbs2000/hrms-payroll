@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-CCF-01 backend PR #75 exact seven hosted checks GREEN; UI PR #17 exact five hosted checks GREEN including cross-repository browser E2E
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** NONE — P5-CCF-01 CLOSED
+**Active product write owner:** NONE — P5-SSC-01 activation authorizes read-only G01 only
 **Migration state:** V001–V041 committed and immutable
 **Next migration:** V042 unreserved
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 16 August 2026 at P5-CCF-01 G04 final capability closure
-**Current execution capability:** NONE — P5-CCF-01 CLOSED; fresh reconciliation/selection required before any new product write
+**Last reconciled:** 16 August 2026 at P5-SSC-01 governance-only activation
+**Current execution capability:** P5-SSC-01 — ACTIVATED FOR READ-ONLY G01 PREFLIGHT
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -716,3 +716,28 @@ No next product capability is activated by this closure. Any continuation must
 start with fresh repository/live-GitHub reconciliation and separately governed
 capability selection/activation.
 <!-- P5-CCF-01-G04-FINAL-CLOSURE:END -->
+<!-- P5-SSC-01-ACTIVATION:START -->
+## P5-SSC-01 activation authority
+
+P5-SSC-01 — Salary Structure Composition, Target & Control Completion is
+activated from backend `dcf140701588345a5189637a2eb9037731e2fa32` and UI
+`8e77bcf5a9a773cc9726eec4e87c0859cdb24543`.
+
+Preserved IMPLEMENTED stories: E04-001, E04-004, E04-007 and E04-008.
+
+Selected residual stories: E04-002,003,005,006,009,010,011 and E04-012..017.
+Activation changes no canonical story status; totals remain
+44 / 136 / 80 / 159 / 31 = 450.
+
+Selected UI applicability is revalidated. E04-017 is corrected to
+NOT_REQUIRED_DIRECTLY because integration/security tests exercise the linked
+product/admin/audit journeys and do not create a separate user-facing surface.
+
+Activation is governance-only. Product write owners remain NONE. V001–V041 are
+immutable and V042 remains unreserved.
+
+Exact scope authority:
+`docs/planning/pln-01/p5-ssc-01-salary-structure-composition-target-control-completion-scope.md`
+
+The next controlled action is G01 read-only artifact/contract/schema preflight.
+<!-- P5-SSC-01-ACTIVATION:END -->
