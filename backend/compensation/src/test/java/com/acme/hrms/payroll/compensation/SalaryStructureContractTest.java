@@ -98,6 +98,83 @@ class SalaryStructureContractTest {
   }
 
   @Test
+  void hourlyAndDailyTargetsDelegateRateConversionToCalculationEngine() {
+    SalaryStructureWriteRequest hourly =
+        new SalaryStructureWriteRequest(
+            "HOURLY_TARGET", "Hourly Target", "INR", "HOURLY", "WEEKLY",
+            "STANDARD", POLICY, null, "HOURLY_RATE", "HOURLY",
+            new BigDecimal("500.0000"), null, null, null, null,
+            BigDecimal.ZERO, RESIDUAL, LocalDate.of(2027, 1, 1),
+            LocalDate.of(2029, 1, 1), standardLines());
+
+    hourly.validate(true);
+    assertThat(hourly.targetExecutionMode()).isEqualTo("CALCULATION_ENGINE");
+    assertThat(hourly.resolvedTargetAnnualAmount()).isNull();
+
+    SalaryStructureWriteRequest daily =
+        new SalaryStructureWriteRequest(
+            "DAILY_TARGET", "Daily Target", "INR", "STANDARD", "MONTHLY",
+            "STANDARD", POLICY, null, "DAILY_RATE", "DAILY",
+            new BigDecimal("4000.0000"), null, null, null, null,
+            BigDecimal.ZERO, RESIDUAL, LocalDate.of(2027, 1, 1),
+            LocalDate.of(2029, 1, 1), standardLines());
+
+    daily.validate(true);
+    assertThat(daily.targetExecutionMode()).isEqualTo("CALCULATION_ENGINE");
+    assertThat(daily.resolvedTargetAnnualAmount()).isNull();
+  }
+
+  @Test
+  void annualBasicRequiresExplicitTargetBaseResolver() {
+    SalaryStructureWriteRequest basicTarget =
+        new SalaryStructureWriteRequest(
+            "BASIC_TARGET", "Basic Target", "INR", "STANDARD", "MONTHLY",
+            "STANDARD", POLICY, null, "ANNUAL_BASIC", "ANNUAL",
+            new BigDecimal("600000.0000"), BigDecimal.ONE,
+            UUID.fromString("24100000-0000-0000-0000-000000000001"),
+            null, null, BigDecimal.ZERO, RESIDUAL,
+            LocalDate.of(2027, 1, 1), LocalDate.of(2029, 1, 1),
+            standardLines());
+
+    basicTarget.validate(true);
+    assertThat(basicTarget.targetExecutionMode())
+        .isEqualTo("TARGET_RESOLVER_REQUIRED");
+  }
+
+  @Test
+  void netPayTargetIsModelledButDelegatedToCalculationEngine() {
+    SalaryStructureWriteRequest netPay =
+        new SalaryStructureWriteRequest(
+            "NET_TARGET", "Net Pay Target", "INR", "STANDARD", "MONTHLY",
+            "RESTRICTED", POLICY, null, "NET_PAY_TARGET", "ANNUAL",
+            new BigDecimal("900000.0000"), BigDecimal.ONE,
+            null, null, null, BigDecimal.ZERO, RESIDUAL,
+            LocalDate.of(2027, 1, 1), LocalDate.of(2029, 1, 1),
+            standardLines());
+
+    netPay.validate(true);
+    assertThat(netPay.targetExecutionMode()).isEqualTo("CALCULATION_ENGINE");
+    assertThat(netPay.resolvedTargetAnnualAmount())
+        .isEqualByComparingTo(new BigDecimal("900000.0000"));
+  }
+
+  @Test
+  void targetFrequencyMustMatchTargetType() {
+    SalaryStructureWriteRequest invalid =
+        new SalaryStructureWriteRequest(
+            "BAD_FREQUENCY", "Bad Frequency", "INR", "STANDARD", "MONTHLY",
+            "STANDARD", POLICY, null, "MONTHLY_GROSS", "ANNUAL",
+            new BigDecimal("100000.0000"), new BigDecimal("12.0000"),
+            null, null, null, BigDecimal.ZERO, RESIDUAL,
+            LocalDate.of(2027, 1, 1), LocalDate.of(2029, 1, 1),
+            standardLines());
+
+    assertThatThrownBy(() -> invalid.validate(true))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("targetFrequency");
+  }
+
+  @Test
   void duplicateSequencesComponentsAndDisplayOrdersAreRejected() {
     List<SalaryStructureLineWriteRequest> duplicate = List.of(
         fixed(BASIC, 1, 1, 1),

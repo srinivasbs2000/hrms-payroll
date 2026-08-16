@@ -191,6 +191,9 @@ public class SalaryStructureCompositionService {
       CtcPolicyView policy,
       SalaryStructureSimulationRequest request) {
     SalaryStructureView structure = snapshot.structure();
+    if (!"STRUCTURAL".equals(structure.targetExecutionMode())) {
+      return baseValidation;
+    }
     List<Map<String, Object>> errors = new ArrayList<>();
     List<Map<String, Object>> warnings = new ArrayList<>();
     copyIssues(
@@ -442,6 +445,20 @@ public class SalaryStructureCompositionService {
         snapshot.compositionRevision());
     summary.put("baseResultHash", baseValidation.resultHash());
     summary.put("targetType", structure.targetType());
+    summary.put("targetFrequency", structure.targetFrequency());
+    summary.put("targetSourceAmount", structure.targetSourceAmount());
+    summary.put(
+        "targetAnnualizationFactor",
+        structure.targetAnnualizationFactor());
+    summary.put("targetExecutionMode", structure.targetExecutionMode());
+    summary.put(
+        "inclusivePayrollBaseVersionId",
+        structure.inclusivePayrollBaseVersionId() == null
+            ? "" : structure.inclusivePayrollBaseVersionId().toString());
+    summary.put(
+        "exclusivePayrollBaseVersionId",
+        structure.exclusivePayrollBaseVersionId() == null
+            ? "" : structure.exclusivePayrollBaseVersionId().toString());
     summary.put(
         "targetAnnualAmount",
         structure.targetAnnualAmount());
