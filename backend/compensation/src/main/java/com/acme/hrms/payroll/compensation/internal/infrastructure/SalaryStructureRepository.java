@@ -483,7 +483,7 @@ public class SalaryStructureRepository {
         request.ctcPolicyVersionId(),
         request.eligibilityRuleVersionId(),
         request.targetType(),
-        request.targetAnnualAmount(),
+        request.resolvedTargetAnnualAmount(),
         request.toleranceAmount(),
         request.residualComponentVersionId(),
         configurationHash,

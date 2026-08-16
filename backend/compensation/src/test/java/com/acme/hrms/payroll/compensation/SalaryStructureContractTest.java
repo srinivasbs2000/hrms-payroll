@@ -72,6 +72,32 @@ class SalaryStructureContractTest {
   }
 
   @Test
+  void monthlyGrossTargetNormalizesToAnnualExecutionAmount() {
+    SalaryStructureWriteRequest monthly =
+        new SalaryStructureWriteRequest(
+            "MONTHLY_GROSS_TEST",
+            "Monthly Gross Structure",
+            "INR",
+            "STANDARD",
+            "MONTHLY",
+            "STANDARD",
+            POLICY,
+            null,
+            "MONTHLY_GROSS",
+            new BigDecimal("100000.0000"),
+            BigDecimal.ZERO,
+            RESIDUAL,
+            LocalDate.of(2027, 1, 1),
+            LocalDate.of(2029, 1, 1),
+            standardLines());
+
+    monthly.validate(true);
+
+    assertThat(monthly.resolvedTargetAnnualAmount())
+        .isEqualByComparingTo(new BigDecimal("1200000.0000"));
+  }
+
+  @Test
   void duplicateSequencesComponentsAndDisplayOrdersAreRejected() {
     List<SalaryStructureLineWriteRequest> duplicate = List.of(
         fixed(BASIC, 1, 1, 1),

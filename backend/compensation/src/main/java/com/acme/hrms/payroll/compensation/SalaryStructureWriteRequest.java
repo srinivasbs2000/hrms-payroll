@@ -173,6 +173,16 @@ public record SalaryStructureWriteRequest(
     return currency == null || currency.isBlank() ? "INR" : currency;
   }
 
+  public BigDecimal resolvedTargetAnnualAmount() {
+    if (targetAnnualAmount == null) {
+      return null;
+    }
+    if ("MONTHLY_GROSS".equals(targetType)) {
+      return targetAnnualAmount.multiply(BigDecimal.valueOf(12));
+    }
+    return targetAnnualAmount;
+  }
+
   @JsonAnySetter
   public void rejectUnknownProperty(String property, Object value) {
     throw new IllegalArgumentException(

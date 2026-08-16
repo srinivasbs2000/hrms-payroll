@@ -103,7 +103,7 @@ public class SalaryStructureCompositionService {
     }
 
     SalaryStructureValidationView baseValidation =
-        baseService.simulate(identityId, versionId, key, request);
+        baseService.calculateDraft(identityId, versionId, request);
 
     CompositionSnapshot snapshot = transactions.read(
         () -> snapshot(identityId, versionId));

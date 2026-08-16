@@ -185,20 +185,8 @@ public class SalaryStructureService {
         request,
         SalaryStructureValidationView.class,
         () -> {
-          SalaryStructureView structure = repository.version(versionId);
-          requireIdentity(structure, identityId);
-          requireSimulationDraft(structure, request.effectiveDate());
-
-          CtcPolicyView policy =
-              ctcPolicies.version(structure.ctcPolicyVersionId());
-          EvaluationView eligibility = evaluateEligibility(
-              structure,
-              request);
-          SalaryStructureValidationView validation = calculate(
-              structure,
-              policy,
-              eligibility,
-              request);
+          SalaryStructureValidationView validation =
+              calculateDraft(identityId, versionId, request);
 
           var existing = repository.findValidation(
               versionId,
@@ -211,6 +199,38 @@ public class SalaryStructureService {
           recordValidation(persisted);
           return persisted;
         });
+  }
+
+  SalaryStructureValidationView calculateDraft(
+      UUID identityId,
+      UUID versionId,
+      SalaryStructureSimulationRequest request) {
+    request.validate();
+    return transactions.read(
+        () -> calculateDraftInTenantTransaction(
+            identityId,
+            versionId,
+            request));
+  }
+
+  private SalaryStructureValidationView calculateDraftInTenantTransaction(
+      UUID identityId,
+      UUID versionId,
+      SalaryStructureSimulationRequest request) {
+    SalaryStructureView structure = repository.version(versionId);
+    requireIdentity(structure, identityId);
+    requireSimulationDraft(structure, request.effectiveDate());
+
+    CtcPolicyView policy =
+        ctcPolicies.version(structure.ctcPolicyVersionId());
+    EvaluationView eligibility = evaluateEligibility(
+        structure,
+        request);
+    return calculate(
+        structure,
+        policy,
+        eligibility,
+        request);
   }
 
   public List<SalaryStructureValidationView> validations(
@@ -668,7 +688,10 @@ public class SalaryStructureService {
     state.put("ctcPolicyVersionId", request.ctcPolicyVersionId());
     state.put("eligibilityRuleVersionId", request.eligibilityRuleVersionId());
     state.put("targetType", request.targetType());
-    state.put("targetAnnualAmount", request.targetAnnualAmount());
+    state.put("targetSourceAmount", request.targetAnnualAmount());
+    state.put(
+        "targetAnnualAmount",
+        request.resolvedTargetAnnualAmount());
     state.put("toleranceAmount", request.toleranceAmount());
     state.put("residualComponentVersionId",
         request.residualComponentVersionId());
