@@ -9,12 +9,13 @@
 **Latest merged quality increment:** P5-SSC-01 backend exact seven hosted checks GREEN; UI exact five hosted checks GREEN including cross-repository browser E2E against backend `969be73f971207e09541f1a6cfef7319ac2d8621`
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** NONE
+**Active product write owner:** NONE — P5-EPA-01 G01 is read-only; product writes are not authorized
 **Migration state:** V001–V049 committed and immutable; V050 unreserved
 **Next migration:** V050 unreserved
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 17 August 2026 at P5-SSC-01 post-merge reconciliation
-**Current execution capability:** NONE — fresh R3 next-capability selection required
+**Last reconciled:** 17 August 2026 at P5-EPA-01 fresh-R3 activation
+**Current execution capability:** P5-EPA-01 G01 — Employee Payroll Assignment & Compensation Binding Completion architecture/schema verdict
+**Active capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -38,6 +39,32 @@ Validate this checkpoint against:
 
 Conversation history and thread names are locators only. They are not the
 project-status authority.
+
+## Active capability — P5-EPA-01
+
+Fresh post-P5-SSC R3 selects **P5-EPA-01 — Employee Payroll Assignment &
+Compensation Binding Completion**.
+
+Canonical story boundary:
+
+- `PLN-E05-001`;
+- `PLN-E05-002`;
+- `PLN-E05-007`;
+- `PLN-E05-008`;
+- `PLN-E05-009`;
+- `PLN-E05-010`;
+- `PLN-E05-018`.
+
+Activation changes no canonical story status. All seven selected stories require
+product UI evidence.
+
+G01 is read-only and must publish the architecture/schema/API/UI verdict before
+product implementation. V001-V049 remain immutable, V050 remains unreserved,
+and no product write owner is assigned during G01.
+
+Bank/payment readiness, payroll identifiers, PF/ESI/NPS, generic statutory
+memberships, tax/declarations, broad readiness, holds, complete employee
+snapshots and E06 calculation execution remain outside this capability.
 
 ## 2. Latest completed milestone
 

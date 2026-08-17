@@ -1,13 +1,13 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 17 August 2026 P5-SSC-01 product merge and post-merge reconciliation
+**Last verified:** 17 August 2026 P5-EPA-01 fresh-R3 activation
 **Product reconciliation baseline:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-SSC-01 backend PR #78 and UI PR #18
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-SSC-01 backend 7/7 and UI 5/5 hosted checks GREEN
-**Active product write owner:** NONE after P5-SSC-01 closure
+**Active product write owner:** NONE — P5-EPA-01 G01 is read-only
 **Migration authority:** V001–V049 immutable; V050 unreserved
 
 Thread numbers are historical conversation labels, not implementation
@@ -43,16 +43,23 @@ migration number.
 
 | P5-SSC-01 | CLOSED after this status closure | Salary Structure Composition, Target & Control Completion | Backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`; closure PR is the PR containing this update | V042-V049 immutable | None |
 
+| P5-EPA-01 | ACTIVE — G01 READ-ONLY | Employee payroll relationship, assignment, pay-group binding, salary/target assignment, employee override, compensation-change impact and transfer/rehire/concurrent-assignment completion | Activation authority; product implementation not yet authorized | V050 unreserved pending G01 verdict | Scope/governance read-only only |
+
 ## Active capability workstream
 
-No product capability is active after the P5-SSC-01 status closure.
+P5-EPA-01 is active at **G01 READ-ONLY** after this activation authority merges.
 
-- P5-SSC-01 is historical/closed and retains no write ownership;
+- selected stories: `PLN-E05-001`, `002`, `007`, `008`, `009`, `010`, `018`;
+- product write owner remains NONE during G01;
+- backend/UI product paths are not yet write-owned;
 - V001-V049 are immutable;
-- V050 is unreserved;
-- no next capability is selected or activated by this closure;
-- a fresh R3 reconciliation and separately merged activation authority are
-  required before new product writes or migration reservation.
+- V050 remains unreserved until the G01 schema verdict proves an additive
+  migration is required;
+- canonical story statuses remain unchanged by activation;
+- G01 must reconcile the inherited S2-05/S2-06 backend/UI implementation before
+  any product write; and
+- banking/payment, PF/ESI/NPS, tax/declarations, broad readiness, holds,
+  complete employee snapshots and E06 calculation remain excluded.
 ## Program-status closure process
 
 After each future product increment:
