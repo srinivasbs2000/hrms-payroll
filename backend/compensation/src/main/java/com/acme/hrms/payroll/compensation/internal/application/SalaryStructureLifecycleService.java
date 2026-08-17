@@ -1,4 +1,5 @@
 package com.acme.hrms.payroll.compensation.internal.application;
+import com.acme.hrms.payroll.compensation.SalaryStructureEventContract;
 
 import com.acme.hrms.payroll.compensation.SalaryStructureLifecycleControls.LifecycleCommentRequest;
 import com.acme.hrms.payroll.compensation.SalaryStructureLifecycleControls.LifecycleView;
@@ -172,15 +173,19 @@ public class SalaryStructureLifecycleService {
         state,
         Map.of("source", "P5-SSC-01-E04-010"),
         principal);
+
+    String eventType = SalaryStructureEventContract.eventType(action);
     var event = events.create(
-        "SalaryStructure" + action,
-        1,
+        eventType,
+        SalaryStructureEventContract.SCHEMA_VERSION,
         TenantContext.require(),
         null,
         OBJECT_TYPE,
         identityId,
         result.versionNo(),
-        state);
+        SalaryStructureEventContract.validatePayload(
+            eventType,
+            state));
     outbox.append(event);
   }
 

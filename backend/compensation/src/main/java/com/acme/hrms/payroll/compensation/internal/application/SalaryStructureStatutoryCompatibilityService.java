@@ -1,4 +1,5 @@
 package com.acme.hrms.payroll.compensation.internal.application;
+import com.acme.hrms.payroll.compensation.SalaryStructureEventContract;
 
 import com.acme.hrms.payroll.compensation.SalaryStructureStatutoryCompatibilityControls.BindingRequest;
 import com.acme.hrms.payroll.compensation.SalaryStructureStatutoryCompatibilityControls.BindingView;
@@ -196,18 +197,20 @@ public class SalaryStructureStatutoryCompatibilityService {
             "versionId", after.salaryStructureVersionId(),
             "bindingId", after.bindingId()),
         principal);
-    String eventType = "STATUTORY_BINDING_CREATED".equals(action)
-        ? "SalaryStructureStatutoryBindingCreated"
-        : "SalaryStructureStatutoryBindingRetired";
+
+    String eventType =
+        SalaryStructureEventContract.statutoryBindingEventType(action);
     var event = events.create(
         eventType,
-        1,
+        SalaryStructureEventContract.SCHEMA_VERSION,
         TenantContext.require(),
         null,
         OBJECT_TYPE,
         identityId,
         after.versionNo() + 1,
-        afterState);
+        SalaryStructureEventContract.validatePayload(
+            eventType,
+            afterState));
     outbox.append(event);
   }
 
@@ -228,14 +231,16 @@ public class SalaryStructureStatutoryCompatibilityService {
             "validationId", evaluation.validationId()),
         principal);
     var event = events.create(
-        "SalaryStructureStatutoryCompatibilityEvaluated",
-        1,
+        SalaryStructureEventContract.STATUTORY_COMPATIBILITY_EVALUATED,
+        SalaryStructureEventContract.SCHEMA_VERSION,
         TenantContext.require(),
         null,
         OBJECT_TYPE,
         identityId,
         evaluation.statutoryBindingRevision() + 1,
-        state);
+        SalaryStructureEventContract.validatePayload(
+            SalaryStructureEventContract.STATUTORY_COMPATIBILITY_EVALUATED,
+            state));
     outbox.append(event);
   }
 

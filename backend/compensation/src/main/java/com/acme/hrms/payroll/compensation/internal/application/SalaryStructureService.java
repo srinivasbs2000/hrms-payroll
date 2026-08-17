@@ -1,4 +1,5 @@
 package com.acme.hrms.payroll.compensation.internal.application;
+import com.acme.hrms.payroll.compensation.SalaryStructureEventContract;
 
 import com.acme.hrms.payroll.compensation.CtcPolicyTreatmentView;
 import com.acme.hrms.payroll.compensation.CtcPolicyView;
@@ -854,24 +855,28 @@ public class SalaryStructureService {
       SalaryStructureView after,
       SalaryStructureView before) {
     String principal = actor.require();
+    Map<String, Object> afterState = state(after);
     audit.append(
         action,
         OBJECT_TYPE,
         after.identityId(),
         state(before),
-        state(after),
+        afterState,
         Map.of("versionId", after.versionId()),
         principal);
 
+    String eventType = SalaryStructureEventContract.eventType(action);
     var event = events.create(
-        "SalaryStructure" + action,
-        1,
+        eventType,
+        SalaryStructureEventContract.SCHEMA_VERSION,
         TenantContext.require(),
         null,
         OBJECT_TYPE,
         after.identityId(),
         after.versionSequence(),
-        state(after));
+        SalaryStructureEventContract.validatePayload(
+            eventType,
+            afterState));
     outbox.append(event);
   }
 
@@ -896,14 +901,16 @@ public class SalaryStructureService {
         Map.of("versionId", validation.versionId()),
         actor.require());
     var event = events.create(
-        "SalaryStructureSIMULATED",
-        1,
+        SalaryStructureEventContract.SIMULATED,
+        SalaryStructureEventContract.SCHEMA_VERSION,
         TenantContext.require(),
         null,
         OBJECT_TYPE,
         validation.identityId(),
         1,
-        summary);
+        SalaryStructureEventContract.validatePayload(
+            SalaryStructureEventContract.SIMULATED,
+            summary));
     outbox.append(event);
   }
 
