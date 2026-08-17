@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hrms-payroll.local/schemas/payroll-capability-closure-manifest.schema.json",
+  "title": "HRMS Payroll Capability Closure Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "capabilityId",
+    "title",
+    "repository",
+    "productAuthorities",
+    "filePayloads",
+    "finalAssertions",
+    "publication"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "capabilityId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fullName",
+        "baseBranch",
+        "expectedBaseSha",
+        "closureBranch"
+      ],
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "pattern": "^[^/]+/[^/]+$"
+        },
+        "baseBranch": {
+          "const": "main"
+        },
+        "expectedBaseSha": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{40}$"
+        },
+        "closureBranch": {
+          "type": "string",
+          "pattern": "^docs/.+"
+        }
+      }
+    },
+    "productAuthorities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "repo",
+          "pr",
+          "headSha",
+          "mergeSha"
+        ],
+        "properties": {
+          "repo": {
+            "type": "string",
+            "pattern": "^[^/]+/[^/]+$"
+          },
+          "pr": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "headSha": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{40}$"
+          },
+          "mergeSha": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{40}$"
+          }
+        }
+      }
+    },
+    "storyLedger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "expectedRows",
+        "idColumn",
+        "rows"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceBlob": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{40}$"
+        },
+        "expectedRows": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "idColumn": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "expect",
+              "set"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expect": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                  ]
+                }
+              },
+              "set": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "filePayloads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "sourceBlob",
+          "payload",
+          "payloadSha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceBlob": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "pattern": "^[0-9a-fA-F]{40}$"
+              }
+            ]
+          },
+          "payload": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payloadSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{64}$"
+          }
+        }
+      }
+    },
+    "finalAssertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "contains": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "text"
+              ],
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "notContains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "migrationBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "immutableThrough": {
+          "type": "string"
+        },
+        "nextUnreserved": {
+          "type": "string"
+        }
+      }
+    },
+    "publication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commitMessage",
+        "prTitle",
+        "prBody",
+        "expectedChecks",
+        "mergeMethod",
+        "deleteBranch",
+        "allowedPaths",
+        "passMarker"
+      ],
+      "properties": {
+        "commitMessage": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prTitle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prBody": {
+          "type": "string"
+        },
+        "expectedChecks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "mergeMethod": {
+          "const": "merge"
+        },
+        "deleteBranch": {
+          "const": false
+        },
+        "allowedPaths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "passMarker": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pollSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "maxWaitSeconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 14400
+        },
+        "evidenceRoot": {
+          "type": "string"
+        },
+        "evidencePrefix": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

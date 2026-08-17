@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "capabilityId": "P5-EXAMPLE-01",
+  "title": "Example Capability Closure",
+  "repository": {
+    "fullName": "srinivasbs2000/hrms-payroll",
+    "baseBranch": "main",
+    "expectedBaseSha": "0000000000000000000000000000000000000000",
+    "closureBranch": "docs/p5-example-01-final-closure-reconciliation"
+  },
+  "productAuthorities": [
+    {
+      "repo": "srinivasbs2000/hrms-payroll",
+      "pr": 999,
+      "headSha": "1111111111111111111111111111111111111111",
+      "mergeSha": "2222222222222222222222222222222222222222"
+    },
+    {
+      "repo": "srinivasbs2000/hrms-payroll-web",
+      "pr": 999,
+      "headSha": "3333333333333333333333333333333333333333",
+      "mergeSha": "4444444444444444444444444444444444444444"
+    }
+  ],
+  "storyLedger": {
+    "path": "backlog/payroll-detailed-story-status.csv",
+    "sourceBlob": "5555555555555555555555555555555555555555",
+    "expectedRows": 450,
+    "idColumn": "Detailed Story ID",
+    "rows": [
+      {
+        "id": "PLN-E99-001",
+        "expect": {
+          "Reconciled Evidence Status": "PARTIALLY IMPLEMENTED"
+        },
+        "set": {
+          "Reconciled Evidence Status": "IMPLEMENTED",
+          "Reconciliation Confidence": "HIGH",
+          "Reconciliation Basis": "Example only \u2014 replace with exact merged evidence."
+        }
+      }
+    ]
+  },
+  "filePayloads": [
+    {
+      "path": "docs/governance/payroll-program-status.md",
+      "sourceBlob": "6666666666666666666666666666666666666666",
+      "payload": "payload/payroll-program-status.md",
+      "payloadSha256": "7777777777777777777777777777777777777777777777777777777777777777"
+    }
+  ],
+  "finalAssertions": [
+    {
+      "path": "docs/governance/payroll-program-status.md",
+      "contains": [
+        {
+          "text": "**Active product write owner:** NONE",
+          "count": 1
+        }
+      ],
+      "notContains": [
+        "EXAMPLE OLD ACTIVE OWNER"
+      ]
+    }
+  ],
+  "migrationBoundary": {
+    "immutableThrough": "V999",
+    "nextUnreserved": "V1000"
+  },
+  "publication": {
+    "commitMessage": "P5-EXAMPLE-01: reconcile final capability closure",
+    "prTitle": "P5-EXAMPLE-01: final post-merge reconciliation closure",
+    "prBody": "Reference example only. Replace all placeholder identities with exact live authority.",
+    "expectedChecks": [
+      "maven-verify",
+      "openapi-validation",
+      "flyway-fresh-validation-rls",
+      "auth-smoke-synthetic",
+      "secret-scan",
+      "Dependency review",
+      "sbom"
+    ],
+    "mergeMethod": "merge",
+    "deleteBranch": false,
+    "allowedPaths": [
+      "backlog/payroll-detailed-story-status.csv",
+      "docs/governance/payroll-program-status.md"
+    ],
+    "passMarker": "P5_EXAMPLE_01_POST_MERGE_CLOSURE",
+    "pollSeconds": 10,
+    "maxWaitSeconds": 3600,
+    "evidencePrefix": "P5-EXAMPLE-01-Post-Merge-Closure"
+  }
+}

@@ -392,3 +392,72 @@ commit have already passed:
 
 P5-FAD-01 exposed this after all Maven/runtime gates and the repair commit were
 green but normal Windows recursive deletion failed on a long disposable path.
+
+## 22. Capability closure must be manifest-driven, branch-free and aggregate-preflighted
+
+Post-merge capability closure is now governed by
+`docs/governance/payroll-capability-closure-standard.md` and the repository-owned
+closure engine under `scripts/governance/`.
+
+Permanent controls:
+
+- after the standing engine is installed, normal capability closure artifacts
+  contain data only (`closure-manifest.json` plus payloads), not newly authored
+  closure `.mjs`/`.ps1` implementations;
+- use argument-vector process APIs for every native invocation so Windows paths
+  containing spaces remain one argument;
+- `git ls-remote` is not local object availability: fetch the exact authority
+  before using its SHA as a local tree/commit;
+- build closure commits branch-free from the fetched base tree using a temporary
+  Git index so the project owner's branch, HEAD and working inventory remain
+  untouched;
+- validate all source blobs, payload hashes, story-row preconditions, changed
+  paths and final governance assertions together before the first publication
+  mutation;
+- reconcile canonical story rows by exact IDs/field deltas and preserve every
+  undeclared row; never infer the repository-wide reporting taxonomy from an
+  unrelated CSV metadata field;
+- when program-summary totals are updated, use the approved explicit story delta
+  or explicit post-closure authority rather than an undocumented heuristic;
+- revalidate any existing closure branch/PR against the complete commit contract
+  before resuming;
+- treat branch creation, PR creation, hosted checks and merge as a resume-safe
+  state machine; never replay an already-green boundary merely because a later
+  stage failed; and
+- if the reusable engine itself lacks a required capability, extend it through a
+  separate governance/tooling PR before preparing the closure manifest.
+
+P5-SSC-01 closure exposed the full class of defects: path argument
+re-serialization, remote-SHA/local-object confusion, and incorrect assumptions
+about how the 450-story reporting categories are represented. Its v4 closure
+succeeded only after fetch-first authority, exact story-delta validation,
+aggregate semantic preflight, branch-free commit construction, exact hosted
+checks and exact-head merge were combined. Those behaviors are now permanent
+project controls.
+
+## 23. Executable artifact bytes must be validated after final ZIP extraction
+
+Generated executable artifacts must be validated from the exact bytes delivered
+to the project owner, not only from the source strings used to construct them.
+
+Before release:
+
+- create the final ZIP, extract it into a fresh directory, and validate the
+  extracted files rather than the pre-ZIP staging directory;
+- reject BOMs or unexpected leading bytes unless explicitly required by the
+  target runtime;
+- for `.cmd`, require the first non-empty command to be the intended launcher
+  preamble (normally `@echo off`) and reject stray standalone tokens;
+- for PowerShell, require the first executable token to be a valid script
+  preamble (`#requires`, `using`, `param`, or an approved script attribute) and
+  run the repository parser against the exact extracted file;
+- run syntax/self-tests for every Node executable from the extracted package;
+- regenerate and verify SHA-256 manifests only after final artifact bytes are
+  fixed; and
+- never assume a template delimiter, escaping character or language-string
+  artifact was removed correctly without inspecting final bytes.
+
+The first Payroll capability-closure-standard installer exposed this when a
+literal standalone backslash was emitted as byte zero in the `.cmd`, installer
+PowerShell and permanent closure launcher. The failure was packaging-generation
+noise, not repository state or missing project context.

@@ -17,6 +17,29 @@ Current repository evidence overrides an older handoff entry. Update the
 running handoff after every committed increment and before every thread or
 session transition.
 
+## Mandatory capability-closure standard
+
+After all applicable product repositories for an activated capability are merged
+and required hosted product evidence is green, post-merge governance closure is
+a mandatory first-class phase. Before preparing or executing that phase, read
+`docs/governance/payroll-capability-closure-standard.md`.
+
+Use the repository-owned closure launcher
+`scripts/governance/Invoke-PayrollCapabilityClosure.ps1` with a declarative
+`closure-manifest.json`. Normal future closure packages are data-only: manifest
+plus complete-file payloads where required. Do not generate a new
+capability-specific closure `.mjs`/`.ps1` implementation when the standing
+engine can represent the closure.
+
+If a legitimate future closure cannot be represented by the standing engine,
+change the reusable engine/schema in a separately reviewed governance/tooling
+increment first. Do not patch the engine inside the capability closure being
+executed.
+
+Closure is separate from next-capability selection and activation. A closure
+must release the completed capability's ownership/migration state but must not
+activate the next capability or reserve its migration.
+
 ## Mandatory assistant GitHub read-only boundary
 
 For this project, assistant and agent GitHub access is strictly read-only even

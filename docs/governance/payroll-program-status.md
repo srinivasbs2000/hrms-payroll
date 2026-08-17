@@ -32,7 +32,9 @@ Validate this checkpoint against:
 5. `docs/runbooks/project-continuation-handoff.md`;
 6. the exact capability-scope authority named in this file;
 7. `docs/governance/payroll-automation-lessons-and-package-checklist.md`;
-8. `docs/governance/hrms-payroll-model-routing-policy.md`.
+8. `docs/governance/payroll-capability-closure-standard.md` when preparing or
+   executing post-merge capability closure;
+9. `docs/governance/hrms-payroll-model-routing-policy.md`.
 
 Conversation history and thread names are locators only. They are not the
 project-status authority.
