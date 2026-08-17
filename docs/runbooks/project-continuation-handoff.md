@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 17 August 2026 at P5-EPA-01 fresh-R3 activation
+**Updated:** 17 August 2026 at P5-EPA-01 G01 verdict / G02 implementation authorization
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,10 +11,10 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-SSC-01 backend exact seven hosted checks GREEN; UI exact five hosted checks GREEN including cross-repository browser E2E against backend `969be73f971207e09541f1a6cfef7319ac2d8621`
-**Active capability:** P5-EPA-01 G01 — Employee Payroll Assignment & Compensation Binding Completion; read-only architecture/schema verdict
-**Current state:** P5-SSC-01 closed; fresh R3 selected P5-EPA-01; G01 read-only architecture/schema verdict is next
-**Migrations:** V001–V049 committed and immutable; V050 unreserved
-**Next migration:** V050 unreserved
+**Active capability:** P5-EPA-01 G02 — Employee Payroll Assignment & Compensation Binding Completion implementation
+**Current state:** P5-EPA-01 activation PR #81 merged; G01 closed; G02 implementation authorized after this authority merges
+**Migrations:** V001–V049 committed and immutable; V050 reserved exclusively to P5-EPA-01 G02
+**Next migration:** V050 reserved exclusively to P5-EPA-01
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | NONE — P5-EPA-01 G01 is read-only |
+| Active write owner | P5-EPA-01 G02 exact G01-authorized backend/UI paths |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | P5-EPA-01 scope/governance authority only during G01; backend/UI product paths are not yet write-owned |
-| Migration state | V001–V049 immutable; V050 unreserved |
-| Next migration | V050 unreserved |
+| Active path ownership | Exact backend/UI allow-list in the P5-EPA-01 scope authority |
+| Migration state | V001–V049 immutable; V050 reserved exclusively to P5-EPA-01 G02 |
+| Next migration | V050 reserved exclusively to P5-EPA-01 |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -54,12 +54,24 @@ current relationship/assignment/pay-group/salary-assignment implementation
 against the completed E04 target model, effective dating, concurrent-assignment
 lineage, employee component overrides and compensation-change impact semantics.
 
-V050 remains unreserved and no product write owner exists until G01 proves the
-implementation boundary and migration requirement.
+G01 proves an additive migration is required. V050 is reserved exclusively to
+P5-EPA-01 G02 after this authority merges, with exact backend/UI ownership
+defined in the scope authority.
 
 Explicit exclusions include employee banking/payment readiness, PF/ESI/NPS,
 tax/declarations, broad readiness, payroll holds, complete employee snapshots
 and E06 calculation execution.
+
+## P5-EPA-01 G01 verdict checkpoint
+
+- activation PR #81 merge/main: `6e29c564f20694c1855972b426fb18accb0631ab`;
+- UI authority: `f2d7d1ac1e96cf154b624cf583681c6b751b5219`;
+- G01 verdict: preserve V021/V022 stable identity/version lineage; reuse V038 routing/compatibility and E04 target/override authority;
+- migration: additive V050 required and reserved exclusively to P5-EPA-01 G02;
+- country/currency: derive from exact organisation/legal-entity authority, do not duplicate mutable employee truth;
+- product ownership: exact backend/UI allow-list in the scope authority;
+- story statuses: unchanged;
+- next action after this authority merges: G02A backend/database/contracts implementation, then G02B UI and real-backend E2E.
 
 ## Reconciliation checkpoint
 
