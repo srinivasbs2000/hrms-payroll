@@ -95,6 +95,26 @@ whether to download, extract, execute, retain, archive, ignore or delete it; the
 exact command; expected output; and the evidence to return. When there is no
 action or return item, the response says so explicitly.
 
+## Capability closure execution norm
+
+Post-merge capability closure must use
+`docs/governance/payroll-capability-closure-standard.md` and the repository-owned
+launcher `scripts/governance/Invoke-PayrollCapabilityClosure.ps1`.
+
+After the standing engine is installed, a normal closure download is data-only:
+`closure-manifest.json` plus any complete-file payloads. Do not ship a new
+capability-specific closure implementation script for each capability.
+
+The closure runner must be branch-free, fetch-first, exact-base guarded,
+aggregate-preflighted, resume-safe and exact-head merged. It must preserve the
+project owner's pre-run branch, HEAD and working-tree/index inventory and must
+not use `switch`, `reset`, `clean`, `stash`, rebase or force-push as part of
+normal closure.
+
+A failure in a later closure stage preserves every already-green boundary.
+Engine defects are corrected in a separate reusable governance/tooling
+increment; manifest/payload defects are corrected in the data package only.
+
 ## History
 
 Sprint 0 and Sprint 1 used Codex and exhausted the available quota in roughly
