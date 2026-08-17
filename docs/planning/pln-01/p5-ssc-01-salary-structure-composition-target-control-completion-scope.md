@@ -1,12 +1,12 @@
 # P5-SSC-01 — Salary Structure Composition, Target & Control Completion
 
-**Status:** ACTIVATED FOR READ-ONLY G01 PREFLIGHT
+**Status:** G02A PRODUCT IMPLEMENTATION — SUPPLEMENTAL-PLAN COMPOSITION
 **Execution identity:** P5-SSC-01
 **Original program mapping:** P5 / E04 Salary Structures residual completion
 **Activation backend baseline:** dcf140701588345a5189637a2eb9037731e2fa32
 **Activation UI baseline:** 8e77bcf5a9a773cc9726eec4e87c0859cdb24543
-**Product write owner:** NONE
-**Migration owner:** NONE; V042 remains unreserved
+**Product write owner:** `feature/p5-ssc-01-g02a-supplemental-composition` — bounded G02A backend/schema slice
+**Migration owner:** P5-SSC-01 G02A; V042 reserved for supplemental-plan composition
 **Activation story totals:** unchanged at 44 / 136 / 80 / 159 / 31 = 450
 
 ## 1. Purpose
@@ -134,3 +134,29 @@ G01 writes evidence only to the external artifacts directory.
 - Migration owner: NONE; V042 unreserved.
 - Story totals unchanged.
 - Authorized next action: G01 read-only preflight only.
+
+## G02A implementation slice — supplemental-plan composition
+
+G01 returned `SCHEMA_AMENDMENT_REQUIRED`.
+
+G02A reserves V042 and implements the first complete business slice for
+PLN-E04-002:
+
+- reusable supplemental-plan identity/version catalogue;
+- ALLOWANCE, BENEFIT and INCENTIVE plan types;
+- exact approved component-version plan lines;
+- half-open effective dating and amount/percentage defaults;
+- employee-override metadata without employee-specific election persistence;
+- maker-checker approval;
+- salary structure as the base plus ordered approved supplemental plans;
+- no deep inheritance because supplemental plans are a separate bounded model;
+- duplicate active component-identity protection across base and bound plans;
+- no supplemental binding after validation is bound;
+- salary-structure approval remains blocked for bound supplemental composition until the next P5-SSC-01 slice integrates supplemental composition into validation/simulation;
+- tenant-safe foreign keys, forced RLS and NOBYPASSRLS-compatible runtime access;
+- append-only plan versions, lines and bindings;
+- idempotent service writes, audit and outbox lineage;
+- focused contract, migration and security tests.
+
+This slice does not promote E04-002. UI, public OpenAPI publication and the
+remaining target/flex/statutory/impact residuals continue under P5-SSC-01.

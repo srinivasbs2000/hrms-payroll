@@ -46,6 +46,12 @@ public class SalaryStructureRepository {
              version.ctc_policy_version_id,
              version.eligibility_rule_version_id,
              version.target_type,
+             version.target_frequency,
+             version.target_source_amount,
+             version.target_annualization_factor,
+             version.target_execution_mode,
+             version.inclusive_payroll_base_version_id,
+             version.exclusive_payroll_base_version_id,
              version.target_annual_amount,
              version.tolerance_amount,
              version.residual_component_version_id,
@@ -229,6 +235,7 @@ public class SalaryStructureRepository {
             + """
                where identity.tenant_id=?
                  and version.approval_status='APPROVED'
+                 and version.workflow_status='PUBLISHED'
                  and version.effective_from<=?
                  and (version.effective_to is null or version.effective_to>?)
                  and not exists (
@@ -465,11 +472,15 @@ public class SalaryStructureRepository {
           id,tenant_id,salary_structure_id,version_sequence,name,currency,
           structure_schema_version,structure_type,pay_frequency,
           confidentiality_level,ctc_policy_version_id,
-          eligibility_rule_version_id,target_type,target_annual_amount,
-          tolerance_amount,residual_component_version_id,configuration_hash,
-          effective_from,effective_to,approval_status,supersedes_version_id,
-          created_by,updated_by
-        ) values (?,?,?,?,?,?,1,?,?,?,?,?,?,?,?,?,?,?,?,'DRAFT',?,?,?)
+          eligibility_rule_version_id,target_type,target_source_amount,
+          target_frequency,target_annualization_factor,target_execution_mode,
+          inclusive_payroll_base_version_id,exclusive_payroll_base_version_id,
+          target_annual_amount,tolerance_amount,residual_component_version_id,
+          configuration_hash,effective_from,effective_to,approval_status,
+          supersedes_version_id,created_by,updated_by
+        ) values (
+          ?,?,?,?,?,?,1,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'DRAFT',?,?,?
+        )
         """,
         versionId,
         TenantContext.require(),
@@ -483,7 +494,13 @@ public class SalaryStructureRepository {
         request.ctcPolicyVersionId(),
         request.eligibilityRuleVersionId(),
         request.targetType(),
-        request.targetAnnualAmount(),
+        request.targetSourceAmount(),
+        request.resolvedTargetFrequency(),
+        request.resolvedTargetAnnualizationFactor(),
+        request.targetExecutionMode(),
+        request.inclusivePayrollBaseVersionId(),
+        request.exclusivePayrollBaseVersionId(),
+        request.resolvedTargetAnnualAmount(),
         request.toleranceAmount(),
         request.residualComponentVersionId(),
         configurationHash,
@@ -585,6 +602,12 @@ public class SalaryStructureRepository {
         result.getObject("ctc_policy_version_id", UUID.class),
         result.getObject("eligibility_rule_version_id", UUID.class),
         result.getString("target_type"),
+        result.getString("target_frequency"),
+        result.getBigDecimal("target_source_amount"),
+        result.getBigDecimal("target_annualization_factor"),
+        result.getString("target_execution_mode"),
+        result.getObject("inclusive_payroll_base_version_id", UUID.class),
+        result.getObject("exclusive_payroll_base_version_id", UUID.class),
         result.getBigDecimal("target_annual_amount"),
         result.getBigDecimal("tolerance_amount"),
         result.getObject("residual_component_version_id", UUID.class),
@@ -715,6 +738,12 @@ public class SalaryStructureRepository {
     private final UUID ctcPolicyVersionId;
     private final UUID eligibilityRuleVersionId;
     private final String targetType;
+    private final String targetFrequency;
+    private final java.math.BigDecimal targetSourceAmount;
+    private final java.math.BigDecimal targetAnnualizationFactor;
+    private final String targetExecutionMode;
+    private final UUID inclusivePayrollBaseVersionId;
+    private final UUID exclusivePayrollBaseVersionId;
     private final java.math.BigDecimal targetAnnualAmount;
     private final java.math.BigDecimal toleranceAmount;
     private final UUID residualComponentVersionId;
@@ -743,6 +772,12 @@ public class SalaryStructureRepository {
         UUID ctcPolicyVersionId,
         UUID eligibilityRuleVersionId,
         String targetType,
+        String targetFrequency,
+        java.math.BigDecimal targetSourceAmount,
+        java.math.BigDecimal targetAnnualizationFactor,
+        String targetExecutionMode,
+        UUID inclusivePayrollBaseVersionId,
+        UUID exclusivePayrollBaseVersionId,
         java.math.BigDecimal targetAnnualAmount,
         java.math.BigDecimal toleranceAmount,
         UUID residualComponentVersionId,
@@ -768,6 +803,12 @@ public class SalaryStructureRepository {
       this.ctcPolicyVersionId = ctcPolicyVersionId;
       this.eligibilityRuleVersionId = eligibilityRuleVersionId;
       this.targetType = targetType;
+      this.targetFrequency = targetFrequency;
+      this.targetSourceAmount = targetSourceAmount;
+      this.targetAnnualizationFactor = targetAnnualizationFactor;
+      this.targetExecutionMode = targetExecutionMode;
+      this.inclusivePayrollBaseVersionId = inclusivePayrollBaseVersionId;
+      this.exclusivePayrollBaseVersionId = exclusivePayrollBaseVersionId;
       this.targetAnnualAmount = targetAnnualAmount;
       this.toleranceAmount = toleranceAmount;
       this.residualComponentVersionId = residualComponentVersionId;
@@ -785,7 +826,9 @@ public class SalaryStructureRepository {
           identityId,code,identityStatus,versionId,versionSequence,versionNo,
           name,currency,structureSchemaVersion,structureType,payFrequency,
           confidentialityLevel,ctcPolicyVersionId,eligibilityRuleVersionId,
-          targetType,targetAnnualAmount,toleranceAmount,
+          targetType,targetFrequency,targetSourceAmount,targetAnnualizationFactor,
+          targetExecutionMode,inclusivePayrollBaseVersionId,
+          exclusivePayrollBaseVersionId,targetAnnualAmount,toleranceAmount,
           residualComponentVersionId,configurationHash,validationFingerprint,
           effectiveFrom,effectiveTo,approvalStatus,supersedesVersionId,
           superseded,List.copyOf(lines));

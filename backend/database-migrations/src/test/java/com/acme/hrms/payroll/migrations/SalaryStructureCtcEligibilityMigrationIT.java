@@ -556,6 +556,21 @@ class SalaryStructureCtcEligibilityMigrationIT {
                 "salary-structure lines cannot be appended after validation is bound");
         statement.execute("ROLLBACK TO SAVEPOINT immutable_structure_line");
 
+        assertFunctionResult(
+            statement,
+            """
+            SELECT compensation.submit_salary_structure_version(
+              '%s', '%s', '%s', 1,
+              'Ready for governed review', 'maker', '%s'
+            )
+            """
+                .formatted(
+                    TENANT_A,
+                    structureId,
+                    structureVersionId,
+                    Instant.parse("2026-08-05T12:00:20Z")),
+            1);
+
         statement.execute("SAVEPOINT stale_validation");
         statement.execute(
             failedValidationSql(
@@ -578,7 +593,7 @@ class SalaryStructureCtcEligibilityMigrationIT {
                                 Instant.parse("2026-08-05T12:00:30Z"))))
             .isInstanceOf(SQLException.class)
             .hasMessageContaining(
-                "latest passing validation fingerprint");
+                "exact structural validation submitted for review");
         statement.execute("ROLLBACK TO SAVEPOINT stale_validation");
 
         assertFunctionResult(
@@ -634,7 +649,7 @@ class SalaryStructureCtcEligibilityMigrationIT {
           assertThat(state.getString("approval_status")).isEqualTo("APPROVED");
           assertThat(state.getString("validation_fingerprint"))
               .isEqualTo(RESULT_HASH);
-          assertThat(state.getLong("version_no")).isEqualTo(2);
+          assertThat(state.getLong("version_no")).isEqualTo(3);
           assertThat(state.getString("policy_status")).isEqualTo("ACTIVE");
           assertThat(state.getString("rule_status")).isEqualTo("ACTIVE");
         }
@@ -1148,6 +1163,10 @@ class SalaryStructureCtcEligibilityMigrationIT {
           ctc_policy_version_id,
           eligibility_rule_version_id,
           target_type,
+          target_source_amount,
+          target_frequency,
+          target_annualization_factor,
+          target_execution_mode,
           target_annual_amount,
           tolerance_amount,
           residual_component_version_id,
@@ -1171,6 +1190,10 @@ class SalaryStructureCtcEligibilityMigrationIT {
           '%s',
           '%s',
           'ANNUAL_CTC',
+          120000.0000,
+          'ANNUAL',
+          1.0000,
+          'STRUCTURAL',
           120000.0000,
           0.0100,
           '%s',

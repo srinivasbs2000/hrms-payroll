@@ -1,4 +1,5 @@
 package com.acme.hrms.payroll.compensation.internal.application;
+import com.acme.hrms.payroll.compensation.SalaryStructureEventContract;
 
 import com.acme.hrms.payroll.compensation.CtcPolicyTreatmentView;
 import com.acme.hrms.payroll.compensation.CtcPolicyView;
@@ -185,20 +186,8 @@ public class SalaryStructureService {
         request,
         SalaryStructureValidationView.class,
         () -> {
-          SalaryStructureView structure = repository.version(versionId);
-          requireIdentity(structure, identityId);
-          requireSimulationDraft(structure, request.effectiveDate());
-
-          CtcPolicyView policy =
-              ctcPolicies.version(structure.ctcPolicyVersionId());
-          EvaluationView eligibility = evaluateEligibility(
-              structure,
-              request);
-          SalaryStructureValidationView validation = calculate(
-              structure,
-              policy,
-              eligibility,
-              request);
+          SalaryStructureValidationView validation =
+              calculateDraft(identityId, versionId, request);
 
           var existing = repository.findValidation(
               versionId,
@@ -211,6 +200,38 @@ public class SalaryStructureService {
           recordValidation(persisted);
           return persisted;
         });
+  }
+
+  SalaryStructureValidationView calculateDraft(
+      UUID identityId,
+      UUID versionId,
+      SalaryStructureSimulationRequest request) {
+    request.validate();
+    return transactions.read(
+        () -> calculateDraftInTenantTransaction(
+            identityId,
+            versionId,
+            request));
+  }
+
+  private SalaryStructureValidationView calculateDraftInTenantTransaction(
+      UUID identityId,
+      UUID versionId,
+      SalaryStructureSimulationRequest request) {
+    SalaryStructureView structure = repository.version(versionId);
+    requireIdentity(structure, identityId);
+    requireSimulationDraft(structure, request.effectiveDate());
+
+    CtcPolicyView policy =
+        ctcPolicies.version(structure.ctcPolicyVersionId());
+    EvaluationView eligibility = evaluateEligibility(
+        structure,
+        request);
+    return calculate(
+        structure,
+        policy,
+        eligibility,
+        request);
   }
 
   public List<SalaryStructureValidationView> validations(
@@ -356,6 +377,13 @@ public class SalaryStructureService {
     Map<UUID, BigDecimal> amountByVersion = new LinkedHashMap<>();
     List<SalaryStructureValidationLineView> lines = new ArrayList<>();
 
+    if (!"STRUCTURAL".equals(structure.targetExecutionMode())) {
+      return calculationEngineBoundary(
+          structure,
+          eligibility,
+          request);
+    }
+
     List<SalaryStructureLineView> ordered = structure.lines().stream()
         .sorted(Comparator.comparingInt(SalaryStructureLineView::sequenceNo))
         .toList();
@@ -457,6 +485,20 @@ public class SalaryStructureService {
     Map<String, Object> summary = new LinkedHashMap<>();
     summary.put("disclaimer", DISCLAIMER);
     summary.put("targetType", structure.targetType());
+    summary.put("targetFrequency", structure.targetFrequency());
+    summary.put("targetSourceAmount", structure.targetSourceAmount());
+    summary.put(
+        "targetAnnualizationFactor",
+        structure.targetAnnualizationFactor());
+    summary.put("targetExecutionMode", structure.targetExecutionMode());
+    summary.put(
+        "inclusivePayrollBaseVersionId",
+        structure.inclusivePayrollBaseVersionId() == null
+            ? "" : structure.inclusivePayrollBaseVersionId().toString());
+    summary.put(
+        "exclusivePayrollBaseVersionId",
+        structure.exclusivePayrollBaseVersionId() == null
+            ? "" : structure.exclusivePayrollBaseVersionId().toString());
     summary.put("targetAnnualAmount", structure.targetAnnualAmount());
     summary.put("totalAnnualAmount", total);
     summary.put("reconciliationDelta", delta);
@@ -500,6 +542,83 @@ public class SalaryStructureService {
         actor.require(),
         DISCLAIMER,
         List.copyOf(lines));
+  }
+
+  private SalaryStructureValidationView calculationEngineBoundary(
+      SalaryStructureView structure,
+      EvaluationView eligibility,
+      SalaryStructureSimulationRequest request) {
+    boolean calculationEngine =
+        "CALCULATION_ENGINE".equals(structure.targetExecutionMode());
+    Map<String, Object> blocking = issue(
+        calculationEngine
+            ? "TARGET_REQUIRES_CALCULATION_ENGINE"
+            : "TARGET_RESOLUTION_POLICY_REQUIRED",
+        calculationEngine
+            ? "This target requires calculation-engine rate/gross-up resolution"
+            : "This target requires an explicit component-base target resolver");
+    String requestHash = canonical.hash(request);
+
+    Map<String, Object> summary = new LinkedHashMap<>();
+    summary.put("disclaimer", DISCLAIMER);
+    summary.put("targetType", structure.targetType());
+    summary.put("targetFrequency", structure.targetFrequency());
+    summary.put("targetSourceAmount", structure.targetSourceAmount());
+    summary.put(
+        "targetAnnualizationFactor",
+        structure.targetAnnualizationFactor());
+    summary.put("targetExecutionMode", structure.targetExecutionMode());
+    summary.put(
+        "inclusivePayrollBaseVersionId",
+        structure.inclusivePayrollBaseVersionId() == null
+            ? "" : structure.inclusivePayrollBaseVersionId().toString());
+    summary.put(
+        "exclusivePayrollBaseVersionId",
+        structure.exclusivePayrollBaseVersionId() == null
+            ? "" : structure.exclusivePayrollBaseVersionId().toString());
+    summary.put("targetAnnualAmount", structure.targetAnnualAmount());
+    summary.put(
+        "eligibilityResult",
+        eligibility == null ? "NOT_CONFIGURED" : eligibility.result());
+    summary.put("costViews", Map.of());
+    summary.put(
+        "statutoryCompatibilityStatus",
+        calculationEngine
+            ? "CALCULATION_ENGINE_REQUIRED"
+            : "TARGET_RESOLUTION_POLICY_REQUIRED");
+    summary.put("blockingErrors", List.of(blocking));
+    summary.put("warnings", List.of());
+
+    Map<String, Object> resultState = new LinkedHashMap<>();
+    resultState.put("versionId", structure.versionId());
+    resultState.put("configurationHash", structure.configurationHash());
+    resultState.put("requestHash", requestHash);
+    resultState.put("validationStatus", "FAIL");
+    resultState.put("summary", summary);
+    resultState.put("lines", List.of());
+    String resultHash = canonical.hash(resultState);
+
+    return new SalaryStructureValidationView(
+        UUID.randomUUID(),
+        structure.identityId(),
+        structure.versionId(),
+        structure.ctcPolicyVersionId(),
+        structure.eligibilityRuleVersionId(),
+        request.effectiveDate(),
+        structure.targetAnnualAmount() == null
+            ? structure.targetSourceAmount()
+            : structure.targetAnnualAmount(),
+        "FAIL",
+        requestHash,
+        structure.configurationHash(),
+        resultHash,
+        1,
+        0,
+        Map.copyOf(summary),
+        null,
+        actor.require(),
+        DISCLAIMER,
+        List.of());
   }
 
   private BigDecimal calculateNonResidual(
@@ -668,7 +787,21 @@ public class SalaryStructureService {
     state.put("ctcPolicyVersionId", request.ctcPolicyVersionId());
     state.put("eligibilityRuleVersionId", request.eligibilityRuleVersionId());
     state.put("targetType", request.targetType());
-    state.put("targetAnnualAmount", request.targetAnnualAmount());
+    state.put("targetFrequency", request.resolvedTargetFrequency());
+    state.put("targetSourceAmount", request.targetSourceAmount());
+    state.put(
+        "targetAnnualizationFactor",
+        request.resolvedTargetAnnualizationFactor());
+    state.put("targetExecutionMode", request.targetExecutionMode());
+    state.put(
+        "inclusivePayrollBaseVersionId",
+        request.inclusivePayrollBaseVersionId());
+    state.put(
+        "exclusivePayrollBaseVersionId",
+        request.exclusivePayrollBaseVersionId());
+    state.put(
+        "targetAnnualAmount",
+        request.resolvedTargetAnnualAmount());
     state.put("toleranceAmount", request.toleranceAmount());
     state.put("residualComponentVersionId",
         request.residualComponentVersionId());
@@ -722,24 +855,28 @@ public class SalaryStructureService {
       SalaryStructureView after,
       SalaryStructureView before) {
     String principal = actor.require();
+    Map<String, Object> afterState = state(after);
     audit.append(
         action,
         OBJECT_TYPE,
         after.identityId(),
         state(before),
-        state(after),
+        afterState,
         Map.of("versionId", after.versionId()),
         principal);
 
+    String eventType = SalaryStructureEventContract.eventType(action);
     var event = events.create(
-        "SalaryStructure" + action,
-        1,
+        eventType,
+        SalaryStructureEventContract.SCHEMA_VERSION,
         TenantContext.require(),
         null,
         OBJECT_TYPE,
         after.identityId(),
         after.versionSequence(),
-        state(after));
+        SalaryStructureEventContract.validatePayload(
+            eventType,
+            afterState));
     outbox.append(event);
   }
 
@@ -764,14 +901,16 @@ public class SalaryStructureService {
         Map.of("versionId", validation.versionId()),
         actor.require());
     var event = events.create(
-        "SalaryStructureSIMULATED",
-        1,
+        SalaryStructureEventContract.SIMULATED,
+        SalaryStructureEventContract.SCHEMA_VERSION,
         TenantContext.require(),
         null,
         OBJECT_TYPE,
         validation.identityId(),
         1,
-        summary);
+        SalaryStructureEventContract.validatePayload(
+            SalaryStructureEventContract.SIMULATED,
+            summary));
     outbox.append(event);
   }
 
@@ -791,6 +930,18 @@ public class SalaryStructureService {
     state.put("ctcPolicyVersionId", view.ctcPolicyVersionId());
     state.put("eligibilityRuleVersionId", view.eligibilityRuleVersionId());
     state.put("targetType", view.targetType());
+    state.put("targetFrequency", view.targetFrequency());
+    state.put("targetSourceAmount", view.targetSourceAmount());
+    state.put(
+        "targetAnnualizationFactor",
+        view.targetAnnualizationFactor());
+    state.put("targetExecutionMode", view.targetExecutionMode());
+    state.put(
+        "inclusivePayrollBaseVersionId",
+        view.inclusivePayrollBaseVersionId());
+    state.put(
+        "exclusivePayrollBaseVersionId",
+        view.exclusivePayrollBaseVersionId());
     state.put("targetAnnualAmount", view.targetAnnualAmount());
     state.put("configurationHash", view.configurationHash());
     state.put("validationFingerprint", view.validationFingerprint());

@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-CCF-01 backend PR #75 exact seven hosted checks GREEN; UI PR #17 exact five hosted checks GREEN including cross-repository browser E2E
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** NONE — P5-SSC-01 activation authorizes read-only G01 only
-**Migration state:** V001–V041 committed and immutable
-**Next migration:** V042 unreserved
+**Active product write owner:** feature/p5-ssc-01-g02a-supplemental-composition — P5-SSC-01 G02A
+**Migration state:** V001–V041 committed and immutable; V042 reserved to P5-SSC-01 G02A supplemental composition
+**Next migration:** V042 reserved — salary-structure supplemental-plan composition
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
 **Last reconciled:** 16 August 2026 at P5-SSC-01 governance-only activation
-**Current execution capability:** P5-SSC-01 — ACTIVATED FOR READ-ONLY G01 PREFLIGHT
+**Current execution capability:** P5-SSC-01 — G02A SUPPLEMENTAL-PLAN COMPOSITION IMPLEMENTATION
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 

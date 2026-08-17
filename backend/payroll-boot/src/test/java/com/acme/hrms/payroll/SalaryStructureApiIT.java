@@ -291,7 +291,29 @@ class SalaryStructureApiIT {
 
     JsonNode bound = objectMapper.readTree(
         boundResult.getResponse().getContentAsString());
-    mvc.perform(post(
+
+    MvcResult submittedResult = mvc.perform(post(
+                "/api/v1/salary-structures/{identityId}/versions/"
+                    + "{versionId}/submission",
+                identityId,
+                versionId)
+            .with(token(
+                TENANT_A,
+                "structure-maker",
+                "compensation.structure.submit"))
+            .header("Idempotency-Key", "submit-standard-salary-0001")
+            .header("If-Match", bound.get("versionNo").asText())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"comment\":\"Ready for checker review\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.workflowStatus").value("SUBMITTED"))
+        .andExpect(jsonPath("$.versionNo")
+            .value(bound.get("versionNo").asLong() + 1))
+        .andReturn();
+    JsonNode submitted = objectMapper.readTree(
+        submittedResult.getResponse().getContentAsString());
+
+    MvcResult approvedResult = mvc.perform(post(
                 "/api/v1/salary-structures/{identityId}/versions/"
                     + "{versionId}/approval",
                 identityId,
@@ -308,7 +330,46 @@ class SalaryStructureApiIT {
         .andExpect(jsonPath("$.validationFingerprint")
             .value(first.get("resultHash").asText()))
         .andExpect(jsonPath("$.versionNo")
-            .value(bound.get("versionNo").asLong() + 1));
+            .value(submitted.get("versionNo").asLong() + 1))
+        .andReturn();
+    JsonNode approved = objectMapper.readTree(
+        approvedResult.getResponse().getContentAsString());
+
+    mvc.perform(get("/api/v1/salary-structures")
+            .param("asOf", "2027-07-01")
+            .with(token(
+                TENANT_A,
+                "structure-reader",
+                "compensation.structure.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isEmpty());
+
+    mvc.perform(post(
+                "/api/v1/salary-structures/{identityId}/versions/"
+                    + "{versionId}/publication",
+                identityId,
+                versionId)
+            .with(token(
+                TENANT_A,
+                "structure-publisher",
+                "compensation.structure.publish"))
+            .header("Idempotency-Key", "publish-standard-salary-0001")
+            .header("If-Match", approved.get("versionNo").asText())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"comment\":\"Approved configuration release\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.workflowStatus").value("PUBLISHED"))
+        .andExpect(jsonPath("$.versionNo")
+            .value(approved.get("versionNo").asLong() + 1));
+
+    mvc.perform(get("/api/v1/salary-structures")
+            .param("asOf", "2027-07-01")
+            .with(token(
+                TENANT_A,
+                "structure-reader",
+                "compensation.structure.read")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].versionId").value(versionId));
 
     mvc.perform(get(
                 "/api/v1/salary-structures/{identityId}/audit",
@@ -320,7 +381,11 @@ class SalaryStructureApiIT {
         .andExpect(jsonPath("$[2].action")
             .value("VALIDATION_BOUND"))
         .andExpect(jsonPath("$[3].action")
-            .value("VERSION_APPROVED"));
+            .value("VERSION_SUBMITTED"))
+        .andExpect(jsonPath("$[4].action")
+            .value("VERSION_APPROVED"))
+        .andExpect(jsonPath("$[5].action")
+            .value("VERSION_PUBLISHED"));
 
     mvc.perform(get("/api/v1/salary-structures")
             .param("asOf", "2027-07-01")

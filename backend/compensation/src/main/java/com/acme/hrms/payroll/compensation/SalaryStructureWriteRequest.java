@@ -35,9 +35,21 @@ public record SalaryStructureWriteRequest(
     @NotNull UUID ctcPolicyVersionId,
     UUID eligibilityRuleVersionId,
     @NotBlank
-        @Pattern(regexp = "^(ANNUAL_CTC|ANNUAL_GROSS|MONTHLY_GROSS)$")
+        @Pattern(
+            regexp =
+                "^(ANNUAL_CTC|ANNUAL_TOTAL_CTC|ANNUAL_FIXED_CTC|ANNUAL_GROSS|MONTHLY_GROSS|ANNUAL_BASIC|HOURLY_RATE|DAILY_RATE|GRADE_MIDPOINT|TOTAL_CASH_TARGET|NET_PAY_TARGET|EMPLOYER_COST_TARGET)$")
         String targetType,
-    @NotNull @DecimalMin(value = "0.0000", inclusive = false)
+    @Pattern(regexp = "^(ANNUAL|MONTHLY|HOURLY|DAILY)$")
+        String targetFrequency,
+    @DecimalMin(value = "0.0000", inclusive = false)
+        @Digits(integer = 15, fraction = 4)
+        BigDecimal targetAmount,
+    @DecimalMin(value = "0.0000", inclusive = false)
+        @Digits(integer = 15, fraction = 4)
+        BigDecimal targetAnnualizationFactor,
+    UUID inclusivePayrollBaseVersionId,
+    UUID exclusivePayrollBaseVersionId,
+    @DecimalMin(value = "0.0000", inclusive = false)
         @Digits(integer = 15, fraction = 4)
         BigDecimal targetAnnualAmount,
     @NotNull @DecimalMin("0.0000") @Digits(integer = 15, fraction = 4)
@@ -54,7 +66,59 @@ public record SalaryStructureWriteRequest(
   private static final Set<String> CONFIDENTIALITY_LEVELS = Set.of(
       "STANDARD", "RESTRICTED", "EXECUTIVE");
   private static final Set<String> TARGET_TYPES = Set.of(
-      "ANNUAL_CTC", "ANNUAL_GROSS", "MONTHLY_GROSS");
+      "ANNUAL_CTC",
+      "ANNUAL_TOTAL_CTC",
+      "ANNUAL_FIXED_CTC",
+      "ANNUAL_GROSS",
+      "MONTHLY_GROSS",
+      "ANNUAL_BASIC",
+      "HOURLY_RATE",
+      "DAILY_RATE",
+      "GRADE_MIDPOINT",
+      "TOTAL_CASH_TARGET",
+      "NET_PAY_TARGET",
+      "EMPLOYER_COST_TARGET");
+  private static final Set<String> TARGET_FREQUENCIES = Set.of(
+      "ANNUAL", "MONTHLY", "HOURLY", "DAILY");
+
+  public SalaryStructureWriteRequest(
+      String code,
+      String name,
+      String currency,
+      String structureType,
+      String payFrequency,
+      String confidentialityLevel,
+      UUID ctcPolicyVersionId,
+      UUID eligibilityRuleVersionId,
+      String targetType,
+      BigDecimal targetAnnualAmount,
+      BigDecimal toleranceAmount,
+      UUID residualComponentVersionId,
+      LocalDate effectiveFrom,
+      LocalDate effectiveTo,
+      List<SalaryStructureLineWriteRequest> lines) {
+    this(
+        code,
+        name,
+        currency,
+        structureType,
+        payFrequency,
+        confidentialityLevel,
+        ctcPolicyVersionId,
+        eligibilityRuleVersionId,
+        targetType,
+        null,
+        null,
+        null,
+        null,
+        null,
+        targetAnnualAmount,
+        toleranceAmount,
+        residualComponentVersionId,
+        effectiveFrom,
+        effectiveTo,
+        lines);
+  }
 
   public void validate(boolean identityCreation) {
     if (identityCreation && (code == null || code.isBlank())) {
@@ -81,9 +145,74 @@ public record SalaryStructureWriteRequest(
       throw new IllegalArgumentException(
           "confidentialityLevel contains an unsupported value");
     }
-    if (!TARGET_TYPES.contains(targetType)) {
+    if (targetType == null || !TARGET_TYPES.contains(targetType)) {
       throw new IllegalArgumentException(
           "targetType contains an unsupported value");
+    }
+    String frequency = resolvedTargetFrequency();
+    if (!TARGET_FREQUENCIES.contains(frequency)) {
+      throw new IllegalArgumentException(
+          "targetFrequency contains an unsupported value");
+    }
+    if (targetFrequency != null
+        && !targetFrequency.equals(frequency)) {
+      throw new IllegalArgumentException(
+          "targetFrequency does not match targetType");
+    }
+    BigDecimal sourceAmount = targetSourceAmount();
+    if (sourceAmount == null || sourceAmount.signum() <= 0) {
+      throw new IllegalArgumentException(
+          "targetAmount must be greater than zero");
+    }
+    if (targetAmount != null
+        && targetAnnualAmount != null
+        && targetAmount.compareTo(targetAnnualAmount) != 0) {
+      throw new IllegalArgumentException(
+          "targetAmount and legacy targetAnnualAmount must match");
+    }
+    BigDecimal factor = resolvedTargetAnnualizationFactor();
+    if (!("HOURLY_RATE".equals(targetType)
+        || "DAILY_RATE".equals(targetType))
+        && (factor == null || factor.signum() <= 0)) {
+      throw new IllegalArgumentException(
+          "targetAnnualizationFactor is required and must be positive");
+    }
+    if (("HOURLY_RATE".equals(targetType)
+        || "DAILY_RATE".equals(targetType))
+        && factor != null) {
+      throw new IllegalArgumentException(
+          "Rate targets defer annualization to the calculation-engine divisor policy");
+    }
+    if ("MONTHLY_GROSS".equals(targetType)
+        && factor.compareTo(BigDecimal.valueOf(12)) != 0) {
+      throw new IllegalArgumentException(
+          "MONTHLY_GROSS requires an annualization factor of 12");
+    }
+    if (Set.of(
+            "ANNUAL_CTC",
+            "ANNUAL_TOTAL_CTC",
+            "ANNUAL_FIXED_CTC",
+            "ANNUAL_GROSS",
+            "ANNUAL_BASIC",
+            "GRADE_MIDPOINT",
+            "TOTAL_CASH_TARGET",
+            "NET_PAY_TARGET",
+            "EMPLOYER_COST_TARGET")
+        .contains(targetType)
+        && factor.compareTo(BigDecimal.ONE) != 0) {
+      throw new IllegalArgumentException(
+          "Annual target types require an annualization factor of 1");
+    }
+    if (inclusivePayrollBaseVersionId != null
+        && inclusivePayrollBaseVersionId.equals(
+            exclusivePayrollBaseVersionId)) {
+      throw new IllegalArgumentException(
+          "Inclusive and exclusive payroll-base versions must differ");
+    }
+    if ("TARGET_RESOLVER_REQUIRED".equals(targetExecutionMode())
+        && inclusivePayrollBaseVersionId == null) {
+      throw new IllegalArgumentException(
+          "An inclusive payroll-base version is required for this target type");
     }
     if (ctcPolicyVersionId == null) {
       throw new IllegalArgumentException(
@@ -93,11 +222,7 @@ public record SalaryStructureWriteRequest(
       throw new IllegalArgumentException(
           "residualComponentVersionId is required");
     }
-    if (targetAnnualAmount == null
-        || targetAnnualAmount.signum() <= 0) {
-      throw new IllegalArgumentException(
-          "targetAnnualAmount must be greater than zero");
-    }
+
     if (toleranceAmount == null || toleranceAmount.signum() < 0) {
       throw new IllegalArgumentException(
           "toleranceAmount must not be negative");
@@ -171,6 +296,56 @@ public record SalaryStructureWriteRequest(
 
   public String resolvedCurrency() {
     return currency == null || currency.isBlank() ? "INR" : currency;
+  }
+
+  public BigDecimal targetSourceAmount() {
+    return targetAmount != null ? targetAmount : targetAnnualAmount;
+  }
+
+  public String resolvedTargetFrequency() {
+    return switch (targetType) {
+      case "MONTHLY_GROSS" -> "MONTHLY";
+      case "HOURLY_RATE" -> "HOURLY";
+      case "DAILY_RATE" -> "DAILY";
+      default -> "ANNUAL";
+    };
+  }
+
+  public BigDecimal resolvedTargetAnnualizationFactor() {
+    if (targetAnnualizationFactor != null) {
+      return targetAnnualizationFactor;
+    }
+    return switch (targetType) {
+      case "MONTHLY_GROSS" -> BigDecimal.valueOf(12);
+      case "HOURLY_RATE", "DAILY_RATE" -> null;
+      default -> BigDecimal.ONE;
+    };
+  }
+
+  public BigDecimal resolvedTargetAnnualAmount() {
+    BigDecimal source = targetSourceAmount();
+    BigDecimal factor = resolvedTargetAnnualizationFactor();
+    if (source == null || factor == null) {
+      return null;
+    }
+    return source.multiply(factor)
+        .setScale(4, java.math.RoundingMode.HALF_UP);
+  }
+
+  public String targetExecutionMode() {
+    if (Set.of("NET_PAY_TARGET", "HOURLY_RATE", "DAILY_RATE")
+        .contains(targetType)) {
+      return "CALCULATION_ENGINE";
+    }
+    if (Set.of(
+            "ANNUAL_CTC",
+            "ANNUAL_TOTAL_CTC",
+            "ANNUAL_GROSS",
+            "MONTHLY_GROSS")
+        .contains(targetType)) {
+      return "STRUCTURAL";
+    }
+    return "TARGET_RESOLVER_REQUIRED";
   }
 
   @JsonAnySetter
