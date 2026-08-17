@@ -1,18 +1,18 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 17 August 2026 at P5-SSC-01 post-merge reconciliation
+**Updated:** 17 August 2026 at P5-EPA-01 fresh-R3 activation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
-**Product reconciliation baseline:** P5-E2E-UI-01-B02-G01 backend PR #68 / `d635200523c1685f42ae08c24bd6d7acaa7d68a3`; B02-G03 UI PR #16 / `42487de1e99240a99df1ba99742a728671c1636e`
+**Product reconciliation baseline:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-SSC-01 backend exact seven hosted checks GREEN; UI exact five hosted checks GREEN including cross-repository browser E2E against backend `969be73f971207e09541f1a6cfef7319ac2d8621`
-**Active capability:** NONE — P5-SSC-01 CLOSED; fresh R3 next-capability selection required
-**Current state:** P5-SSC-01 product, hosted-CI and canonical story reconciliation complete
+**Active capability:** P5-EPA-01 G01 — Employee Payroll Assignment & Compensation Binding Completion; read-only architecture/schema verdict
+**Current state:** P5-SSC-01 closed; fresh R3 selected P5-EPA-01; G01 read-only architecture/schema verdict is next
 **Migrations:** V001–V049 committed and immutable; V050 unreserved
 **Next migration:** V050 unreserved
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -32,13 +32,34 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | NONE |
+| Active write owner | NONE — P5-EPA-01 G01 is read-only |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | NONE; P5-SSC-01 product and governance ownership released |
+| Active path ownership | P5-EPA-01 scope/governance authority only during G01; backend/UI product paths are not yet write-owned |
 | Migration state | V001–V049 immutable; V050 unreserved |
 | Next migration | V050 unreserved |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
+
+## P5-EPA-01 activation checkpoint
+
+Fresh R3 selects the bounded employee-level configuration completion capability
+`P5-EPA-01 — Employee Payroll Assignment & Compensation Binding Completion`.
+
+Selected canonical stories are `PLN-E05-001`, `002`, `007`, `008`, `009`,
+`010` and `018`. Their canonical statuses do not change at activation.
+
+The existing S2-05/S2-06 employee-payroll backend/UI foundation is authoritative
+and must be evolved rather than rewritten. The G01 verdict must reconcile the
+current relationship/assignment/pay-group/salary-assignment implementation
+against the completed E04 target model, effective dating, concurrent-assignment
+lineage, employee component overrides and compensation-change impact semantics.
+
+V050 remains unreserved and no product write owner exists until G01 proves the
+implementation boundary and migration requirement.
+
+Explicit exclusions include employee banking/payment readiness, PF/ESI/NPS,
+tax/declarations, broad readiness, payroll holds, complete employee snapshots
+and E06 calculation execution.
 
 ## Reconciliation checkpoint
 
