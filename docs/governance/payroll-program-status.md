@@ -3,18 +3,18 @@
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
-**Product reconciliation baseline:** P5-CCF-01 backend PR #75 / `65269a42008f31c0ec116a3fccb9f996826c621e`; UI PR #17 / `8e77bcf5a9a773cc9726eec4e87c0859cdb24543`
+**Product reconciliation baseline:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
-**Latest merged product increment:** P5-CCF-01 G03 UI PR #17 / `8e77bcf5a9a773cc9726eec4e87c0859cdb24543`; backend authority PR #75 / `65269a42008f31c0ec116a3fccb9f996826c621e`
-**Latest merged quality increment:** P5-CCF-01 backend PR #75 exact seven hosted checks GREEN; UI PR #17 exact five hosted checks GREEN including cross-repository browser E2E
+**Latest merged product increment:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
+**Latest merged quality increment:** P5-SSC-01 backend exact seven hosted checks GREEN; UI exact five hosted checks GREEN including cross-repository browser E2E against backend `969be73f971207e09541f1a6cfef7319ac2d8621`
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** feature/p5-ssc-01-g02a-supplemental-composition — P5-SSC-01 G02A
-**Migration state:** V001–V041 committed and immutable; V042 reserved to P5-SSC-01 G02A supplemental composition
-**Next migration:** V042 reserved — salary-structure supplemental-plan composition
+**Active product write owner:** NONE
+**Migration state:** V001–V049 committed and immutable; V050 unreserved
+**Next migration:** V050 unreserved
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 16 August 2026 at P5-SSC-01 governance-only activation
-**Current execution capability:** P5-SSC-01 — G02A SUPPLEMENTAL-PLAN COMPOSITION IMPLEMENTATION
+**Last reconciled:** 17 August 2026 at P5-SSC-01 post-merge reconciliation
+**Current execution capability:** NONE — fresh R3 next-capability selection required
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -38,6 +38,10 @@ Conversation history and thread names are locators only. They are not the
 project-status authority.
 
 ## 2. Latest completed milestone
+
+P5-SSC-01 delivered Salary Structure Composition, Target & Control Completion through backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621` and UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`, with exact hosted backend 7/7 and UI 5/5 checks GREEN including cross-repository browser E2E against backend `969be73f971207e09541f1a6cfef7319ac2d8621`. All eleven canonical E04 business stories are IMPLEMENTED; V001-V049 are immutable; V050 is unreserved; no product write owner remains.
+
+### Previous completed milestone — P5-A4
 
 P5-A4 delivered the remaining Calendar & Pay Groups capability for
 `PLN-E02-001` through `PLN-E02-010`:
@@ -180,9 +184,9 @@ The approved program contains 450 detailed source-linked stories:
 
 | Status | Stories | Percentage |
 |---|---:|---:|
-| Implemented | 44 | 9.78% |
-| Partially implemented | 136 | 30.22% |
-| Not evidenced | 80 | 17.78% |
+| Implemented | 51 | 11.33% |
+| Partially implemented | 132 | 29.33% |
+| Not evidenced | 77 | 17.11% |
 | Not started | 159 | 35.33% |
 | Legal/domain revalidation | 31 | 6.89% |
 | **Total** | **450** | **100%** |
@@ -741,3 +745,8 @@ Exact scope authority:
 
 The next controlled action is G01 read-only artifact/contract/schema preflight.
 <!-- P5-SSC-01-ACTIVATION:END -->
+
+<!-- P5-SSC-01-PROGRAM-CLOSURE -->
+## P5-SSC-01 post-merge program closure
+
+P5-SSC-01 is CLOSED through backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621` and UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`. The seven residual canonical E04 business stories are promoted to IMPLEMENTED; all eleven canonical E04 stories are now IMPLEMENTED. E04-012..017 are closed technical capability controls without changing the canonical 450-row cardinality. V001-V049 are immutable, V050 is unreserved, and no product write owner remains. Next action is a fresh R3 selection of the next payroll business capability; this closure does not itself activate that capability.

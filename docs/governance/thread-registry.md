@@ -1,14 +1,14 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 13 August 2026 P5-A4 product merge and post-merge closure reconciliation
-**Product reconciliation baseline:** P5-A4 PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; UI baseline `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+**Last verified:** 17 August 2026 P5-SSC-01 product merge and post-merge reconciliation
+**Product reconciliation baseline:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-A4 backend PR #58
+**Latest merged product increment:** P5-SSC-01 backend PR #78 and UI PR #18
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
-**Latest merged quality increment:** PR #33
-**Active product write owner:** None after P5-A4 status closure
-**Migration authority:** V001–V038 immutable; V039 unreserved
+**Latest merged quality increment:** P5-SSC-01 backend 7/7 and UI 5/5 hosted checks GREEN
+**Active product write owner:** NONE after P5-SSC-01 closure
+**Migration authority:** V001–V049 immutable; V050 unreserved
 
 Thread numbers are historical conversation labels, not implementation
 authority. Only an explicitly active capability entry may own files or a
@@ -41,15 +41,16 @@ migration number.
 | P5-FAD-01 | CLOSED after this status closure | Shared entity/PSU-scoped application approval authority and effective-dated delegation | Product PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`; closure PR is the PR containing this update | V037 immutable | None |
 | P5-A4 | CLOSED after this status closure | Pay groups, period generation, milestone rules and calendar lifecycle | Product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`; closure PR is the PR containing this update | V038 immutable | None |
 
+| P5-SSC-01 | CLOSED after this status closure | Salary Structure Composition, Target & Control Completion | Backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`; closure PR is the PR containing this update | V042-V049 immutable | None |
+
 ## Active capability workstream
 
-No product capability is active after this P5-A4 status closure.
+No product capability is active after the P5-SSC-01 status closure.
 
-- P5-A4 is historical/closed and retains no write ownership;
-- V001-V038 are immutable;
-- V039 is unreserved;
-- Original P5-A5/E03 is dependency-unblocked by P5-A4 closure but is not
-  selected or activated by this closure;
+- P5-SSC-01 is historical/closed and retains no write ownership;
+- V001-V049 are immutable;
+- V050 is unreserved;
+- no next capability is selected or activated by this closure;
 - a fresh R3 reconciliation and separately merged activation authority are
   required before new product writes or migration reservation.
 ## Program-status closure process
@@ -73,3 +74,6 @@ packages and returned evidence.
 P5-A4 product evidence is PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314` with hosted run
 `31634393939` green. The post-merge ledger closes `PLN-E02-001` through
 `PLN-E02-010`. V038 is immutable and no active write owner remains.
+
+<!-- P5-SSC-01-THREAD-REGISTRY-CLOSURE -->
+P5-SSC-01 product evidence is backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621` and UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`, with hosted backend 7/7 and UI 5/5 checks GREEN. Canonical E04 business stories are all IMPLEMENTED, V001-V049 are immutable, V050 is unreserved, and no active write owner remains.
