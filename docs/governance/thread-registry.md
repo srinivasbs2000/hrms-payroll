@@ -1,14 +1,14 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 17 August 2026 P5-EPA-01 fresh-R3 activation
+**Last verified:** 17 August 2026 P5-EPA-01 G01 verdict / G02 authorization
 **Product reconciliation baseline:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-SSC-01 backend PR #78 and UI PR #18
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-SSC-01 backend 7/7 and UI 5/5 hosted checks GREEN
-**Active product write owner:** NONE — P5-EPA-01 G01 is read-only
-**Migration authority:** V001–V049 immutable; V050 unreserved
+**Active product write owner:** P5-EPA-01 G02 exact authorized product paths
+**Migration authority:** V001–V049 immutable; V050 reserved exclusively to P5-EPA-01 G02
 
 Thread numbers are historical conversation labels, not implementation
 authority. Only an explicitly active capability entry may own files or a
@@ -43,21 +43,19 @@ migration number.
 
 | P5-SSC-01 | CLOSED after this status closure | Salary Structure Composition, Target & Control Completion | Backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`; closure PR is the PR containing this update | V042-V049 immutable | None |
 
-| P5-EPA-01 | ACTIVE — G01 READ-ONLY | Employee payroll relationship, assignment, pay-group binding, salary/target assignment, employee override, compensation-change impact and transfer/rehire/concurrent-assignment completion | Activation authority; product implementation not yet authorized | V050 unreserved pending G01 verdict | Scope/governance read-only only |
+| P5-EPA-01 | ACTIVE — G02 IMPLEMENTATION AUTHORIZED | Employee payroll relationship, assignment, pay-group binding, salary/target assignment, employee override, compensation-change impact and transfer/rehire/concurrent-assignment completion | Activation PR #81 / merge `6e29c564f20694c1855972b426fb18accb0631ab`; G01 verdict authority is the PR containing this update | V050 reserved exclusively | Exact G01 backend/UI allow-list |
 
 ## Active capability workstream
 
-P5-EPA-01 is active at **G01 READ-ONLY** after this activation authority merges.
+P5-EPA-01 is active at **G02 IMPLEMENTATION AUTHORIZED** after this G01 verdict authority merges.
 
 - selected stories: `PLN-E05-001`, `002`, `007`, `008`, `009`, `010`, `018`;
-- product write owner remains NONE during G01;
-- backend/UI product paths are not yet write-owned;
+- G01 is CLOSED with additive V050 required;
+- exact backend/UI path ownership is defined by the active scope authority;
 - V001-V049 are immutable;
-- V050 remains unreserved until the G01 schema verdict proves an additive
-  migration is required;
-- canonical story statuses remain unchanged by activation;
-- G01 must reconcile the inherited S2-05/S2-06 backend/UI implementation before
-  any product write; and
+- V050 is reserved exclusively to P5-EPA-01 G02;
+- canonical story statuses remain unchanged by this authority;
+- backend G02A publication precedes UI G02B real-backend browser closure; and
 - banking/payment, PF/ESI/NPS, tax/declarations, broad readiness, holds,
   complete employee snapshots and E06 calculation remain excluded.
 ## Program-status closure process
