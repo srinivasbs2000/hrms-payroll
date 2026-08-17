@@ -1,13 +1,13 @@
 # P5-SSC-01 — Salary Structure Composition, Target & Control Completion
 
-**Status:** G02A PRODUCT IMPLEMENTATION — SUPPLEMENTAL-PLAN COMPOSITION
+**Status:** CLOSED — PRODUCT MERGED / HOSTED CI GREEN; POST-MERGE GOVERNANCE RECONCILED
 **Execution identity:** P5-SSC-01
 **Original program mapping:** P5 / E04 Salary Structures residual completion
 **Activation backend baseline:** dcf140701588345a5189637a2eb9037731e2fa32
 **Activation UI baseline:** 8e77bcf5a9a773cc9726eec4e87c0859cdb24543
-**Product write owner:** `feature/p5-ssc-01-g02a-supplemental-composition` — bounded G02A backend/schema slice
-**Migration owner:** P5-SSC-01 G02A; V042 reserved for supplemental-plan composition
-**Activation story totals:** unchanged at 44 / 136 / 80 / 159 / 31 = 450
+**Product write owner:** NONE — P5-SSC-01 product work merged and closed
+**Migration owner:** NONE; V001–V049 immutable; V050 unreserved
+**Closure story totals:** 51 / 132 / 77 / 159 / 31 = 450
 
 ## 1. Purpose
 
@@ -160,3 +160,19 @@ PLN-E04-002:
 
 This slice does not promote E04-002. UI, public OpenAPI publication and the
 remaining target/flex/statutory/impact residuals continue under P5-SSC-01.
+
+<!-- P5-SSC-01-FINAL-CLOSURE -->
+## 10. Final closure evidence
+
+- backend product PR #78 / merge `969be73f971207e09541f1a6cfef7319ac2d8621`; product head `b1b0e3d365ca813f0e1d1198078797c31c100325`;
+- UI product PR #18 / merge `f2d7d1ac1e96cf154b624cf583681c6b751b5219`; UI head `9aaed9785f1c58a809dbb450f8c2c50f56b299db`;
+- backend hosted CI: exact seven required checks GREEN;
+- UI hosted CI: exact five required checks GREEN;
+- hosted cross-repository browser E2E consumed exact backend merge `969be73f971207e09541f1a6cfef7319ac2d8621`;
+- E04-016/E04-017 local capability closure: GREEN;
+- V042-V049 committed and immutable; V050 unreserved;
+- canonical PLN-E04-001 through PLN-E04-011: IMPLEMENTED;
+- E04-012 through E04-017 are capability-level technical closure controls and do not create extra rows in the canonical 450-story ledger;
+- active product write owner: NONE.
+
+P5-SSC-01 is CLOSED. Employee-specific compensation assignment/elections, official payroll calculation, country-specific legal execution, retro/off-cycle/final settlement, payments and accounting remain outside this capability.
