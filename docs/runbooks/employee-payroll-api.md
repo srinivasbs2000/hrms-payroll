@@ -68,3 +68,28 @@ The canonical API contract remains
 `contracts/openapi/payroll-vertical-slice-openapi-v1.yaml`. Employee-payroll
 path items and schemas are maintained in the externally referenced
 `contracts/openapi/employee-payroll-openapi-v1.yaml` fragment.
+
+<!-- P5-EPA-01-G02A -->
+## P5-EPA-01 G02A binding completion
+
+V050 extends the existing lifecycle API without replacing V021/V022 identities.
+New/successor relationship approvals require the exact payroll statutory unit and
+aggregation boundary. Payroll assignments carry the source work-assignment
+reference, PRIMARY/SECONDARY payroll role and explicit payroll-eligibility range.
+
+Explicit pay-group assignments retain the V038 routing and compatibility model,
+while recording affected pay periods through an impact-assessment horizon before
+approval. Salary assignments now support the approved E04 target contract
+(target type, value, frequency and currency) and an approved source compensation
+event. The historical monthly-INR shape is accepted only for an exact schema-0
+salary structure.
+
+Additional endpoint families expose compensation-change classification and
+affected-period assessment, employee component overrides governed by the E04
+PROHIBITED/CONTROLLED/ALLOWED line policy, and explicit transfer/rehire/concurrent
+assignment lineage. Compensation impact is design-time evidence only: these APIs
+do not execute retro payroll, alter official results, post balances, create
+payments or perform accounting.
+
+All new writes retain Idempotency-Key handling, tenant-scoped forced RLS, atomic
+audit/outbox evidence and permission checks.

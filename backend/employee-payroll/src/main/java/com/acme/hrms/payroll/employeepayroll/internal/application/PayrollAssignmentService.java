@@ -73,7 +73,7 @@ public class PayrollAssignmentService {
         () -> {
           PayrollAssignmentView created =
               repository.addAssignmentVersion(
-                  identityId, request, null, actor.require());
+                  identityId, request, null, actor.require(), clock.instant());
           record("VERSION_CREATED", created, null);
           return created;
         });
@@ -103,7 +103,7 @@ public class PayrollAssignmentService {
           }
           PayrollAssignmentView corrected =
               repository.addAssignmentVersion(
-                  identityId, request, versionId, actor.require());
+                  identityId, request, versionId, actor.require(), clock.instant());
           record("VERSION_CORRECTED", corrected, previous);
           return corrected;
         });
@@ -212,6 +212,10 @@ public class PayrollAssignmentService {
         "payrollRelationshipVersionId",
         view.payrollRelationshipVersionId());
     state.put("establishmentVersionId", view.establishmentVersionId());
+    state.put("sourceWorkAssignmentRef", view.sourceWorkAssignmentRef());
+    state.put("payrollRole", view.payrollRole());
+    state.put("payrollEligibilityFrom", view.payrollEligibilityFrom());
+    state.put("payrollEligibilityTo", view.payrollEligibilityTo());
     state.put("assignmentStart", view.assignmentStart());
     state.put("assignmentEnd", view.assignmentEnd());
     state.put("approvalStatus", view.approvalStatus());

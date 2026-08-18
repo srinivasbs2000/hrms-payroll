@@ -106,6 +106,6 @@ class EmployeePayrollContractTest {
     for (var field : EmployeePayrollPermissions.class.getFields()) {
       assertThat(values.add((String) field.get(null))).isTrue();
     }
-    assertThat(values).hasSize(25);
+    assertThat(values).hasSize(36);
   }
 }

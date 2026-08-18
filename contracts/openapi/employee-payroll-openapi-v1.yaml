@@ -885,6 +885,245 @@ pathItems:
         '401': {$ref: '#/responses/Unauthorized'}
         '403': {$ref: '#/responses/Forbidden'}
 
+  PayGroupAssignmentImpact:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    get:
+      tags: [Employee Payroll]
+      summary: Read affected pay periods for an explicit pay-group assignment
+      operationId: getPayGroupAssignmentImpact
+      x-permission: employee-payroll.pay-group-assignment.read
+      responses:
+        '200':
+          description: Impact period evidence
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/schemas/PayGroupAssignmentImpact'}}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+  CompensationChangeCollection:
+    get:
+      tags: [Employee Payroll]
+      operationId: listCompensationChanges
+      x-permission: employee-payroll.compensation-change.read
+      parameters:
+      - name: payrollAssignmentId
+        in: query
+        required: true
+        schema: {type: string, format: uuid}
+      responses:
+        '200':
+          description: Compensation change history
+          content:
+            application/json:
+              schema: {type: array, items: {$ref: '#/schemas/CompensationChange'}}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Employee Payroll]
+      operationId: createCompensationChange
+      x-permission: employee-payroll.compensation-change.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/CompensationChangeWrite'}
+      responses:
+        '201':
+          description: Compensation change draft created
+          content:
+            application/json:
+              schema: {$ref: '#/schemas/CompensationChange'}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  CompensationChangeAssessment:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    post:
+      tags: [Employee Payroll]
+      operationId: assessCompensationChange
+      x-permission: employee-payroll.compensation-change.assess
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/schemas/CompensationChangeAssessment'}
+      responses:
+        '200': {description: Impact assessed, content: {application/json: {schema: {$ref: '#/schemas/CompensationChange'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  CompensationChangeImpact:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    get:
+      tags: [Employee Payroll]
+      operationId: getCompensationChangeImpact
+      x-permission: employee-payroll.compensation-change.read
+      responses:
+        '200': {description: Affected pay periods, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/CompensationChangeImpact'}}}}}
+  CompensationChangeApproval:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    post:
+      tags: [Employee Payroll]
+      operationId: approveCompensationChange
+      x-permission: employee-payroll.compensation-change.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      responses:
+        '200': {description: Approved compensation change, content: {application/json: {schema: {$ref: '#/schemas/CompensationChange'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  CompensationChangeAudit:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    get:
+      tags: [Employee Payroll]
+      operationId: getCompensationChangeAudit
+      x-permission: audit.read
+      responses:
+        '200': {description: Audit history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/AuditEvent'}}}}}
+  ComponentOverrideCollection:
+    get:
+      tags: [Employee Payroll]
+      operationId: listEmployeeComponentOverrides
+      x-permission: employee-payroll.component-override.read
+      parameters:
+      - name: payrollAssignmentVersionId
+        in: query
+        required: true
+        schema: {type: string, format: uuid}
+      responses:
+        '200': {description: Employee component overrides, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EmployeeComponentOverride'}}}}}
+    post:
+      tags: [Employee Payroll]
+      operationId: createEmployeeComponentOverride
+      x-permission: employee-payroll.component-override.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/schemas/EmployeeComponentOverrideWrite'}}}
+      responses:
+        '201': {description: Override draft created, content: {application/json: {schema: {$ref: '#/schemas/EmployeeComponentOverride'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  ComponentOverrideCorrection:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    post:
+      tags: [Employee Payroll]
+      operationId: correctEmployeeComponentOverride
+      x-permission: employee-payroll.component-override.correct
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/schemas/EmployeeComponentOverrideWrite'}}}
+      responses:
+        '200': {description: Successor override draft, content: {application/json: {schema: {$ref: '#/schemas/EmployeeComponentOverride'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  ComponentOverrideApproval:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    post:
+      tags: [Employee Payroll]
+      operationId: approveEmployeeComponentOverride
+      x-permission: employee-payroll.component-override.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      responses:
+        '200': {description: Approved override, content: {application/json: {schema: {$ref: '#/schemas/EmployeeComponentOverride'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  ComponentOverrideAudit:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    get:
+      tags: [Employee Payroll]
+      operationId: getEmployeeComponentOverrideAudit
+      x-permission: audit.read
+      responses:
+        '200': {description: Audit history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/AuditEvent'}}}}}
+  LifecycleLineageCollection:
+    get:
+      tags: [Employee Payroll]
+      operationId: listPayrollLifecycleLineage
+      x-permission: employee-payroll.lifecycle-lineage.read
+      parameters:
+      - name: payrollRelationshipId
+        in: query
+        required: true
+        schema: {type: string, format: uuid}
+      responses:
+        '200': {description: Transfer/rehire/concurrency lineage, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/PayrollLifecycleLineage'}}}}}
+    post:
+      tags: [Employee Payroll]
+      operationId: createPayrollLifecycleLineage
+      x-permission: employee-payroll.lifecycle-lineage.create
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/schemas/PayrollLifecycleLineageWrite'}}}
+      responses:
+        '201': {description: Lineage draft created, content: {application/json: {schema: {$ref: '#/schemas/PayrollLifecycleLineage'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  LifecycleLineageApproval:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    post:
+      tags: [Employee Payroll]
+      operationId: approvePayrollLifecycleLineage
+      x-permission: employee-payroll.lifecycle-lineage.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      responses:
+        '200': {description: Approved lineage, content: {application/json: {schema: {$ref: '#/schemas/PayrollLifecycleLineage'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  LifecycleLineageAudit:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    get:
+      tags: [Employee Payroll]
+      operationId: getPayrollLifecycleLineageAudit
+      x-permission: audit.read
+      responses:
+        '200': {description: Audit history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/AuditEvent'}}}}}
+
 schemas:
   Problem:
     type: object
@@ -930,6 +1169,8 @@ schemas:
         maxLength: 60
         description: Required when creating the stable relationship identity.
       legalEntityVersionId: {type: string, format: uuid}
+      payrollStatutoryUnitVersionId: {type: [string, 'null'], format: uuid}
+      aggregationBoundaryKey: {type: [string, 'null'], maxLength: 120}
       relationshipStart: {type: string, format: date}
       relationshipEnd: {type: [string, 'null'], format: date}
   PayrollRelationshipEndDate:
@@ -962,6 +1203,10 @@ schemas:
       versionSequence: {type: integer, minimum: 1}
       versionNo: {type: integer, format: int64, minimum: 0}
       legalEntityVersionId: {type: string, format: uuid}
+      payrollStatutoryUnitVersionId: {type: [string, 'null'], format: uuid}
+      aggregationBoundaryKey: {type: [string, 'null'], maxLength: 120}
+      countryCode: {type: string, pattern: '^[A-Z]{2}$'}
+      employerCurrency: {type: string, pattern: '^[A-Z]{3}$'}
       relationshipStart: {type: string, format: date}
       relationshipEnd: {type: [string, 'null'], format: date}
       approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
@@ -985,6 +1230,10 @@ schemas:
         description: Required when creating the stable assignment identity.
       payrollRelationshipVersionId: {type: string, format: uuid}
       establishmentVersionId: {type: string, format: uuid}
+      sourceWorkAssignmentRef: {type: [string, 'null'], maxLength: 160}
+      payrollRole: {type: [string, 'null'], enum: [PRIMARY, SECONDARY, null]}
+      payrollEligibilityFrom: {type: [string, 'null'], format: date}
+      payrollEligibilityTo: {type: [string, 'null'], format: date}
       assignmentStart: {type: string, format: date}
       assignmentEnd: {type: [string, 'null'], format: date}
   PayrollAssignmentEndDate:
@@ -1019,6 +1268,10 @@ schemas:
       versionNo: {type: integer, format: int64, minimum: 0}
       payrollRelationshipVersionId: {type: string, format: uuid}
       establishmentVersionId: {type: string, format: uuid}
+      sourceWorkAssignmentRef: {type: [string, 'null'], maxLength: 160}
+      payrollRole: {type: [string, 'null'], enum: [PRIMARY, SECONDARY, null]}
+      payrollEligibilityFrom: {type: [string, 'null'], format: date}
+      payrollEligibilityTo: {type: [string, 'null'], format: date}
       assignmentStart: {type: string, format: date}
       assignmentEnd: {type: [string, 'null'], format: date}
       approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
@@ -1070,6 +1323,7 @@ schemas:
       payGroupVersionId: {type: string, format: uuid}
       effectiveFrom: {type: string, format: date}
       effectiveTo: {type: [string, 'null'], format: date}
+      impactAssessmentThrough: {type: [string, 'null'], format: date}
   EffectiveEndDate:
     type: object
     additionalProperties: false
@@ -1093,6 +1347,8 @@ schemas:
       payGroupVersionId: {type: string, format: uuid}
       effectiveFrom: {type: string, format: date}
       effectiveTo: {type: [string, 'null'], format: date}
+      impactAssessmentThrough: {type: [string, 'null'], format: date}
+      impactedPeriodCount: {type: integer, minimum: 0}
       approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
       supersedesAssignmentId: {type: [string, 'null'], format: uuid}
       superseded: {type: boolean}
@@ -1103,13 +1359,19 @@ schemas:
     required:
     - payrollAssignmentVersionId
     - salaryStructureVersionId
-    - monthlyAmount
     - effectiveFrom
+    oneOf:
+    - required: [monthlyAmount]
+    - required: [targetType, targetValue, targetFrequency, currency, sourceCompensationEventId]
     properties:
       payrollAssignmentVersionId: {type: string, format: uuid}
       salaryStructureVersionId: {type: string, format: uuid}
-      monthlyAmount: {type: number, minimum: 0, multipleOf: 0.0001}
-      currency: {type: [string, 'null'], const: INR, default: INR}
+      monthlyAmount: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      targetType: {type: [string, 'null'], maxLength: 40}
+      targetValue: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      targetFrequency: {type: [string, 'null'], enum: [ANNUAL, MONTHLY, HOURLY, DAILY, null]}
+      currency: {type: [string, 'null'], pattern: '^[A-Z]{3}$'}
+      sourceCompensationEventId: {type: [string, 'null'], format: uuid}
       effectiveFrom: {type: string, format: date}
       effectiveTo: {type: [string, 'null'], format: date}
   SalaryAssignment:
@@ -1129,11 +1391,126 @@ schemas:
       id: {type: string, format: uuid}
       payrollAssignmentVersionId: {type: string, format: uuid}
       salaryStructureVersionId: {type: string, format: uuid}
-      monthlyAmount: {type: number, minimum: 0, multipleOf: 0.0001}
-      currency: {type: string, const: INR}
+      monthlyAmount: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      targetType: {type: [string, 'null'], maxLength: 40}
+      targetValue: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      targetFrequency: {type: [string, 'null'], enum: [ANNUAL, MONTHLY, HOURLY, DAILY, null]}
+      currency: {type: string, pattern: '^[A-Z]{3}$'}
+      sourceCompensationEventId: {type: [string, 'null'], format: uuid}
       effectiveFrom: {type: string, format: date}
       effectiveTo: {type: [string, 'null'], format: date}
       approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
       supersedesAssignmentId: {type: [string, 'null'], format: uuid}
       superseded: {type: boolean}
+      versionNo: {type: integer, format: int64, minimum: 0}
+
+  PayGroupAssignmentImpact:
+    type: object
+    additionalProperties: false
+    properties:
+      payPeriodId: {type: string, format: uuid}
+      periodCode: {type: string}
+      periodStart: {type: string, format: date}
+      periodEnd: {type: string, format: date}
+      reasonCode: {type: string, const: EFFECTIVE_RANGE_OVERLAP}
+  CompensationChangeWrite:
+    type: object
+    additionalProperties: false
+    required: [payrollAssignmentId, eventType, effectiveDate, reason]
+    properties:
+      payrollAssignmentId: {type: string, format: uuid}
+      eventType: {type: string, enum: [PROSPECTIVE, CURRENT_PERIOD, RETROSPECTIVE, CORRECTION, REVERSAL]}
+      effectiveDate: {type: string, format: date}
+      sourceEventId: {type: [string, 'null'], format: uuid}
+      reason: {type: string, minLength: 1, maxLength: 500}
+  CompensationChangeAssessment:
+    type: object
+    additionalProperties: false
+    required: [assessmentThrough]
+    properties:
+      assessmentThrough: {type: string, format: date}
+  CompensationChange:
+    type: object
+    additionalProperties: false
+    properties:
+      id: {type: string, format: uuid}
+      payrollAssignmentId: {type: string, format: uuid}
+      eventType: {type: string}
+      effectiveDate: {type: string, format: date}
+      sourceEventId: {type: [string, 'null'], format: uuid}
+      reason: {type: string}
+      assessmentThrough: {type: [string, 'null'], format: date}
+      impactAssessedAt: {type: [string, 'null'], format: date-time}
+      impactAssessedBy: {type: [string, 'null']}
+      impactedPeriodCount: {type: integer, minimum: 0}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      approvedAt: {type: [string, 'null'], format: date-time}
+      approvedBy: {type: [string, 'null']}
+      versionNo: {type: integer, format: int64, minimum: 0}
+  CompensationChangeImpact:
+    type: object
+    additionalProperties: false
+    properties:
+      payPeriodId: {type: string, format: uuid}
+      periodCode: {type: string}
+      periodStart: {type: string, format: date}
+      periodEnd: {type: string, format: date}
+      reasonCode: {type: string, const: EFFECTIVE_DATE_OVERLAP}
+  EmployeeComponentOverrideWrite:
+    type: object
+    additionalProperties: false
+    required: [payrollAssignmentVersionId, salaryAssignmentId, salaryStructureLineId, componentVersionId, overrideKind, overrideValue, effectiveFrom]
+    properties:
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      salaryAssignmentId: {type: string, format: uuid}
+      salaryStructureLineId: {type: string, format: uuid}
+      componentVersionId: {type: string, format: uuid}
+      overrideKind: {type: string, enum: [AMOUNT, PERCENTAGE]}
+      overrideValue: {type: number, minimum: 0}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+  EmployeeComponentOverride:
+    type: object
+    additionalProperties: false
+    properties:
+      id: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      salaryAssignmentId: {type: string, format: uuid}
+      salaryStructureLineId: {type: string, format: uuid}
+      componentVersionId: {type: string, format: uuid}
+      overrideKind: {type: string, enum: [AMOUNT, PERCENTAGE]}
+      overrideValue: {type: number}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesOverrideId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+      versionNo: {type: integer, format: int64, minimum: 0}
+  PayrollLifecycleLineageWrite:
+    type: object
+    additionalProperties: false
+    required: [eventType, relationshipDecision, effectiveDate, reason]
+    properties:
+      eventType: {type: string, enum: [TRANSFER, REHIRE, CONCURRENT_ASSIGNMENT]}
+      relationshipDecision: {type: string, enum: [CONTINUE, SUCCESSOR]}
+      predecessorRelationshipId: {type: [string, 'null'], format: uuid}
+      successorRelationshipId: {type: [string, 'null'], format: uuid}
+      predecessorAssignmentId: {type: [string, 'null'], format: uuid}
+      successorAssignmentId: {type: [string, 'null'], format: uuid}
+      effectiveDate: {type: string, format: date}
+      reason: {type: string, minLength: 1, maxLength: 500}
+  PayrollLifecycleLineage:
+    type: object
+    additionalProperties: false
+    properties:
+      id: {type: string, format: uuid}
+      eventType: {type: string, enum: [TRANSFER, REHIRE, CONCURRENT_ASSIGNMENT]}
+      relationshipDecision: {type: string, enum: [CONTINUE, SUCCESSOR]}
+      predecessorRelationshipId: {type: [string, 'null'], format: uuid}
+      successorRelationshipId: {type: [string, 'null'], format: uuid}
+      predecessorAssignmentId: {type: [string, 'null'], format: uuid}
+      successorAssignmentId: {type: [string, 'null'], format: uuid}
+      effectiveDate: {type: string, format: date}
+      reason: {type: string}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
       versionNo: {type: integer, format: int64, minimum: 0}

@@ -1,6 +1,6 @@
 # Payroll vertical-slice Flyway package
 
-`sql/` is the canonical source for the ordered V001-V038 migrations. The Maven
+`sql/` is the canonical source for the ordered V001-V050 migrations. The Maven
 `backend/database-migrations` module packages these files at `db/migration` and
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
@@ -20,9 +20,12 @@ immutable. V037 is `V037__foundation_approval_delegation.sql`, delivered through
 P5-FAD-01 product PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`.
 V037 is committed and immutable. V038 is
 `V038__pay_group_routing_compatibility_foundation.sql`, delivered through
-P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`. V038 is committed and immutable.
-V001-V038 are now immutable. V039 is unreserved and may not be claimed without
-a separately merged capability activation authority.
+P5-A4 product PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314`. V038 is committed and immutable. V039-V049 are also committed and immutable.
+V050 is `V050__employee_payroll_assignment_compensation_binding.sql`, reserved
+exclusively to P5-EPA-01 G02 by merged G01/G02 authority PR #82. V001-V049 are
+immutable; V050 completes the bounded employee relationship, assignment,
+pay-group impact, compensation target, component override, compensation-change
+impact and lifecycle-lineage contracts without executing payroll retroactivity.
 
 V033 implements the P5-A3 configuration-design foundation: schema-1 salary
 structures, versioned CTC policies, typed eligibility rules and deterministic
@@ -86,6 +89,18 @@ Migration order:
 36. P5-FSR-01 immutable foundation-configuration snapshot, exact input/calculation binding and history-preserving V035 upgrade
 37. P5-FAD-01 entity/PSU-scoped application approval authority, bounded delegation and tenant-safe resolution
 38. P5-A4 versioned pay-group routing, governed payroll-calendar lifecycle, deterministic period/frequency/milestone generation, compatibility and operational evidence
+39. pay-group routing-rule effective-end contract
+40. component-catalogue formula and rate controls
+41. component runtime lock authority
+42. salary-structure supplemental-plan composition
+43. salary-structure supplemental-composition validation
+44. salary-structure target contract
+45. flex-benefit-plan policy
+46. salary-structure statutory/minimum-wage compatibility
+47. salary-structure submission, approval and publication
+48. salary-structure security and segregation-of-duties completion
+49. salary-structure audit-lineage read authority
+50. P5-EPA-01 employee payroll assignment and compensation binding completion
 
 This remains a greenfield product with no evidenced production deployment.
 Forward-only migrations and populated-upgrade tests protect reproducible local,

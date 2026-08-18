@@ -208,6 +208,8 @@ public class PayrollRelationshipService {
     state.put("externalEmployeeId", view.externalEmployeeId());
     state.put("employeeNumber", view.employeeNumber());
     state.put("legalEntityVersionId", view.legalEntityVersionId());
+    state.put("payrollStatutoryUnitVersionId", view.payrollStatutoryUnitVersionId());
+    state.put("aggregationBoundaryKey", view.aggregationBoundaryKey());
     state.put("relationshipStart", view.relationshipStart());
     state.put("relationshipEnd", view.relationshipEnd());
     state.put("approvalStatus", view.approvalStatus());
