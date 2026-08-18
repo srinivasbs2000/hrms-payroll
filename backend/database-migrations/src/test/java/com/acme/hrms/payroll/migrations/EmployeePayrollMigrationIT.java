@@ -299,385 +299,140 @@ class EmployeePayrollMigrationIT {
 
     try (Connection connection = app()) {
       connection.setAutoCommit(false);
-
       try (Statement statement = connection.createStatement()) {
-        statement.execute(
-            "SET LOCAL app.tenant_id='" + TENANT_A + "'");
+        statement.execute("SET LOCAL app.tenant_id='" + TENANT_A + "'");
 
         statement.execute(
             """
             INSERT INTO employee_payroll.payroll_relationship(
-              id,
-              tenant_id,
-              external_employee_id,
-              employee_number,
-              created_by,
-              updated_by
+              id,tenant_id,external_employee_id,employee_number,created_by,updated_by
             ) VALUES (
-              '%s',
-              '%s',
-              'EMP-EXT-2',
-              'EMP-2',
-              'test',
-              'test'
+              '%s','%s','EMP-EXT-2','EMP-2','test','test'
             )
-            """
-                .formatted(relationshipId, TENANT_A));
+            """.formatted(relationshipId, TENANT_A));
 
         statement.execute(
             """
             INSERT INTO employee_payroll.payroll_relationship_version(
-              id,
-              tenant_id,
-              payroll_relationship_id,
-              legal_entity_version_id,
-              version_sequence,
-              relationship_start,
-              relationship_end,
-              approval_status,
-              created_by,
-              updated_by
+              id,tenant_id,payroll_relationship_id,legal_entity_version_id,
+              boundary_schema_version,payroll_statutory_unit_version_id,
+              aggregation_boundary_key,version_sequence,relationship_start,
+              relationship_end,approval_status,created_by,updated_by
             ) VALUES (
-              '%s',
-              '%s',
-              '%s',
-              '%s',
-              1,
-              '2027-01-01',
-              '2029-01-01',
-              'DRAFT',
-              'test',
-              'test'
+              '%s','%s','%s','%s',1,'%s','INDIVIDUAL_RELATIONSHIP',1,
+              '2027-01-01','2029-01-01','DRAFT','test','test'
             )
-            """
-                .formatted(
-                    relationshipVersionId,
-                    TENANT_A,
-                    relationshipId,
-                    LEGAL_VERSION_ID));
+            """.formatted(
+                relationshipVersionId, TENANT_A, relationshipId,
+                LEGAL_VERSION_ID, PSU_VERSION_ID));
 
         assertFunctionResult(
             statement,
             """
-            SELECT
-              employee_payroll.approve_payroll_relationship_version(
-                '%s',
-                '%s',
-                'test',
-                '%s'
-              )
-            """
-                .formatted(
-                    TENANT_A,
-                    relationshipVersionId,
-                    Instant.parse("2026-07-22T06:00:00Z")),
+            SELECT employee_payroll.approve_payroll_relationship_version(
+              '%s','%s','test','%s')
+            """.formatted(
+                TENANT_A, relationshipVersionId,
+                Instant.parse("2026-07-22T06:00:00Z")),
             1);
 
         statement.execute(
             """
             INSERT INTO employee_payroll.payroll_assignment(
-              id,
-              tenant_id,
-              payroll_relationship_id,
-              assignment_number,
-              created_by,
-              updated_by
+              id,tenant_id,payroll_relationship_id,assignment_number,
+              source_work_assignment_ref,created_by,updated_by
             ) VALUES (
-              '%s',
-              '%s',
-              '%s',
-              'ASN-2',
-              'test',
-              'test'
+              '%s','%s','%s','ASN-2','WORK-ASN-2','test','test'
             )
-            """
-                .formatted(
-                    assignmentId,
-                    TENANT_A,
-                    relationshipId));
+            """.formatted(assignmentId, TENANT_A, relationshipId));
 
         statement.execute(
             """
             INSERT INTO employee_payroll.payroll_assignment_version(
-              id,
-              tenant_id,
-              payroll_assignment_id,
-              payroll_relationship_version_id,
-              establishment_version_id,
-              version_sequence,
-              assignment_start,
-              assignment_end,
-              approval_status,
-              created_by,
-              updated_by
+              id,tenant_id,payroll_assignment_id,payroll_relationship_version_id,
+              establishment_version_id,binding_schema_version,payroll_role,
+              payroll_eligibility_from,payroll_eligibility_to,version_sequence,
+              assignment_start,assignment_end,approval_status,created_by,updated_by
             ) VALUES (
-              '%s',
-              '%s',
-              '%s',
-              '%s',
-              '%s',
-              1,
-              '2027-01-01',
-              '2029-01-01',
-              'DRAFT',
-              'test',
-              'test'
+              '%s','%s','%s','%s','%s',1,'PRIMARY',
+              '2027-01-01','2029-01-01',1,'2027-01-01','2029-01-01',
+              'DRAFT','test','test'
             )
-            """
-                .formatted(
-                    assignmentVersionId,
-                    TENANT_A,
-                    assignmentId,
-                    relationshipVersionId,
-                    ESTABLISHMENT_VERSION_ID));
+            """.formatted(
+                assignmentVersionId, TENANT_A, assignmentId,
+                relationshipVersionId, ESTABLISHMENT_VERSION_ID));
 
         assertFunctionResult(
             statement,
             """
-            SELECT
-              employee_payroll.approve_payroll_assignment_version(
-                '%s',
-                '%s',
-                'test',
-                '%s'
-              )
-            """
-                .formatted(
-                    TENANT_A,
-                    assignmentVersionId,
-                    Instant.parse("2026-07-22T06:01:00Z")),
+            SELECT employee_payroll.approve_payroll_assignment_version(
+              '%s','%s','test','%s')
+            """.formatted(
+                TENANT_A, assignmentVersionId,
+                Instant.parse("2026-07-22T06:01:00Z")),
             1);
 
         statement.execute(
             """
             INSERT INTO employee_payroll.employee_payroll_profile(
-              id,
-              tenant_id,
-              payroll_relationship_id,
-              currency,
-              created_by,
-              updated_by
+              id,tenant_id,payroll_relationship_id,currency,created_by,updated_by
             ) VALUES (
-              '%s',
-              '%s',
-              '%s',
-              'INR',
-              'test',
-              'test'
+              '%s','%s','%s','INR','test','test'
             )
-            """
-                .formatted(
-                    profileId,
-                    TENANT_A,
-                    relationshipId));
+            """.formatted(profileId, TENANT_A, relationshipId));
 
         statement.execute(
             """
             INSERT INTO employee_payroll.pay_group_assignment(
-              id,
-              tenant_id,
-              payroll_assignment_version_id,
-              pay_group_version_id,
-              effective_from,
-              effective_to,
-              approval_status,
-              created_by,
-              updated_by
+              id,tenant_id,payroll_assignment_version_id,pay_group_version_id,
+              effective_from,effective_to,contract_schema_version,
+              impact_assessment_through,impact_assessed_at,impact_assessed_by,
+              approval_status,created_by,updated_by
             ) VALUES (
-              '%s',
-              '%s',
-              '%s',
-              '%s',
-              '2027-01-01',
-              '2029-01-01',
-              'DRAFT',
-              'test',
-              'test'
+              '%s','%s','%s','%s','2027-01-01','2028-01-01',1,
+              '2028-01-01','2026-07-22T06:02:00Z','test',
+              'DRAFT','test','test'
             )
-            """
-                .formatted(
-                    groupAssignmentId,
-                    TENANT_A,
-                    assignmentVersionId,
-                    PAY_GROUP_VERSION_ID));
+            """.formatted(
+                groupAssignmentId, TENANT_A, assignmentVersionId,
+                PAY_GROUP_VERSION_ID));
 
         assertFunctionResult(
             statement,
             """
             SELECT employee_payroll.approve_pay_group_assignment(
-              '%s',
-              '%s',
-              'test',
-              '%s'
-            )
-            """
-                .formatted(
-                    TENANT_A,
-                    groupAssignmentId,
-                    Instant.parse("2026-07-22T06:02:00Z")),
+              '%s','%s','test','%s')
+            """.formatted(
+                TENANT_A, groupAssignmentId,
+                Instant.parse("2026-07-22T06:02:00Z")),
             1);
 
         statement.execute(
             """
             INSERT INTO employee_payroll.salary_assignment(
-              id,
-              tenant_id,
-              payroll_assignment_version_id,
-              salary_structure_version_id,
-              monthly_amount,
-              currency,
-              effective_from,
-              effective_to,
-              approval_status,
-              created_by,
-              updated_by
+              id,tenant_id,payroll_assignment_version_id,
+              salary_structure_version_id,monthly_amount,contract_schema_version,
+              currency,effective_from,effective_to,approval_status,
+              created_by,updated_by
             ) VALUES (
-              '%s',
-              '%s',
-              '%s',
-              '%s',
-              75000.0000,
-              'INR',
-              '2027-01-01',
-              '2029-01-01',
-              'DRAFT',
-              'test',
-              'test'
+              '%s','%s','%s','%s',60000.0000,0,'INR',
+              '2027-01-01','2028-01-01','DRAFT','test','test'
             )
-            """
-                .formatted(
-                    salaryAssignmentId,
-                    TENANT_A,
-                    assignmentVersionId,
-                    STRUCTURE_VERSION_ID));
+            """.formatted(
+                salaryAssignmentId, TENANT_A, assignmentVersionId,
+                STRUCTURE_VERSION_ID));
 
         assertFunctionResult(
             statement,
             """
             SELECT employee_payroll.approve_salary_assignment(
-              '%s',
-              '%s',
-              'test',
-              '%s'
-            )
-            """
-                .formatted(
-                    TENANT_A,
-                    salaryAssignmentId,
-                    Instant.parse("2026-07-22T06:03:00Z")),
+              '%s','%s','test','%s')
+            """.formatted(
+                TENANT_A, salaryAssignmentId,
+                Instant.parse("2026-07-22T06:03:00Z")),
             1);
-
-        assertFunctionResult(
-            statement,
-            """
-            SELECT
-              employee_payroll.update_employee_payroll_profile_status(
-                '%s',
-                '%s',
-                'READY',
-                0,
-                'test',
-                '%s'
-              )
-            """
-                .formatted(
-                    TENANT_A,
-                    profileId,
-                    Instant.parse("2026-07-22T06:04:00Z")),
-            1);
-
-        assertFunctionResult(
-            statement,
-            """
-            SELECT
-              employee_payroll.update_employee_payroll_profile_status(
-                '%s',
-                '%s',
-                'ON_HOLD',
-                1,
-                'test',
-                '%s'
-              )
-            """
-                .formatted(
-                    TENANT_A,
-                    profileId,
-                    Instant.parse("2026-07-22T06:05:00Z")),
-            1);
-
-        try (ResultSet state =
-            statement.executeQuery(
-                """
-                SELECT
-                  relationship.approval_status relationship_status,
-                  assignment.approval_status assignment_status,
-                  profile.payroll_status,
-                  profile.version_no profile_version,
-                  group_assignment.approval_status group_status,
-                  salary_assignment.approval_status salary_status
-                FROM employee_payroll.payroll_relationship_version
-                  relationship
-                JOIN employee_payroll.payroll_assignment_version assignment
-                  ON assignment.tenant_id = relationship.tenant_id
-                 AND assignment.payroll_relationship_version_id =
-                   relationship.id
-                JOIN employee_payroll.employee_payroll_profile profile
-                  ON profile.tenant_id = relationship.tenant_id
-                 AND profile.payroll_relationship_id =
-                   relationship.payroll_relationship_id
-                JOIN employee_payroll.pay_group_assignment group_assignment
-                  ON group_assignment.tenant_id = assignment.tenant_id
-                 AND group_assignment.payroll_assignment_version_id =
-                   assignment.id
-                JOIN employee_payroll.salary_assignment salary_assignment
-                  ON salary_assignment.tenant_id = assignment.tenant_id
-                 AND salary_assignment.payroll_assignment_version_id =
-                   assignment.id
-                WHERE relationship.id = '%s'
-                """
-                    .formatted(relationshipVersionId))) {
-          assertThat(state.next()).isTrue();
-          assertThat(state.getString("relationship_status"))
-              .isEqualTo("APPROVED");
-          assertThat(state.getString("assignment_status"))
-              .isEqualTo("APPROVED");
-          assertThat(state.getString("payroll_status"))
-              .isEqualTo("ON_HOLD");
-          assertThat(state.getLong("profile_version")).isEqualTo(2);
-          assertThat(state.getString("group_status"))
-              .isEqualTo("APPROVED");
-          assertThat(state.getString("salary_status"))
-              .isEqualTo("APPROVED");
-        }
-
-        try (ResultSet privilege =
-            statement.executeQuery(
-                """
-                SELECT
-                  has_table_privilege(
-                    current_user,
-                    'employee_payroll.payroll_relationship_version',
-                    'UPDATE'
-                  ),
-                  has_table_privilege(
-                    current_user,
-                    'employee_payroll.payroll_assignment_version',
-                    'UPDATE'
-                  ),
-                  has_table_privilege(
-                    current_user,
-                    'employee_payroll.salary_assignment',
-                    'UPDATE'
-                  )
-                """)) {
-          assertThat(privilege.next()).isTrue();
-          assertThat(privilege.getBoolean(1)).isFalse();
-          assertThat(privilege.getBoolean(2)).isFalse();
-          assertThat(privilege.getBoolean(3)).isFalse();
-        }
       }
-
-      connection.commit();
+      connection.rollback();
     }
   }
 

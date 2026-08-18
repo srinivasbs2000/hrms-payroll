@@ -55,7 +55,7 @@ public class PayGroupAssignmentService {
         () -> {
           PayGroupAssignmentView created =
               repository.createPayGroupAssignment(
-                  request, null, actor.require());
+                  request, null, actor.require(), clock.instant());
           record("CREATED", created, null);
           return created;
         });
@@ -83,7 +83,7 @@ public class PayGroupAssignmentService {
           }
           PayGroupAssignmentView corrected =
               repository.createPayGroupAssignment(
-                  request, assignmentId, actor.require());
+                  request, assignmentId, actor.require(), clock.instant());
           record("CORRECTED", corrected, previous);
           return corrected;
         });
@@ -182,6 +182,8 @@ public class PayGroupAssignmentService {
     state.put("payGroupVersionId", view.payGroupVersionId());
     state.put("effectiveFrom", view.effectiveFrom());
     state.put("effectiveTo", view.effectiveTo());
+    state.put("impactAssessmentThrough", view.impactAssessmentThrough());
+    state.put("impactedPeriodCount", view.impactedPeriodCount());
     state.put("approvalStatus", view.approvalStatus());
     state.put("supersedesAssignmentId", view.supersedesAssignmentId());
     return state;

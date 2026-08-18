@@ -183,7 +183,11 @@ public class SalaryAssignmentService {
         "salaryStructureVersionId",
         view.salaryStructureVersionId());
     state.put("monthlyAmount", view.monthlyAmount());
+    state.put("targetType", view.targetType());
+    state.put("targetValue", view.targetValue());
+    state.put("targetFrequency", view.targetFrequency());
     state.put("currency", view.currency());
+    state.put("sourceCompensationEventId", view.sourceCompensationEventId());
     state.put("effectiveFrom", view.effectiveFrom());
     state.put("effectiveTo", view.effectiveTo());
     state.put("approvalStatus", view.approvalStatus());

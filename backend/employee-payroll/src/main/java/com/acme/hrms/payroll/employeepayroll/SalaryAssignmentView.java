@@ -9,10 +9,25 @@ public record SalaryAssignmentView(
     UUID payrollAssignmentVersionId,
     UUID salaryStructureVersionId,
     BigDecimal monthlyAmount,
+    String targetType,
+    BigDecimal targetValue,
+    String targetFrequency,
     String currency,
+    UUID sourceCompensationEventId,
     LocalDate effectiveFrom,
     LocalDate effectiveTo,
     String approvalStatus,
     UUID supersedesAssignmentId,
     boolean superseded,
-    long versionNo) {}
+    long versionNo) {
+
+  public SalaryAssignmentView(
+      UUID id, UUID payrollAssignmentVersionId, UUID salaryStructureVersionId,
+      BigDecimal monthlyAmount, String currency, LocalDate effectiveFrom,
+      LocalDate effectiveTo, String approvalStatus, UUID supersedesAssignmentId,
+      boolean superseded, long versionNo) {
+    this(id, payrollAssignmentVersionId, salaryStructureVersionId, monthlyAmount,
+        null, null, null, currency, null, effectiveFrom, effectiveTo,
+        approvalStatus, supersedesAssignmentId, superseded, versionNo);
+  }
+}

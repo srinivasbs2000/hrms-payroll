@@ -1751,6 +1751,32 @@ paths:
     $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentEndDate'
   /salary-assignments/{assignmentId}/audit:
     $ref: './employee-payroll-openapi-v1.yaml#/pathItems/SalaryAssignmentAudit'
+  /pay-group-assignments/{id}/impact:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/PayGroupAssignmentImpact'
+  /compensation-changes:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/CompensationChangeCollection'
+  /compensation-changes/{id}/impact-assessment:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/CompensationChangeAssessment'
+  /compensation-changes/{id}/impact:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/CompensationChangeImpact'
+  /compensation-changes/{id}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/CompensationChangeApproval'
+  /compensation-changes/{id}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/CompensationChangeAudit'
+  /employee-component-overrides:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/ComponentOverrideCollection'
+  /employee-component-overrides/{id}/corrections:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/ComponentOverrideCorrection'
+  /employee-component-overrides/{id}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/ComponentOverrideApproval'
+  /employee-component-overrides/{id}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/ComponentOverrideAudit'
+  /payroll-lifecycle-lineage:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/LifecycleLineageCollection'
+  /payroll-lifecycle-lineage/{id}/approval:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/LifecycleLineageApproval'
+  /payroll-lifecycle-lineage/{id}/audit:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/LifecycleLineageAudit'
   /payroll-cycles:
     $ref: './payroll-operations-openapi-v1.yaml#/pathItems/PayrollCycleCollection'
   /payroll-cycles/{cycleId}:

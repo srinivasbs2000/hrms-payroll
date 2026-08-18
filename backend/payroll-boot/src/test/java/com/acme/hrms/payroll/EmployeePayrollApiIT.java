@@ -169,10 +169,12 @@ class EmployeePayrollApiIT {
           "externalEmployeeId":"EMP-EXT-001",
           "employeeNumber":"EMP-001",
           "legalEntityVersionId":"%s",
+          "payrollStatutoryUnitVersionId":"%s",
+          "aggregationBoundaryKey":"INDIVIDUAL_RELATIONSHIP",
           "relationshipStart":"2026-01-01",
           "relationshipEnd":"2029-01-01"
         }
-        """.formatted(LEGAL_VERSION_ID);
+        """.formatted(LEGAL_VERSION_ID, PSU_VERSION_ID);
 
     MvcResult relationshipCreated = mvc.perform(
             post("/api/v1/payroll-relationships")
@@ -215,6 +217,10 @@ class EmployeePayrollApiIT {
           "assignmentNumber":"ASN-001",
           "payrollRelationshipVersionId":"%s",
           "establishmentVersionId":"%s",
+          "sourceWorkAssignmentRef":"WORK-ASN-001",
+          "payrollRole":"PRIMARY",
+          "payrollEligibilityFrom":"2026-01-01",
+          "payrollEligibilityTo":"2029-01-01",
           "assignmentStart":"2026-01-01",
           "assignmentEnd":"2029-01-01"
         }
@@ -271,7 +277,8 @@ class EmployeePayrollApiIT {
                       "payrollAssignmentVersionId":"%s",
                       "payGroupVersionId":"%s",
                       "effectiveFrom":"2026-01-01",
-                      "effectiveTo":"2029-01-01"
+                      "effectiveTo":"2029-01-01",
+                      "impactAssessmentThrough":"2029-01-01"
                     }
                     """.formatted(
                         assignmentVersionId,
@@ -283,6 +290,125 @@ class EmployeePayrollApiIT {
         groupAssignmentCreated.getResponse().getContentAsString())
         .get("id").asText();
     approvePayGroupAssignment(groupAssignmentId);
+
+    MvcResult compensationChangeCreated = mvc.perform(
+            post("/api/v1/compensation-changes")
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.compensation-change.create"))
+                .header("Idempotency-Key", "comp-change-create-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "payrollAssignmentId":"%s",
+                      "eventType":"CURRENT_PERIOD",
+                      "effectiveDate":"2026-01-01",
+                      "reason":"Annual compensation review"
+                    }
+                    """.formatted(assignmentId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.approvalStatus").value("DRAFT"))
+        .andReturn();
+    String compensationChangeId = objectMapper.readTree(
+        compensationChangeCreated.getResponse().getContentAsString())
+        .get("id").asText();
+
+    mvc.perform(post("/api/v1/compensation-changes/{id}/impact-assessment",
+                compensationChangeId)
+            .with(token(
+                TENANT_A,
+                "employee-payroll.compensation-change.assess"))
+            .header("Idempotency-Key", "comp-change-assess-0001")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"assessmentThrough\":\"2029-01-01\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.impactAssessedAt").exists());
+
+    mvc.perform(post("/api/v1/compensation-changes/{id}/approval",
+                compensationChangeId)
+            .with(token(
+                TENANT_A,
+                "employee-payroll.compensation-change.approve"))
+            .header("Idempotency-Key", "comp-change-approve-0001"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.approvalStatus").value("APPROVED"));
+
+    mvc.perform(get("/api/v1/compensation-changes/{id}/impact",
+                compensationChangeId)
+            .with(token(
+                TENANT_A,
+                "employee-payroll.compensation-change.read")))
+        .andExpect(status().isOk());
+
+    MvcResult secondaryAssignmentCreated = mvc.perform(
+            post("/api/v1/payroll-assignments")
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.assignment.create"))
+                .header("Idempotency-Key", "assignment-create-secondary-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "payrollRelationshipId":"%s",
+                      "assignmentNumber":"ASN-002",
+                      "payrollRelationshipVersionId":"%s",
+                      "establishmentVersionId":"%s",
+                      "sourceWorkAssignmentRef":"WORK-ASN-002",
+                      "payrollRole":"SECONDARY",
+                      "payrollEligibilityFrom":"2026-01-01",
+                      "payrollEligibilityTo":"2029-01-01",
+                      "assignmentStart":"2026-01-01",
+                      "assignmentEnd":"2029-01-01"
+                    }
+                    """.formatted(
+                        relationshipId,
+                        relationshipVersionId,
+                        ESTABLISHMENT_VERSION_ID)))
+        .andExpect(status().isCreated())
+        .andReturn();
+    JsonNode secondaryAssignment = objectMapper.readTree(
+        secondaryAssignmentCreated.getResponse().getContentAsString());
+    String secondaryAssignmentId = secondaryAssignment.get("identityId").asText();
+    String secondaryAssignmentVersionId = secondaryAssignment.get("versionId").asText();
+    approveAssignment(secondaryAssignmentId, secondaryAssignmentVersionId);
+
+    MvcResult lineageCreated = mvc.perform(
+            post("/api/v1/payroll-lifecycle-lineage")
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.lifecycle-lineage.create"))
+                .header("Idempotency-Key", "lineage-create-0001")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "eventType":"CONCURRENT_ASSIGNMENT",
+                      "relationshipDecision":"CONTINUE",
+                      "predecessorRelationshipId":"%s",
+                      "successorRelationshipId":"%s",
+                      "predecessorAssignmentId":"%s",
+                      "successorAssignmentId":"%s",
+                      "effectiveDate":"2026-01-01",
+                      "reason":"Approved concurrent assignment"
+                    }
+                    """.formatted(
+                        relationshipId,
+                        relationshipId,
+                        assignmentId,
+                        secondaryAssignmentId)))
+        .andExpect(status().isCreated())
+        .andReturn();
+    String lineageId = objectMapper.readTree(
+        lineageCreated.getResponse().getContentAsString()).get("id").asText();
+    mvc.perform(post("/api/v1/payroll-lifecycle-lineage/{id}/approval", lineageId)
+            .with(token(
+                TENANT_A,
+                "employee-payroll.lifecycle-lineage.approve"))
+            .header("Idempotency-Key", "lineage-approve-0001"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.approvalStatus").value("APPROVED"));
 
     MvcResult salaryAssignmentCreated = mvc.perform(
             post("/api/v1/salary-assignments")
@@ -496,13 +622,16 @@ class EmployeePayrollApiIT {
           "externalEmployeeId":"%s",
           "employeeNumber":"%s",
           "legalEntityVersionId":"%s",
+          "payrollStatutoryUnitVersionId":"%s",
+          "aggregationBoundaryKey":"INDIVIDUAL_RELATIONSHIP",
           "relationshipStart":"2026-01-01",
           "relationshipEnd":"2029-01-01"
         }
         """.formatted(
             externalEmployeeId,
             employeeNumber,
-            LEGAL_VERSION_ID);
+            LEGAL_VERSION_ID,
+            PSU_VERSION_ID);
   }
 
   private static void seedOrganisation(Statement statement)

@@ -20,6 +20,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -35,6 +36,10 @@ public class EmployeePayrollRepository {
              version.version_sequence,
              version.version_no,
              version.legal_entity_version_id,
+             version.payroll_statutory_unit_version_id,
+             version.aggregation_boundary_key,
+             legal.country_code,
+             legal.currency::text employer_currency,
              version.relationship_start,
              version.relationship_end,
              version.approval_status,
@@ -49,6 +54,9 @@ public class EmployeePayrollRepository {
       join employee_payroll.payroll_relationship_version version
         on version.tenant_id = identity.tenant_id
        and version.payroll_relationship_id = identity.id
+      join organisation.legal_entity_version legal
+        on legal.tenant_id = version.tenant_id
+       and legal.id = version.legal_entity_version_id
       """;
 
   private static final String ASSIGNMENT_SELECT = """
@@ -56,11 +64,15 @@ public class EmployeePayrollRepository {
              identity.payroll_relationship_id,
              identity.assignment_number,
              identity.status identity_status,
+             identity.source_work_assignment_ref,
              version.id version_id,
              version.version_sequence,
              version.version_no,
              version.payroll_relationship_version_id,
              version.establishment_version_id,
+             version.payroll_role,
+             version.payroll_eligibility_from,
+             version.payroll_eligibility_to,
              version.assignment_start,
              version.assignment_end,
              version.approval_status,
@@ -96,6 +108,11 @@ public class EmployeePayrollRepository {
              assignment.pay_group_version_id,
              assignment.effective_from,
              assignment.effective_to,
+             assignment.impact_assessment_through,
+             (select count(*)
+                from employee_payroll.pay_group_assignment_impact_period impact
+               where impact.tenant_id=assignment.tenant_id
+                 and impact.pay_group_assignment_id=assignment.id) impacted_period_count,
              assignment.approval_status,
              assignment.supersedes_assignment_id,
              exists (
@@ -113,7 +130,11 @@ public class EmployeePayrollRepository {
              assignment.payroll_assignment_version_id,
              assignment.salary_structure_version_id,
              assignment.monthly_amount,
+             assignment.target_type,
+             assignment.target_value,
+             assignment.target_frequency,
              assignment.currency::text currency,
+             assignment.source_compensation_event_id,
              assignment.effective_from,
              assignment.effective_to,
              assignment.approval_status,
@@ -276,13 +297,14 @@ public class EmployeePayrollRepository {
         """
         insert into employee_payroll.payroll_assignment(
           id,tenant_id,payroll_relationship_id,assignment_number,
-          created_by,updated_by
-        ) values (?,?,?,?,?,?)
+          source_work_assignment_ref,created_by,updated_by
+        ) values (?,?,?,?,?,?,?)
         """,
         identityId,
         TenantContext.require(),
         request.payrollRelationshipId(),
         request.assignmentNumber(),
+        request.sourceWorkAssignmentRef(),
         actor,
         actor);
     insertAssignmentVersion(versionId, identityId, 1, null, request, actor);
@@ -293,8 +315,10 @@ public class EmployeePayrollRepository {
       UUID identityId,
       PayrollAssignmentWriteRequest request,
       UUID supersedesVersionId,
-      String actor) {
+      String actor,
+      Instant changedAt) {
     ensureAssignment(identityId);
+    bindOrValidateSourceWorkAssignment(identityId, request, actor, changedAt);
     int sequence = nextSequence(
         "employee_payroll.payroll_assignment_version",
         "payroll_assignment_id",
@@ -497,15 +521,17 @@ public class EmployeePayrollRepository {
   public PayGroupAssignmentView createPayGroupAssignment(
       PayGroupAssignmentWriteRequest request,
       UUID supersedesAssignmentId,
-      String actor) {
+      String actor,
+      Instant changedAt) {
     UUID id = UUID.randomUUID();
     jdbc.update(
         """
         insert into employee_payroll.pay_group_assignment(
           id,tenant_id,payroll_assignment_version_id,pay_group_version_id,
-          effective_from,effective_to,approval_status,
-          supersedes_assignment_id,created_by,updated_by
-        ) values (?,?,?,?,?,?,'DRAFT',?,?,?)
+          effective_from,effective_to,contract_schema_version,
+          impact_assessment_through,impact_assessed_at,impact_assessed_by,
+          approval_status,supersedes_assignment_id,created_by,updated_by
+        ) values (?,?,?,?,?,?,?,?,?,?, 'DRAFT',?,?,?)
         """,
         id,
         TenantContext.require(),
@@ -513,6 +539,10 @@ public class EmployeePayrollRepository {
         request.payGroupVersionId(),
         request.effectiveFrom(),
         request.effectiveTo(),
+        request.completeImpactContract() ? 1 : 0,
+        request.impactAssessmentThrough(),
+        request.completeImpactContract() ? Timestamp.from(changedAt) : null,
+        request.completeImpactContract() ? actor : null,
         supersedesAssignmentId,
         actor,
         actor);
@@ -587,17 +617,23 @@ public class EmployeePayrollRepository {
         """
         insert into employee_payroll.salary_assignment(
           id,tenant_id,payroll_assignment_version_id,
-          salary_structure_version_id,monthly_amount,currency,
-          effective_from,effective_to,approval_status,
-          supersedes_assignment_id,created_by,updated_by
-        ) values (?,?,?,?,?,?,?,?,'DRAFT',?,?,?)
+          salary_structure_version_id,monthly_amount,contract_schema_version,
+          target_type,target_value,target_frequency,currency,
+          source_compensation_event_id,effective_from,effective_to,
+          approval_status,supersedes_assignment_id,created_by,updated_by
+        ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,'DRAFT',?,?,?)
         """,
         id,
         TenantContext.require(),
         request.payrollAssignmentVersionId(),
         request.salaryStructureVersionId(),
         request.monthlyAmount(),
+        request.targetContract() ? 1 : 0,
+        request.targetType(),
+        request.targetValue(),
+        request.targetFrequency(),
         request.resolvedCurrency(),
+        request.sourceCompensationEventId(),
         request.effectiveFrom(),
         request.effectiveTo(),
         supersedesAssignmentId,
@@ -676,14 +712,19 @@ public class EmployeePayrollRepository {
         """
         insert into employee_payroll.payroll_relationship_version(
           id,tenant_id,payroll_relationship_id,legal_entity_version_id,
-          version_sequence,relationship_start,relationship_end,
-          approval_status,supersedes_version_id,created_by,updated_by
-        ) values (?,?,?,?,?,?,?,'DRAFT',?,?,?)
+          boundary_schema_version,payroll_statutory_unit_version_id,
+          aggregation_boundary_key,version_sequence,relationship_start,
+          relationship_end,approval_status,supersedes_version_id,
+          created_by,updated_by
+        ) values (?,?,?,?,?,?,?,?,?,?,'DRAFT',?,?,?)
         """,
         versionId,
         TenantContext.require(),
         identityId,
         request.legalEntityVersionId(),
+        request.completeBoundary() ? 1 : 0,
+        request.payrollStatutoryUnitVersionId(),
+        request.aggregationBoundaryKey(),
         sequence,
         request.relationshipStart(),
         request.relationshipEnd(),
@@ -704,21 +745,52 @@ public class EmployeePayrollRepository {
         insert into employee_payroll.payroll_assignment_version(
           id,tenant_id,payroll_assignment_id,
           payroll_relationship_version_id,establishment_version_id,
-          version_sequence,assignment_start,assignment_end,
+          binding_schema_version,payroll_role,payroll_eligibility_from,
+          payroll_eligibility_to,version_sequence,assignment_start,assignment_end,
           approval_status,supersedes_version_id,created_by,updated_by
-        ) values (?,?,?,?,?,?,?,?,'DRAFT',?,?,?)
+        ) values (?,?,?,?,?,?,?,?,?,?,?,?,'DRAFT',?,?,?)
         """,
         versionId,
         TenantContext.require(),
         identityId,
         request.payrollRelationshipVersionId(),
         request.establishmentVersionId(),
+        request.completeBinding() ? 1 : 0,
+        request.payrollRole(),
+        request.payrollEligibilityFrom(),
+        request.payrollEligibilityTo(),
         sequence,
         request.assignmentStart(),
         request.assignmentEnd(),
         supersedesVersionId,
         actor,
         actor);
+  }
+
+  private void bindOrValidateSourceWorkAssignment(
+      UUID identityId, PayrollAssignmentWriteRequest request, String actor,
+      Instant changedAt) {
+    if (!request.completeBinding()) {
+      return;
+    }
+    Map<String, Object> identity = jdbc.queryForMap(
+        "select source_work_assignment_ref,version_no from "
+            + "employee_payroll.payroll_assignment where tenant_id=? and id=?",
+        TenantContext.require(), identityId);
+    String current = (String) identity.get("source_work_assignment_ref");
+    if (current == null) {
+      requireOne(
+          jdbc.queryForObject(
+              "select employee_payroll.bind_payroll_assignment_source_ref(?,?,?,?,?,?)",
+              Long.class,
+              TenantContext.require(), identityId, request.sourceWorkAssignmentRef(),
+              ((Number) identity.get("version_no")).longValue(), actor,
+              Timestamp.from(changedAt)),
+          "Payroll assignment source-work reference could not be bound");
+    } else if (!current.equals(request.sourceWorkAssignmentRef())) {
+      throw new ConflictException(
+          "Payroll assignment source-work reference is immutable once bound");
+    }
   }
 
   private int nextSequence(
@@ -778,6 +850,10 @@ public class EmployeePayrollRepository {
         result.getInt("version_sequence"),
         result.getLong("version_no"),
         result.getObject("legal_entity_version_id", UUID.class),
+        result.getObject("payroll_statutory_unit_version_id", UUID.class),
+        result.getString("aggregation_boundary_key"),
+        result.getString("country_code"),
+        result.getString("employer_currency"),
         result.getObject("relationship_start", LocalDate.class),
         result.getObject("relationship_end", LocalDate.class),
         result.getString("approval_status"),
@@ -792,11 +868,15 @@ public class EmployeePayrollRepository {
         result.getObject("payroll_relationship_id", UUID.class),
         result.getString("assignment_number"),
         result.getString("identity_status"),
+        result.getString("source_work_assignment_ref"),
         result.getObject("version_id", UUID.class),
         result.getInt("version_sequence"),
         result.getLong("version_no"),
         result.getObject("payroll_relationship_version_id", UUID.class),
         result.getObject("establishment_version_id", UUID.class),
+        result.getString("payroll_role"),
+        result.getObject("payroll_eligibility_from", LocalDate.class),
+        result.getObject("payroll_eligibility_to", LocalDate.class),
         result.getObject("assignment_start", LocalDate.class),
         result.getObject("assignment_end", LocalDate.class),
         result.getString("approval_status"),
@@ -823,6 +903,8 @@ public class EmployeePayrollRepository {
         result.getObject("pay_group_version_id", UUID.class),
         result.getObject("effective_from", LocalDate.class),
         result.getObject("effective_to", LocalDate.class),
+        result.getObject("impact_assessment_through", LocalDate.class),
+        result.getInt("impacted_period_count"),
         result.getString("approval_status"),
         result.getObject("supersedes_assignment_id", UUID.class),
         result.getBoolean("superseded"),
@@ -836,7 +918,11 @@ public class EmployeePayrollRepository {
         result.getObject("payroll_assignment_version_id", UUID.class),
         result.getObject("salary_structure_version_id", UUID.class),
         result.getBigDecimal("monthly_amount"),
+        result.getString("target_type"),
+        result.getBigDecimal("target_value"),
+        result.getString("target_frequency"),
         result.getString("currency"),
+        result.getObject("source_compensation_event_id", UUID.class),
         result.getObject("effective_from", LocalDate.class),
         result.getObject("effective_to", LocalDate.class),
         result.getString("approval_status"),

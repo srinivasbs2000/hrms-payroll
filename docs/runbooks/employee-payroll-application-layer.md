@@ -69,3 +69,22 @@ Then verify formatting and scope:
 git diff --check
 git status --short --untracked-files=all
 ```
+
+<!-- P5-EPA-01-G02A -->
+## P5-EPA-01 G02A aggregates and invariants
+
+V050 preserves every existing relationship, assignment, pay-group and salary
+assignment UUID. Legacy rows remain schema 0 with no guessed PSU, aggregation,
+work-assignment or compensation-target facts. New authoritative approvals require
+the complete schema-1 binding contract.
+
+The employee-payroll module additionally owns append-only compensation-change
+impact evidence, employee component overrides and lifecycle-lineage records.
+Compensation remains the authority for salary structures, structure lines and pay
+components; employee-payroll references their exact approved public identities
+and does not mutate compensation configuration. V038 remains the pay-group
+routing/compatibility authority.
+
+Repository mutations that bind a stable source work-assignment reference or
+record impact evidence receive the application Clock timestamp explicitly. No
+new server-time dependency is introduced into domain decisions.
