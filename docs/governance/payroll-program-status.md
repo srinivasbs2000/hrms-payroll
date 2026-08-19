@@ -9,12 +9,12 @@
 **Latest merged quality increment:** P5-EPA-01 backend product hosted 7/7 GREEN; runtime hardening PR #84 merged; UI selector PR #20 5/5 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** NONE — P5-EIP-01 G01 is read-only; product writes are not authorized
-**Migration state:** V001–V050 committed and immutable; V051 unreserved
-**Next migration:** V051 unreserved
+**Active product write owner:** P5-EIP-01 G02 — exact backend/UI allow-list in active scope authority
+**Migration state:** V001–V050 committed and immutable; V051 reserved exclusively to P5-EIP-01 G02
+**Next migration:** V051 reserved — P5-EIP-01 only
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 19 August 2026 at P5-EIP-01 fresh-R3 activation
-**Current execution capability:** P5-EIP-01 G01 — Employee Identity, Bank & Payment Readiness architecture/schema/API/UI verdict
+**Last reconciled:** 19 August 2026 at P5-EIP-01 G01 architecture/schema/API/UI verdict
+**Current execution capability:** P5-EIP-01 G02A — Employee Identity, Bank & Payment Readiness backend/database/contracts implementation
 **Active capability scope authority:** `docs/planning/pln-01/p5-eip-01-employee-identity-bank-payment-readiness-scope.md`
 **Latest closed capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
@@ -54,7 +54,7 @@ Canonical story boundary:
 
 Activation changes no canonical story status or program total. All four selected stories remain NOT EVIDENCED and are REQUIRED_PRODUCT_UI.
 
-G01 is read-only. V001-V050 remain immutable, V051 remains unreserved, and no backend/UI product write owner is assigned during G01. Statutory memberships, tax/declarations, onboarding/broad readiness, holds, complete employee snapshots, E06 calculation and payment execution remain excluded.
+G01 is CLOSED after this verdict authority merges. The verdict is **ADDITIVE V051 REQUIRED**. V001–V050 remain immutable; V051 is reserved exclusively to P5-EIP-01 G02. G02A owns only the exact backend/program allow-list in the active scope authority; G02B owns only the exact UI allow-list. Statutory memberships, tax/declarations, onboarding/broad readiness, generic payroll holds, complete employee snapshots, E06 calculation and payment execution remain excluded.
 
 ## Latest closed capability — P5-EPA-01
 
