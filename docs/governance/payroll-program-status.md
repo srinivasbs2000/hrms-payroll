@@ -3,19 +3,19 @@
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
-**Product reconciliation baseline:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
+**Product reconciliation baseline:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
-**Latest merged product increment:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
-**Latest merged quality increment:** P5-SSC-01 backend exact seven hosted checks GREEN; UI exact five hosted checks GREEN including cross-repository browser E2E against backend `969be73f971207e09541f1a6cfef7319ac2d8621`
+**Latest merged product increment:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
+**Latest merged quality increment:** P5-EPA-01 backend product hosted 7/7 GREEN; runtime hardening PR #84 merged; UI selector PR #20 5/5 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** P5-EPA-01 G02 — exact G01-authorized backend/UI product paths only
-**Migration state:** V001–V049 committed and immutable; V050 reserved exclusively to P5-EPA-01 G02
-**Next migration:** V050 reserved exclusively to P5-EPA-01; no other capability may use it
+**Active product write owner:** NONE
+**Migration state:** V001–V050 committed and immutable; V051 unreserved
+**Next migration:** V051 unreserved
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 17 August 2026 at P5-EPA-01 G01 architecture/schema verdict and G02 implementation authorization
-**Current execution capability:** P5-EPA-01 G02 — Employee Payroll Assignment & Compensation Binding Completion implementation
-**Active capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
+**Last reconciled:** 19 August 2026 at P5-EPA-01 post-merge G02C reconciliation
+**Current execution capability:** NONE — fresh R3 next-capability selection required
+**Latest closed capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -40,12 +40,11 @@ Validate this checkpoint against:
 Conversation history and thread names are locators only. They are not the
 project-status authority.
 
-## Active capability — P5-EPA-01
+## Latest closed capability — P5-EPA-01
 
-Fresh post-P5-SSC R3 selects **P5-EPA-01 — Employee Payroll Assignment &
-Compensation Binding Completion**.
+P5-EPA-01 — Employee Payroll Assignment & Compensation Binding Completion is CLOSED after merged backend/UI product evidence and G02C reconciliation.
 
-Canonical story boundary:
+Canonical closure boundary:
 
 - `PLN-E05-001`;
 - `PLN-E05-002`;
@@ -55,26 +54,15 @@ Canonical story boundary:
 - `PLN-E05-010`;
 - `PLN-E05-018`.
 
-Activation changes no canonical story status. All seven selected stories require
-product UI evidence.
+All seven selected stories are IMPLEMENTED with HIGH confidence. The broader E05 epic remains PARTIALLY IMPLEMENTED because the explicitly excluded onboarding/readiness, identifier, banking/payment, statutory, tax/declaration, hold, snapshot and broad-workbench stories remain open.
 
-G01 is closed: the inherited V021/V022 identity/version model is retained, V038
-explicit pay-group routing/compatibility is reused, and completed E04 target/
-override authority is consumed rather than duplicated. Additive V050 is required
-and is reserved exclusively to P5-EPA-01 G02. Exact product-path ownership is
-defined in the active scope authority.
+Backend product PR #83 merged at `847adab127dcbca3431f9f0af4f35ce46ab55285`; backend runtime hardening PR #84 merged at `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`; UI selector PR #20 merged at `c81d351dda6607030a22c3d8afa1514ba17f75f0`; UI product PR #19 merged at `9dbf0d2f700764e2fe577f89142cd6784028f70c`.
 
-Bank/payment readiness, payroll identifiers, PF/ESI/NPS, generic statutory
-memberships, tax/declarations, broad readiness, holds, complete employee
-snapshots and E06 calculation execution remain outside this capability.
-
-### P5-EPA-01 G01 verdict
-
-G01 independently verified backend main `6e29c564f20694c1855972b426fb18accb0631ab` and UI main `f2d7d1ac1e96cf154b624cf583681c6b751b5219`. V050 is an additive employee-payroll completion migration; V001-V049 remain immutable. Country/currency remain organisation-derived, pay-group routing remains V038-owned, employee overrides reuse E04 line override policy, and no retro/tax/statutory/payment/accounting execution is activated.
+V050 is committed and immutable. V051 is unreserved. No product write owner remains and no next capability is activated by this closure.
 
 ## 2. Latest completed milestone
 
-P5-SSC-01 delivered Salary Structure Composition, Target & Control Completion through backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621` and UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`, with exact hosted backend 7/7 and UI 5/5 checks GREEN including cross-repository browser E2E against backend `969be73f971207e09541f1a6cfef7319ac2d8621`. All eleven canonical E04 business stories are IMPLEMENTED; V001-V049 are immutable; V050 is unreserved; no product write owner remains.
+P5-EPA-01 delivered Employee Payroll Assignment & Compensation Binding Completion through backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285` and UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`, with backend hosted 7/7 GREEN and final UI hosted 5/5 GREEN including cross-repository browser E2E. Runtime hardening PR #84 / `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7` and UI selector PR #20 / `c81d351dda6607030a22c3d8afa1514ba17f75f0` are merged quality increments. The seven selected E05 stories are IMPLEMENTED; V001-V050 are immutable; V051 is unreserved; no product write owner remains.
 
 ### Previous completed milestone — P5-A4
 
@@ -219,9 +207,9 @@ The approved program contains 450 detailed source-linked stories:
 
 | Status | Stories | Percentage |
 |---|---:|---:|
-| Implemented | 51 | 11.33% |
-| Partially implemented | 132 | 29.33% |
-| Not evidenced | 77 | 17.11% |
+| Implemented | 58 | 12.89% |
+| Partially implemented | 127 | 28.22% |
+| Not evidenced | 75 | 16.67% |
 | Not started | 159 | 35.33% |
 | Legal/domain revalidation | 31 | 6.89% |
 | **Total** | **450** | **100%** |
@@ -304,7 +292,7 @@ changes story completion classification; it does not roll back backend code.
 | Completed execution increment | Primary original package mapping |
 |---|---|
 | Current P5-A1 — organisation hierarchy closure | Original P5-A1 |
-| Current P5-A2 — component catalogue and named bases | Primarily original P5-B1, plus selected P5-B3 lifecycle/workbench controls |
+| Current P5-A2 — component catalogue and named payroll bases | Primarily original P5-B1, plus selected P5-B3 lifecycle/workbench controls |
 | Current P5-A3 — salary structure, CTC, eligibility and simulation | Primarily original P5-B4, P5-B5 and selected P5-B6 controls |
 | P5-JRF-01 — jurisdiction and registration foundations | Original P5-A2 |
 | P5-FBA-01 — employer banking and authorised-signatory authority | Original P5-A3 (bank/signatory slice) |
@@ -785,3 +773,14 @@ The next controlled action is G01 read-only artifact/contract/schema preflight.
 ## P5-SSC-01 post-merge program closure
 
 P5-SSC-01 is CLOSED through backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621` and UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`. The seven residual canonical E04 business stories are promoted to IMPLEMENTED; all eleven canonical E04 stories are now IMPLEMENTED. E04-012..017 are closed technical capability controls without changing the canonical 450-row cardinality. V001-V049 are immutable, V050 is unreserved, and no product write owner remains. Next action is a fresh R3 selection of the next payroll business capability; this closure does not itself activate that capability.
+
+<!-- P5-EPA-01-PROGRAM-CLOSURE -->
+## P5-EPA-01 post-merge program closure
+
+P5-EPA-01 is CLOSED through backend product PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285` and UI product PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`. Backend runtime hardening PR #84 / `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7` and UI selector hardening PR #20 / `c81d351dda6607030a22c3d8afa1514ba17f75f0` are separately merged quality increments.
+
+The canonical story ledger promotes only `PLN-E05-001`, `002`, `007`, `008`, `009`, `010` and `018` to IMPLEMENTED. The broader E05 epic remains PARTIALLY IMPLEMENTED because excluded E05 stories remain open. The reconciled 450-story totals are **58 IMPLEMENTED / 127 PARTIALLY IMPLEMENTED / 75 NOT EVIDENCED / 159 NOT STARTED / 31 LEGAL/DOMAIN REVALIDATION = 450**.
+
+Backend hosted run `32126631284` passed all seven required checks. Final UI hosted run `32241925335` passed all five required checks, including cross-repository browser E2E. Local integrated G02B closure v1.2 passed 144/144 frontend tests, lint/build and 16 passed / 2 skipped real-backend browser E2E.
+
+V001-V050 are immutable. V051 is unreserved. P5-EPA-01 retains no backend or UI product write ownership. No next capability is activated by this closure; continuation requires fresh repository/live-GitHub R3 reconciliation and separately governed selection/activation.

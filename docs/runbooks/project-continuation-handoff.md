@@ -1,20 +1,20 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 17 August 2026 at P5-EPA-01 G01 verdict / G02 implementation authorization
+**Updated:** 19 August 2026 at P5-EPA-01 post-merge G02C reconciliation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
-**Product reconciliation baseline:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
+**Product reconciliation baseline:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
+**Latest merged product increment:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
-**Latest merged quality increment:** P5-SSC-01 backend exact seven hosted checks GREEN; UI exact five hosted checks GREEN including cross-repository browser E2E against backend `969be73f971207e09541f1a6cfef7319ac2d8621`
-**Active capability:** P5-EPA-01 G02 — Employee Payroll Assignment & Compensation Binding Completion implementation
-**Current state:** P5-EPA-01 activation PR #81 merged; G01 closed; G02 implementation authorized after this authority merges
-**Migrations:** V001–V049 committed and immutable; V050 reserved exclusively to P5-EPA-01 G02
-**Next migration:** V050 reserved exclusively to P5-EPA-01
+**Latest merged quality increment:** P5-EPA-01 backend 7/7 GREEN; backend runtime hardening PR #84 merged; UI selector PR #20 5/5 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
+**Active capability:** NONE — fresh R3 selection required
+**Current state:** P5-EPA-01 product merged, hosted evidence GREEN and G02C story/governance reconciliation prepared for closure
+**Migrations:** V001–V050 committed and immutable
+**Next migration:** V051 unreserved
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | P5-EPA-01 G02 exact G01-authorized backend/UI paths |
+| Active write owner | NONE |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | Exact backend/UI allow-list in the P5-EPA-01 scope authority |
-| Migration state | V001–V049 immutable; V050 reserved exclusively to P5-EPA-01 G02 |
-| Next migration | V050 reserved exclusively to P5-EPA-01 |
+| Active path ownership | NONE |
+| Migration state | V001–V050 immutable |
+| Next migration | V051 unreserved |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -77,9 +77,9 @@ and E06 calculation execution.
 
 The 450 detailed stories reconcile to:
 
-- 51 implemented;
-- 132 partially implemented;
-- 77 not evidenced;
+- 58 implemented;
+- 127 partially implemented;
+- 75 not evidenced;
 - 159 not started;
 - 31 requiring legal/domain revalidation.
 
@@ -157,17 +157,9 @@ After this status-closure PR merges:
 
 ## Exact next controlled action
 
-After G06 governance reconciliation merges, do **not** activate P5-A5/E03.
+P5-EPA-01 closes with no active product owner and V051 unreserved. Do not reopen G02A/G02B and do not activate another capability from this closure.
 
-Perform an independent contract audit and create a separately bounded
-`P5-E2E-UI-01-B02` activation authority for the demonstrated remaining
-Calendar & Pay Groups end-to-end boundaries. At minimum, the audit must resolve
-the missing milestone-rule configuration write contract and holiday/working-day
-configuration write contract, and determine the smallest backend/UI authority
-needed for population-routing and proactive compatibility closure.
-
-V039 remains unreserved unless that separately reviewed amendment proves schema
-change is unavoidable.
+After the closure PR merges, perform a fresh repository/live-GitHub R3 reconciliation and separately govern selection/activation of the next payroll business capability.
 
 <!-- P5-A4-HANDOFF-CLOSURE -->
 ## P5-A4 post-merge continuation checkpoint
@@ -449,3 +441,19 @@ capability selection/activation.
 - V001-V049 immutable; V050 unreserved;
 - product write owner: NONE;
 - next controlled action: fresh R3 selection and separate activation of the next payroll business capability.
+
+<!-- P5-EPA-01-FINAL-CONTINUATION -->
+## P5-EPA-01 final continuation checkpoint
+
+- backend product PR #83 merged at `847adab127dcbca3431f9f0af4f35ce46ab55285` from head `ab441bf40e17273260ac6b0fda400663a25dcd24`;
+- backend runtime hardening PR #84 merged at `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`;
+- UI selector hardening PR #20 merged at `c81d351dda6607030a22c3d8afa1514ba17f75f0`;
+- UI product PR #19 merged at `9dbf0d2f700764e2fe577f89142cd6784028f70c` from final head `b001d8795776708c4a8df076410a6be428990b66`;
+- backend hosted run `32126631284`: exact seven checks GREEN;
+- final UI hosted run `32241925335`: exact five checks GREEN including cross-repository browser E2E;
+- local integrated closure v1.2: 144/144 frontend tests, lint/build and 16 passed / 2 skipped real-backend browser E2E;
+- canonical P5-EPA-01 stories `PLN-E05-001`, `002`, `007`, `008`, `009`, `010`, `018`: IMPLEMENTED with HIGH confidence;
+- canonical totals: 58 implemented / 127 partially implemented / 75 not evidenced / 159 not started / 31 legal-domain revalidation = 450;
+- V001-V050 immutable; V051 unreserved;
+- active product write owner: NONE;
+- next controlled action: fresh R3 selection and separate activation; no next capability is activated by this closure.

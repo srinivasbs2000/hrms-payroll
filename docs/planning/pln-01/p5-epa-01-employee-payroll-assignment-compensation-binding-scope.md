@@ -1,12 +1,12 @@
 # P5-EPA-01 — Employee Payroll Assignment & Compensation Binding Completion
 
-**Status:** G01 CLOSED — G02 IMPLEMENTATION AUTHORIZED after this verdict authority merges
+**Status:** CLOSED — G02A/G02B PRODUCT MERGED / HOSTED CI GREEN / G02C RECONCILED
 **R3 selection date:** 17 August 2026
 **Backend/program authority baseline:** activation PR #81 merge/main `6e29c564f20694c1855972b426fb18accb0631ab`
 **UI authority baseline:** `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
 **Canonical epic:** E05 — Employee Payroll Profile
-**Migration state after G01 authority:** V001–V049 immutable; V050 reserved exclusively to P5-EPA-01 G02
-**Product write state after G01 authority:** G02 exact backend/UI allow-list authorized
+**Migration state after closure:** V001–V050 immutable; V051 unreserved
+**Product write state after closure:** NONE
 
 ## 1. R3 selection verdict
 
@@ -35,13 +35,13 @@ P5-EPA-01 owns exactly these canonical stories:
 
 | Story | Current canonical status | Capability objective |
 |---|---|---|
-| PLN-E05-001 | PARTIALLY IMPLEMENTED | Create payroll relationships distinct from employment and assignment |
-| PLN-E05-002 | PARTIALLY IMPLEMENTED | Create payroll assignments and regular pay-group links |
-| PLN-E05-007 | PARTIALLY IMPLEMENTED | Assign pay groups with effective-dated override control |
-| PLN-E05-008 | PARTIALLY IMPLEMENTED | Assign salary structures and compensation targets |
-| PLN-E05-009 | PARTIALLY IMPLEMENTED | Manage employee-specific component values and overrides |
-| PLN-E05-010 | NOT EVIDENCED | Process compensation changes with impact assessment |
-| PLN-E05-018 | NOT EVIDENCED | Handle transfers, rehires and concurrent assignments |
+| PLN-E05-001 | IMPLEMENTED | Create payroll relationships distinct from employment and assignment |
+| PLN-E05-002 | IMPLEMENTED | Create payroll assignments and regular pay-group links |
+| PLN-E05-007 | IMPLEMENTED | Assign pay groups with effective-dated override control |
+| PLN-E05-008 | IMPLEMENTED | Assign salary structures and compensation targets |
+| PLN-E05-009 | IMPLEMENTED | Manage employee-specific component values and overrides |
+| PLN-E05-010 | IMPLEMENTED | Process compensation changes with impact assessment |
+| PLN-E05-018 | IMPLEMENTED | Handle transfers, rehires and concurrent assignments |
 
 Activation does not change any canonical story status.
 
@@ -484,3 +484,21 @@ G02 is authorized after this authority merges:
 Canonical story status is unchanged by this G01/G02 authority. Banking/payment,
 PF/ESI/NPS, tax/declarations, broad readiness, holds, complete employee
 snapshots and E06 calculation remain excluded.
+
+<!-- P5-EPA-01-FINAL-CLOSURE -->
+## 17. Final closure evidence
+
+P5-EPA-01 G02C independently reconciles the complete merged backend and UI evidence:
+
+- backend product PR #83: head `ab441bf40e17273260ac6b0fda400663a25dcd24`, merge `847adab127dcbca3431f9f0af4f35ce46ab55285`;
+- backend runtime hardening PR #84: head `c19e9eae837c66e7337b43aad1ec2f50d1c95421`, merge/main `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`;
+- UI selector hardening PR #20: head `a6ff09445203f15d96ac259d6ab899168408a49a`, merge `c81d351dda6607030a22c3d8afa1514ba17f75f0`;
+- UI product PR #19: final head `b001d8795776708c4a8df076410a6be428990b66`, merge/main `9dbf0d2f700764e2fe577f89142cd6784028f70c`;
+- backend product hosted run `32126631284`: exact seven required checks GREEN;
+- final UI hosted run `32241925335`: exact five required checks GREEN, including cross-repository browser E2E;
+- local integrated G02B closure v1.2: full frontend 144/144 PASS; lint/build PASS; real-backend browser E2E 16 passed / 2 skipped;
+- V050 is committed and immutable; V051 is unreserved.
+
+The evidence supports `PLN-E05-001`, `002`, `007`, `008`, `009`, `010` and `018` as IMPLEMENTED with HIGH reconciliation confidence. The excluded E05 stories in Section 7 remain unchanged, so E05 as a broader epic remains PARTIALLY IMPLEMENTED.
+
+P5-EPA-01 is CLOSED, retains no backend/UI product write ownership and activates no next capability. Any continuation must begin with fresh repository/live-GitHub reconciliation and separately governed R3 selection/activation.
