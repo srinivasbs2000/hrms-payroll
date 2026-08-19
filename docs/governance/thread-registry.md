@@ -1,13 +1,13 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 19 August 2026 P5-EPA-01 post-merge G02C reconciliation
+**Last verified:** 19 August 2026 P5-EIP-01 fresh-R3 activation
 **Product reconciliation baseline:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-EPA-01 backend PR #83 and UI PR #19
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-EPA-01 backend 7/7 GREEN; runtime hardening PR #84 merged; UI selector PR #20 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
-**Active product write owner:** NONE
+**Active product write owner:** NONE — P5-EIP-01 G01 is read-only
 **Migration authority:** V001–V050 immutable; V051 unreserved
 
 Thread numbers are historical conversation labels, not implementation
@@ -45,18 +45,20 @@ migration number.
 
 | P5-EPA-01 | CLOSED after this status closure | Employee payroll relationship, assignment, pay-group binding, salary/target assignment, employee override, compensation-change impact and transfer/rehire/concurrent-assignment completion | Backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; runtime PR #84 / `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`; UI selector PR #20 / `c81d351dda6607030a22c3d8afa1514ba17f75f0`; UI product PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`; closure PR is the PR containing this update | V050 immutable | None |
 
+| P5-EIP-01 | ACTIVE — G01 READ-ONLY | Secure employee payroll identifiers, identity mismatch workflow, employee bank/payment instructions and payment readiness | Activation authority; product implementation not yet authorized | V051 unreserved pending G01 verdict | Scope/governance read-only only |
+
 ## Active capability workstream
 
-No product capability is active after P5-EPA-01 closure.
+P5-EIP-01 is active at **G01 READ-ONLY** after this activation authority merges.
 
-- P5-EPA-01 selected stories `PLN-E05-001`, `002`, `007`, `008`, `009`, `010`, `018` are IMPLEMENTED;
-- E05 remains PARTIALLY IMPLEMENTED overall because excluded E05 stories remain open;
-- V001-V050 are immutable;
-- V051 is unreserved;
-- active backend/UI product write ownership is NONE;
-- banking/payment, PF/ESI/NPS, tax/declarations, broad readiness, holds,
-  complete employee snapshots and E06 calculation remain excluded; and
-- any continuation requires fresh R3 reconciliation and separately merged activation authority.
+- selected stories: `PLN-E05-005`, `006`, `011`, `012`;
+- all four remain NOT EVIDENCED and are REQUIRED_PRODUCT_UI;
+- product write owner remains NONE during G01;
+- backend/UI product paths are not yet write-owned;
+- V001-V050 are immutable; V051 remains unreserved;
+- canonical story statuses and totals remain unchanged; and
+- statutory memberships, tax/declarations, onboarding/broad readiness, holds, complete employee snapshots, E06 calculation and payment execution remain excluded.
+
 ## Program-status closure process
 
 After each future product increment:
@@ -84,3 +86,7 @@ P5-SSC-01 product evidence is backend PR #78 / `969be73f971207e09541f1a6cfef7319
 
 <!-- P5-EPA-01-THREAD-REGISTRY-CLOSURE -->
 P5-EPA-01 product evidence is backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285` and UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`. Runtime hardening PR #84 merged at `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`; UI selector hardening PR #20 merged at `c81d351dda6607030a22c3d8afa1514ba17f75f0`. Backend hosted CI was 7/7 GREEN and final UI hosted CI was 5/5 GREEN including cross-repository browser E2E. The seven selected E05 stories are IMPLEMENTED; E05 remains PARTIALLY IMPLEMENTED overall because excluded stories remain open. V001-V050 are immutable, V051 is unreserved, no active product write owner remains, and no next capability is activated.
+
+
+<!-- P5-EIP-01-ACTIVATION -->
+P5-EIP-01 fresh-R3 activation selects PLN-E05-005, 006, 011 and 012 for a read-only G01 architecture/schema/API/UI verdict. Activation changes no canonical story status, assigns no product write owner and leaves V051 unreserved. Backend baseline `549ca266c736aafc58bfbfe2e57c5af554c4448b`; UI baseline `9dbf0d2f700764e2fe577f89142cd6784028f70c`.
