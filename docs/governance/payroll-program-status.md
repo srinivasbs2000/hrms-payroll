@@ -9,12 +9,13 @@
 **Latest merged quality increment:** P5-EPA-01 backend product hosted 7/7 GREEN; runtime hardening PR #84 merged; UI selector PR #20 5/5 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** NONE
+**Active product write owner:** NONE — P5-EIP-01 G01 is read-only; product writes are not authorized
 **Migration state:** V001–V050 committed and immutable; V051 unreserved
 **Next migration:** V051 unreserved
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 19 August 2026 at P5-EPA-01 post-merge G02C reconciliation
-**Current execution capability:** NONE — fresh R3 next-capability selection required
+**Last reconciled:** 19 August 2026 at P5-EIP-01 fresh-R3 activation
+**Current execution capability:** P5-EIP-01 G01 — Employee Identity, Bank & Payment Readiness architecture/schema/API/UI verdict
+**Active capability scope authority:** `docs/planning/pln-01/p5-eip-01-employee-identity-bank-payment-readiness-scope.md`
 **Latest closed capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
@@ -39,6 +40,21 @@ Validate this checkpoint against:
 
 Conversation history and thread names are locators only. They are not the
 project-status authority.
+
+## Active capability — P5-EIP-01
+
+Fresh post-P5-EPA-01 R3 selects **P5-EIP-01 — Employee Identity, Bank & Payment Readiness**.
+
+Canonical story boundary:
+
+- `PLN-E05-005`;
+- `PLN-E05-006`;
+- `PLN-E05-011`;
+- `PLN-E05-012`.
+
+Activation changes no canonical story status or program total. All four selected stories remain NOT EVIDENCED and are REQUIRED_PRODUCT_UI.
+
+G01 is read-only. V001-V050 remain immutable, V051 remains unreserved, and no backend/UI product write owner is assigned during G01. Statutory memberships, tax/declarations, onboarding/broad readiness, holds, complete employee snapshots, E06 calculation and payment execution remain excluded.
 
 ## Latest closed capability — P5-EPA-01
 

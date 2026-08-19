@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 19 August 2026 at P5-EPA-01 post-merge G02C reconciliation
+**Updated:** 19 August 2026 at P5-EIP-01 fresh-R3 activation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-EPA-01 backend 7/7 GREEN; backend runtime hardening PR #84 merged; UI selector PR #20 5/5 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
-**Active capability:** NONE — fresh R3 selection required
-**Current state:** P5-EPA-01 product merged, hosted evidence GREEN and G02C story/governance reconciliation prepared for closure
+**Active capability:** P5-EIP-01 G01 — Employee Identity, Bank & Payment Readiness read-only architecture/schema/API/UI verdict
+**Current state:** P5-EPA-01 CLOSED; P5-EIP-01 activated at G01 READ-ONLY after this authority merges
 **Migrations:** V001–V050 committed and immutable
 **Next migration:** V051 unreserved
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -32,9 +32,9 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | NONE |
+| Active write owner | NONE — P5-EIP-01 G01 is read-only |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | NONE |
+| Active path ownership | Scope/governance read-only only |
 | Migration state | V001–V050 immutable |
 | Next migration | V051 unreserved |
 | Product deployment | Greenfield; no evidenced production deployment |
@@ -157,9 +157,23 @@ After this status-closure PR merges:
 
 ## Exact next controlled action
 
-P5-EPA-01 closes with no active product owner and V051 unreserved. Do not reopen G02A/G02B and do not activate another capability from this closure.
+After this activation authority merges, perform **P5-EIP-01 G01 READ-ONLY** against exact backend/program and UI authority.
 
-After the closure PR merges, perform a fresh repository/live-GitHub R3 reconciliation and separately govern selection/activation of the next payroll business capability.
+G01 must return the reusable-artifact/gap map, identifier encryption/tokenisation/masking verdict, mismatch/source-authority workflow, employee bank-account/payment-instruction contract, payment-readiness contract, permission/audit model, exact backend/UI future write allow-list, negative-test/E2E plan and binary V051 schema verdict.
+
+Do not write product code, migration SQL, OpenAPI, Keycloak or story status during G01. V051 remains unreserved until a separately merged verdict explicitly reserves it.
+
+<!-- P5-EIP-01-ACTIVATION -->
+## P5-EIP-01 activation checkpoint
+
+- backend/program baseline: `549ca266c736aafc58bfbfe2e57c5af554c4448b`;
+- UI baseline: `9dbf0d2f700764e2fe577f89142cd6784028f70c`;
+- selected stories: PLN-E05-005, PLN-E05-006, PLN-E05-011, PLN-E05-012;
+- UI applicability: REQUIRED_PRODUCT_UI for all four;
+- canonical story statuses/totals: unchanged;
+- product write owner: NONE;
+- V001-V050 immutable; V051 unreserved;
+- next gate: G01 read-only architecture/schema/API/UI verdict.
 
 <!-- P5-A4-HANDOFF-CLOSURE -->
 ## P5-A4 post-merge continuation checkpoint
