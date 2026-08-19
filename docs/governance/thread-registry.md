@@ -1,14 +1,14 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 17 August 2026 P5-EPA-01 G01 verdict / G02 authorization
-**Product reconciliation baseline:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
+**Last verified:** 19 August 2026 P5-EPA-01 post-merge G02C reconciliation
+**Product reconciliation baseline:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-SSC-01 backend PR #78 and UI PR #18
+**Latest merged product increment:** P5-EPA-01 backend PR #83 and UI PR #19
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
-**Latest merged quality increment:** P5-SSC-01 backend 7/7 and UI 5/5 hosted checks GREEN
-**Active product write owner:** P5-EPA-01 G02 exact authorized product paths
-**Migration authority:** V001–V049 immutable; V050 reserved exclusively to P5-EPA-01 G02
+**Latest merged quality increment:** P5-EPA-01 backend 7/7 GREEN; runtime hardening PR #84 merged; UI selector PR #20 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
+**Active product write owner:** NONE
+**Migration authority:** V001–V050 immutable; V051 unreserved
 
 Thread numbers are historical conversation labels, not implementation
 authority. Only an explicitly active capability entry may own files or a
@@ -43,21 +43,20 @@ migration number.
 
 | P5-SSC-01 | CLOSED after this status closure | Salary Structure Composition, Target & Control Completion | Backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`; closure PR is the PR containing this update | V042-V049 immutable | None |
 
-| P5-EPA-01 | ACTIVE — G02 IMPLEMENTATION AUTHORIZED | Employee payroll relationship, assignment, pay-group binding, salary/target assignment, employee override, compensation-change impact and transfer/rehire/concurrent-assignment completion | Activation PR #81 / merge `6e29c564f20694c1855972b426fb18accb0631ab`; G01 verdict authority is the PR containing this update | V050 reserved exclusively | Exact G01 backend/UI allow-list |
+| P5-EPA-01 | CLOSED after this status closure | Employee payroll relationship, assignment, pay-group binding, salary/target assignment, employee override, compensation-change impact and transfer/rehire/concurrent-assignment completion | Backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; runtime PR #84 / `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`; UI selector PR #20 / `c81d351dda6607030a22c3d8afa1514ba17f75f0`; UI product PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`; closure PR is the PR containing this update | V050 immutable | None |
 
 ## Active capability workstream
 
-P5-EPA-01 is active at **G02 IMPLEMENTATION AUTHORIZED** after this G01 verdict authority merges.
+No product capability is active after P5-EPA-01 closure.
 
-- selected stories: `PLN-E05-001`, `002`, `007`, `008`, `009`, `010`, `018`;
-- G01 is CLOSED with additive V050 required;
-- exact backend/UI path ownership is defined by the active scope authority;
-- V001-V049 are immutable;
-- V050 is reserved exclusively to P5-EPA-01 G02;
-- canonical story statuses remain unchanged by this authority;
-- backend G02A publication precedes UI G02B real-backend browser closure; and
+- P5-EPA-01 selected stories `PLN-E05-001`, `002`, `007`, `008`, `009`, `010`, `018` are IMPLEMENTED;
+- E05 remains PARTIALLY IMPLEMENTED overall because excluded E05 stories remain open;
+- V001-V050 are immutable;
+- V051 is unreserved;
+- active backend/UI product write ownership is NONE;
 - banking/payment, PF/ESI/NPS, tax/declarations, broad readiness, holds,
-  complete employee snapshots and E06 calculation remain excluded.
+  complete employee snapshots and E06 calculation remain excluded; and
+- any continuation requires fresh R3 reconciliation and separately merged activation authority.
 ## Program-status closure process
 
 After each future product increment:
@@ -82,3 +81,6 @@ P5-A4 product evidence is PR #58 / `6ce57213c8d77e76d8addee55a92f0349229a314` wi
 
 <!-- P5-SSC-01-THREAD-REGISTRY-CLOSURE -->
 P5-SSC-01 product evidence is backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621` and UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`, with hosted backend 7/7 and UI 5/5 checks GREEN. Canonical E04 business stories are all IMPLEMENTED, V001-V049 are immutable, V050 is unreserved, and no active write owner remains.
+
+<!-- P5-EPA-01-THREAD-REGISTRY-CLOSURE -->
+P5-EPA-01 product evidence is backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285` and UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`. Runtime hardening PR #84 merged at `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`; UI selector hardening PR #20 merged at `c81d351dda6607030a22c3d8afa1514ba17f75f0`. Backend hosted CI was 7/7 GREEN and final UI hosted CI was 5/5 GREEN including cross-repository browser E2E. The seven selected E05 stories are IMPLEMENTED; E05 remains PARTIALLY IMPLEMENTED overall because excluded stories remain open. V001-V050 are immutable, V051 is unreserved, no active product write owner remains, and no next capability is activated.

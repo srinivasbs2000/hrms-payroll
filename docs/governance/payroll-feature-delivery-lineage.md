@@ -1,7 +1,7 @@
 # Payroll Feature Delivery Lineage
 
-**Product reconciliation baseline:** P5-SSC-01 backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
-**Product implementation baseline:** P5-SSC-01 product head `b1b0e3d365ca813f0e1d1198078797c31c100325`; backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI head `9aaed9785f1c58a809dbb450f8c2c50f56b299db`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`
+**Product reconciliation baseline:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
+**Product implementation baseline:** P5-EPA-01 backend product head `ab441bf40e17273260ac6b0fda400663a25dcd24`; backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; backend runtime PR #84 / `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`; UI selector PR #20 / `c81d351dda6607030a22c3d8afa1514ba17f75f0`; UI product head `b001d8795776708c4a8df076410a6be428990b66`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
 **Purpose:** Trace original epic -> original backlog row -> current story -> migration -> commit -> PR/merge -> evidence -> remaining scope.
 
 ## 1. Epic-level lineage
@@ -12,7 +12,7 @@
 | E02 | P5-A4; inherited S2-01/S2-02/S3-01 foundations | V017-V018, V023, V038 | G01 f038bdf; G02 840c106; G03 155563b; R3 80441eb | PR #58 / 6ce57213c8d77e76d8addee55a92f0349229a314 | PARTIALLY IMPLEMENTED |
 | E03 | S2-03; P5-A2 general catalogue and named bases | V019; V032 | Sprint 2 foundation plus `c30cb1f2f0c16cd78387bb9551b93825bc7ef688` | PR #3; PR #30 merge `aeb4b1560e7c7d6147bb288ef989b15ad1be4946` | PARTIALLY IMPLEMENTED |
 | E04 | S2-04; P5-A3; P5-SSC-01 | V020, V033, V042-V049 | P5-SSC-01 product head `b1b0e3d365ca813f0e1d1198078797c31c100325`; UI head `9aaed9785f1c58a809dbb450f8c2c50f56b299db` | Backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`; UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219` | IMPLEMENTED |
-| E05 | S2-05, S2-06; generic statutory profile contribution from S4-02 | V021-V022; V028 for generic statutory profiles | adf3769b945d56828aa984e634e6e1bbb62582d7; 1575cbc373bf4dc22ff116b1ea4bbfb7e5a19288; 63c9b1a719765fce3868eb7fc69fac37bc196dc9; 12536c3f629cf567022f3fd50998397d1d0b5911; e98f70b0346a13e463f8e768ab4014be0e30ca0f | PR #3; merge 84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9 | PARTIALLY IMPLEMENTED |
+| E05 | S2-05, S2-06; generic statutory profile contribution from S4-02; P5-EPA-01 selected-story completion | V021-V022; V028 for generic statutory profiles; V050 | Sprint 2 foundation plus P5-EPA-01 product head `ab441bf40e17273260ac6b0fda400663a25dcd24`; UI head `b001d8795776708c4a8df076410a6be428990b66` | PR #3 / `84530e1fe975dbe5f2a45feb3ceabd44d8b4fbb9`; backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c` | PARTIALLY IMPLEMENTED |
 | E06 | S3-03, S3-04, S3-05 | V025-V026 | c9ada6bad94071d70a6d10fbcfec085d476a6279; f7eb7fa1fc152b8da4088b881f03bff18558d140; db644298ab3197a6931cd9c6b8d9875ef30d28c5 | PR #18; merge 73c356662b1888194a72c7006a66bd91443550ca | PARTIALLY IMPLEMENTED |
 | E07 | S3-05 and controlled recalculation increment; S4-04 for statutory balances | V026 and V030 | db644298ab3197a6931cd9c6b8d9875ef30d28c5; 34a3af93433eb61b801db36c8ff84fe1ccfad874 | PR #18 and PR #19 | PARTIALLY IMPLEMENTED |
 | E08 | S3-01, S3-02, S3-07 | V023-V024 | 5bc08e440c21bbeeddc3c1bb4e28ad04943ac9cd; 64b4ca7b2a7a53c373b56d5f6767192a000dd60f; 625e38dc1fed649eb37ec6c1d1171f142430403a; 134fe3e63e6b04f2da08df957f4d415a1fd97606; 7fee492bd8899269fe588c9d3ab8202029a8b0b5 | PR #18; merge 73c356662b1888194a72c7006a66bd91443550ca | PARTIALLY IMPLEMENTED |
@@ -274,3 +274,12 @@ contract/UI boundaries.
 
 <!-- P5-SSC-01-LINEAGE-CLOSURE -->
 P5-SSC-01 closes the residual reusable Salary Structures capability with backend PR #78 / `969be73f971207e09541f1a6cfef7319ac2d8621`, UI PR #18 / `f2d7d1ac1e96cf154b624cf583681c6b751b5219`, migrations V042-V049, local E04-016/E04-017 closure, and hosted cross-repository browser evidence against the exact merged backend.
+
+<!-- P5-EPA-01-LINEAGE-CLOSURE -->
+## P5-EPA-01 post-merge lineage closure
+
+P5-EPA-01 closes its bounded seven-story Employee Payroll Assignment & Compensation Binding scope through backend product PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285` and UI product PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`. Runtime hardening PR #84 / `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7` and selector hardening PR #20 / `c81d351dda6607030a22c3d8afa1514ba17f75f0` are bounded quality increments.
+
+Merged V050 and executable backend/UI/browser evidence support `PLN-E05-001`, `002`, `007`, `008`, `009`, `010` and `018` as IMPLEMENTED. The broader E05 epic remains PARTIALLY IMPLEMENTED because P5-EPA-01 explicitly excludes onboarding/readiness, payroll identifiers and mismatch workflow, employee banking/payment readiness, PF/ESI/NPS and generic statutory memberships, tax/declaration/proof workflows, payroll holds, complete employee snapshots and the broad onboarding/readiness workbench.
+
+V050 is immutable. V051 is unreserved. P5-EPA-01 retains no write ownership and no next capability is activated by this lineage closure.
