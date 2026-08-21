@@ -1124,7 +1124,1509 @@ pathItems:
       responses:
         '200': {description: Audit history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/AuditEvent'}}}}}
 
+  EmployeePayrollIdentifierCollection:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/CorrelationId'
+    get:
+      tags: [Employee Payroll]
+      operationId: listEmployeePayrollIdentifiers
+      x-permission: employee-payroll.identifier.read
+      responses:
+        '200': {description: Masked payroll identifier history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EipPayrollIdentifier'}}}}}
+        '401': {$ref: '#/responses/Unauthorized'}
+        '403': {$ref: '#/responses/Forbidden'}
+    post:
+      tags: [Employee Payroll]
+      operationId: writeEmployeePayrollIdentifier
+      x-permission: employee-payroll.identifier.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/schemas/EipPayrollIdentifierWrite'}}}
+      responses:
+        '201': {description: Identifier draft version created, content: {application/json: {schema: {$ref: '#/schemas/EipPayrollIdentifier'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeePayrollIdentifierVerification:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: verifyEmployeePayrollIdentifier
+      x-permission: employee-payroll.identifier.verify
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipEvidenceRequest'}}}}
+      responses:
+        '200': {description: Verified identifier, content: {application/json: {schema: {$ref: '#/schemas/EipPayrollIdentifier'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeePayrollIdentifierApproval:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: approveEmployeePayrollIdentifier
+      x-permission: employee-payroll.identifier.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipEvidenceRequest'}}}}
+      responses:
+        '200': {description: Active identifier, content: {application/json: {schema: {$ref: '#/schemas/EipPayrollIdentifier'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeePayrollIdentifierReveal:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: revealEmployeePayrollIdentifier
+      x-permission: employee-payroll.identifier.reveal
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipRevealRequest'}}}}
+      responses:
+        '200': {description: Restricted non-cacheable identifier reveal, content: {application/json: {schema: {$ref: '#/schemas/EipReveal'}}}}
+        '403': {$ref: '#/responses/Forbidden'}
+        '404': {$ref: '#/responses/NotFound'}
+  EmployeeIdentityMismatchCollection:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    get:
+      tags: [Employee Payroll]
+      operationId: listEmployeeIdentityMismatches
+      x-permission: employee-payroll.identity-mismatch.read
+      responses:
+        '200': {description: Identity mismatch cases, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EipIdentityMismatch'}}}}}
+    post:
+      tags: [Employee Payroll]
+      operationId: createEmployeeIdentityMismatch
+      x-permission: employee-payroll.identity-mismatch.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipIdentityMismatchWrite'}}}}
+      responses:
+        '201': {description: Mismatch case created, content: {application/json: {schema: {$ref: '#/schemas/EipIdentityMismatch'}}}}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeeIdentityMismatchResolution:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - name: caseId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    post:
+      tags: [Employee Payroll]
+      operationId: resolveEmployeeIdentityMismatch
+      x-permission: employee-payroll.identity-mismatch.resolve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipIdentityMismatchResolve'}}}}
+      responses:
+        '200': {description: Mismatch resolved with source-authority evidence, content: {application/json: {schema: {$ref: '#/schemas/EipIdentityMismatch'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeeBankAccountCollection:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    get:
+      tags: [Employee Payroll]
+      operationId: listEmployeeBankAccounts
+      x-permission: employee-payroll.bank-account.read
+      responses:
+        '200': {description: Masked employee bank-account history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EipEmployeeBankAccount'}}}}}
+    post:
+      tags: [Employee Payroll]
+      operationId: writeEmployeeBankAccount
+      x-permission: employee-payroll.bank-account.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipEmployeeBankAccountWrite'}}}}
+      responses:
+        '201': {description: Bank-account draft version created, content: {application/json: {schema: {$ref: '#/schemas/EipEmployeeBankAccount'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeeBankAccountVerification:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: verifyEmployeeBankAccount
+      x-permission: employee-payroll.bank-account.verify
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipEvidenceRequest'}}}}
+      responses:
+        '200': {description: Verified bank account, content: {application/json: {schema: {$ref: '#/schemas/EipEmployeeBankAccount'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeeBankAccountImpactReview:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: reviewEmployeeBankAccountPaymentImpact
+      x-permission: employee-payroll.bank-account.verify
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipImpactReviewRequest'}}}}
+      responses:
+        '200': {description: Payment impact reviewed, content: {application/json: {schema: {$ref: '#/schemas/EipEmployeeBankAccount'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeeBankAccountApproval:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: approveEmployeeBankAccount
+      x-permission: employee-payroll.bank-account.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipEvidenceRequest'}}}}
+      responses:
+        '200': {description: Active bank account, content: {application/json: {schema: {$ref: '#/schemas/EipEmployeeBankAccount'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeeBankAccountSuspension:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: suspendEmployeeBankAccount
+      x-permission: employee-payroll.bank-account.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipSuspendRequest'}}}}
+      responses:
+        '200': {description: Suspended bank account, content: {application/json: {schema: {$ref: '#/schemas/EipEmployeeBankAccount'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeeBankAccountReveal:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: revealEmployeeBankAccount
+      x-permission: employee-payroll.bank-account.reveal
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipRevealRequest'}}}}
+      responses:
+        '200': {description: Restricted non-cacheable account reveal, content: {application/json: {schema: {$ref: '#/schemas/EipReveal'}}}}
+        '403': {$ref: '#/responses/Forbidden'}
+  EmployeePaymentInstructionCollection:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    get:
+      tags: [Employee Payroll]
+      operationId: listEmployeePaymentInstructions
+      x-permission: employee-payroll.payment-instruction.read
+      responses:
+        '200': {description: Payment instruction history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EipPaymentInstruction'}}}}}
+    post:
+      tags: [Employee Payroll]
+      operationId: writeEmployeePaymentInstruction
+      x-permission: employee-payroll.payment-instruction.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentInstructionWrite'}}}}
+      responses:
+        '201': {description: Payment instruction draft version created, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentInstruction'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeePaymentInstructionImpactReview:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: reviewEmployeePaymentInstructionImpact
+      x-permission: employee-payroll.payment-instruction.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipImpactReviewRequest'}}}}
+      responses:
+        '200': {description: Payment-instruction impact reviewed, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentInstruction'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeePaymentInstructionApproval:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      operationId: approveEmployeePaymentInstruction
+      x-permission: employee-payroll.payment-instruction.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipEvidenceRequest'}}}}
+      responses:
+        '200': {description: Active payment instruction, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentInstruction'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeePaymentRestrictionCollection:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    get:
+      tags: [Employee Payroll]
+      operationId: listEmployeePaymentRestrictions
+      x-permission: employee-payroll.payment-restriction.read
+      responses:
+        '200': {description: Payment-only restriction history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EipPaymentRestriction'}}}}}
+    post:
+      tags: [Employee Payroll]
+      operationId: imposeEmployeePaymentRestriction
+      x-permission: employee-payroll.payment-restriction.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentRestrictionWrite'}}}}
+      responses:
+        '201': {description: Payment restriction imposed, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentRestriction'}}}}
+  EmployeePaymentRestrictionClear:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - name: restrictionId
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    post:
+      tags: [Employee Payroll]
+      operationId: clearEmployeePaymentRestriction
+      x-permission: employee-payroll.payment-restriction.clear
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentRestrictionClear'}}}}
+      responses:
+        '200': {description: Restriction clear evidence appended, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentRestriction'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeePaymentReadiness:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    get:
+      tags: [Employee Payroll]
+      operationId: getEmployeePaymentReadiness
+      x-permission: employee-payroll.payment-readiness.read
+      parameters:
+      - name: currencyCode
+        in: query
+        required: true
+        schema: {type: string, pattern: '^[A-Z]{3}  Problem:
+    type: object
+    properties:
+      type: {type: string, format: uri}
+      title: {type: string}
+      status: {type: integer}
+      detail: {type: string}
+      instance: {type: string, format: uri-reference}
+  AuditEvent:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - occurredAt
+    - actor
+    - action
+    - objectType
+    - objectId
+    - correlationId
+    properties:
+      id: {type: string, format: uuid}
+      occurredAt: {type: string, format: date-time}
+      actor: {type: string}
+      action: {type: string}
+      objectType: {type: string}
+      objectId: {type: string, format: uuid}
+      correlationId: {type: string, format: uuid}
+      beforeState: {type: [string, 'null']}
+      afterState: {type: [string, 'null']}
+      metadata: {type: [string, 'null']}
+  PayrollRelationshipWrite:
+    type: object
+    additionalProperties: false
+    required: [legalEntityVersionId, relationshipStart]
+    properties:
+      externalEmployeeId:
+        type: [string, 'null']
+        maxLength: 100
+        description: Required when creating the stable relationship identity.
+      employeeNumber:
+        type: [string, 'null']
+        maxLength: 60
+        description: Required when creating the stable relationship identity.
+      legalEntityVersionId: {type: string, format: uuid}
+      payrollStatutoryUnitVersionId: {type: [string, 'null'], format: uuid}
+      aggregationBoundaryKey: {type: [string, 'null'], maxLength: 120}
+      relationshipStart: {type: string, format: date}
+      relationshipEnd: {type: [string, 'null'], format: date}
+  PayrollRelationshipEndDate:
+    type: object
+    additionalProperties: false
+    required: [relationshipEnd]
+    properties:
+      relationshipEnd: {type: string, format: date}
+  PayrollRelationship:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - externalEmployeeId
+    - employeeNumber
+    - identityStatus
+    - versionId
+    - versionSequence
+    - versionNo
+    - legalEntityVersionId
+    - relationshipStart
+    - approvalStatus
+    - superseded
+    properties:
+      identityId: {type: string, format: uuid}
+      externalEmployeeId: {type: string}
+      employeeNumber: {type: string}
+      identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
+      versionId: {type: string, format: uuid}
+      versionSequence: {type: integer, minimum: 1}
+      versionNo: {type: integer, format: int64, minimum: 0}
+      legalEntityVersionId: {type: string, format: uuid}
+      payrollStatutoryUnitVersionId: {type: [string, 'null'], format: uuid}
+      aggregationBoundaryKey: {type: [string, 'null'], maxLength: 120}
+      countryCode: {type: string, pattern: '^[A-Z]{2}$'}
+      employerCurrency: {type: string, pattern: '^[A-Z]{3}$'}
+      relationshipStart: {type: string, format: date}
+      relationshipEnd: {type: [string, 'null'], format: date}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesVersionId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+  PayrollAssignmentWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - payrollRelationshipVersionId
+    - establishmentVersionId
+    - assignmentStart
+    properties:
+      payrollRelationshipId:
+        type: [string, 'null']
+        format: uuid
+        description: Required when creating the stable assignment identity.
+      assignmentNumber:
+        type: [string, 'null']
+        maxLength: 60
+        description: Required when creating the stable assignment identity.
+      payrollRelationshipVersionId: {type: string, format: uuid}
+      establishmentVersionId: {type: string, format: uuid}
+      sourceWorkAssignmentRef: {type: [string, 'null'], maxLength: 160}
+      payrollRole: {type: [string, 'null'], enum: [PRIMARY, SECONDARY, null]}
+      payrollEligibilityFrom: {type: [string, 'null'], format: date}
+      payrollEligibilityTo: {type: [string, 'null'], format: date}
+      assignmentStart: {type: string, format: date}
+      assignmentEnd: {type: [string, 'null'], format: date}
+  PayrollAssignmentEndDate:
+    type: object
+    additionalProperties: false
+    required: [assignmentEnd]
+    properties:
+      assignmentEnd: {type: string, format: date}
+  PayrollAssignment:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - payrollRelationshipId
+    - assignmentNumber
+    - identityStatus
+    - versionId
+    - versionSequence
+    - versionNo
+    - payrollRelationshipVersionId
+    - establishmentVersionId
+    - assignmentStart
+    - approvalStatus
+    - superseded
+    properties:
+      identityId: {type: string, format: uuid}
+      payrollRelationshipId: {type: string, format: uuid}
+      assignmentNumber: {type: string}
+      identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
+      versionId: {type: string, format: uuid}
+      versionSequence: {type: integer, minimum: 1}
+      versionNo: {type: integer, format: int64, minimum: 0}
+      payrollRelationshipVersionId: {type: string, format: uuid}
+      establishmentVersionId: {type: string, format: uuid}
+      sourceWorkAssignmentRef: {type: [string, 'null'], maxLength: 160}
+      payrollRole: {type: [string, 'null'], enum: [PRIMARY, SECONDARY, null]}
+      payrollEligibilityFrom: {type: [string, 'null'], format: date}
+      payrollEligibilityTo: {type: [string, 'null'], format: date}
+      assignmentStart: {type: string, format: date}
+      assignmentEnd: {type: [string, 'null'], format: date}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesVersionId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+  EmployeePayrollProfileWrite:
+    type: object
+    additionalProperties: false
+    required: [payrollRelationshipId]
+    properties:
+      payrollRelationshipId: {type: string, format: uuid}
+      currency: {type: [string, 'null'], const: INR, default: INR}
+  EmployeePayrollProfileStatusWrite:
+    type: object
+    additionalProperties: false
+    required: [payrollStatus]
+    properties:
+      payrollStatus:
+        type: string
+        enum: [INCOMPLETE, READY, ON_HOLD, INACTIVE]
+  EmployeePayrollProfile:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payrollRelationshipId
+    - employeeNumber
+    - currency
+    - payrollStatus
+    - versionNo
+    properties:
+      id: {type: string, format: uuid}
+      payrollRelationshipId: {type: string, format: uuid}
+      employeeNumber: {type: string}
+      currency: {type: string, const: INR}
+      payrollStatus:
+        type: string
+        enum: [INCOMPLETE, READY, ON_HOLD, INACTIVE]
+      versionNo: {type: integer, format: int64, minimum: 0}
+  PayGroupAssignmentWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - payrollAssignmentVersionId
+    - payGroupVersionId
+    - effectiveFrom
+    properties:
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      payGroupVersionId: {type: string, format: uuid}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+      impactAssessmentThrough: {type: [string, 'null'], format: date}
+  EffectiveEndDate:
+    type: object
+    additionalProperties: false
+    required: [effectiveTo]
+    properties:
+      effectiveTo: {type: string, format: date}
+  PayGroupAssignment:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payrollAssignmentVersionId
+    - payGroupVersionId
+    - effectiveFrom
+    - approvalStatus
+    - superseded
+    - versionNo
+    properties:
+      id: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      payGroupVersionId: {type: string, format: uuid}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+      impactAssessmentThrough: {type: [string, 'null'], format: date}
+      impactedPeriodCount: {type: integer, minimum: 0}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesAssignmentId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+      versionNo: {type: integer, format: int64, minimum: 0}
+  SalaryAssignmentWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - payrollAssignmentVersionId
+    - salaryStructureVersionId
+    - effectiveFrom
+    oneOf:
+    - required: [monthlyAmount]
+    - required: [targetType, targetValue, targetFrequency, currency, sourceCompensationEventId]
+    properties:
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      salaryStructureVersionId: {type: string, format: uuid}
+      monthlyAmount: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      targetType: {type: [string, 'null'], maxLength: 40}
+      targetValue: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      targetFrequency: {type: [string, 'null'], enum: [ANNUAL, MONTHLY, HOURLY, DAILY, null]}
+      currency: {type: [string, 'null'], pattern: '^[A-Z]{3}$'}
+      sourceCompensationEventId: {type: [string, 'null'], format: uuid}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+  SalaryAssignment:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payrollAssignmentVersionId
+    - salaryStructureVersionId
+    - monthlyAmount
+    - currency
+    - effectiveFrom
+    - approvalStatus
+    - superseded
+    - versionNo
+    properties:
+      id: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      salaryStructureVersionId: {type: string, format: uuid}
+      monthlyAmount: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      targetType: {type: [string, 'null'], maxLength: 40}
+      targetValue: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
+      targetFrequency: {type: [string, 'null'], enum: [ANNUAL, MONTHLY, HOURLY, DAILY, null]}
+      currency: {type: string, pattern: '^[A-Z]{3}$'}
+      sourceCompensationEventId: {type: [string, 'null'], format: uuid}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesAssignmentId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+      versionNo: {type: integer, format: int64, minimum: 0}
+
+  PayGroupAssignmentImpact:
+    type: object
+    additionalProperties: false
+    properties:
+      payPeriodId: {type: string, format: uuid}
+      periodCode: {type: string}
+      periodStart: {type: string, format: date}
+      periodEnd: {type: string, format: date}
+      reasonCode: {type: string, const: EFFECTIVE_RANGE_OVERLAP}
+  CompensationChangeWrite:
+    type: object
+    additionalProperties: false
+    required: [payrollAssignmentId, eventType, effectiveDate, reason]
+    properties:
+      payrollAssignmentId: {type: string, format: uuid}
+      eventType: {type: string, enum: [PROSPECTIVE, CURRENT_PERIOD, RETROSPECTIVE, CORRECTION, REVERSAL]}
+      effectiveDate: {type: string, format: date}
+      sourceEventId: {type: [string, 'null'], format: uuid}
+      reason: {type: string, minLength: 1, maxLength: 500}
+  CompensationChangeAssessment:
+    type: object
+    additionalProperties: false
+    required: [assessmentThrough]
+    properties:
+      assessmentThrough: {type: string, format: date}
+  CompensationChange:
+    type: object
+    additionalProperties: false
+    properties:
+      id: {type: string, format: uuid}
+      payrollAssignmentId: {type: string, format: uuid}
+      eventType: {type: string}
+      effectiveDate: {type: string, format: date}
+      sourceEventId: {type: [string, 'null'], format: uuid}
+      reason: {type: string}
+      assessmentThrough: {type: [string, 'null'], format: date}
+      impactAssessedAt: {type: [string, 'null'], format: date-time}
+      impactAssessedBy: {type: [string, 'null']}
+      impactedPeriodCount: {type: integer, minimum: 0}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      approvedAt: {type: [string, 'null'], format: date-time}
+      approvedBy: {type: [string, 'null']}
+      versionNo: {type: integer, format: int64, minimum: 0}
+  CompensationChangeImpact:
+    type: object
+    additionalProperties: false
+    properties:
+      payPeriodId: {type: string, format: uuid}
+      periodCode: {type: string}
+      periodStart: {type: string, format: date}
+      periodEnd: {type: string, format: date}
+      reasonCode: {type: string, const: EFFECTIVE_DATE_OVERLAP}
+  EmployeeComponentOverrideWrite:
+    type: object
+    additionalProperties: false
+    required: [payrollAssignmentVersionId, salaryAssignmentId, salaryStructureLineId, componentVersionId, overrideKind, overrideValue, effectiveFrom]
+    properties:
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      salaryAssignmentId: {type: string, format: uuid}
+      salaryStructureLineId: {type: string, format: uuid}
+      componentVersionId: {type: string, format: uuid}
+      overrideKind: {type: string, enum: [AMOUNT, PERCENTAGE]}
+      overrideValue: {type: number, minimum: 0}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+  EmployeeComponentOverride:
+    type: object
+    additionalProperties: false
+    properties:
+      id: {type: string, format: uuid}
+      payrollAssignmentVersionId: {type: string, format: uuid}
+      salaryAssignmentId: {type: string, format: uuid}
+      salaryStructureLineId: {type: string, format: uuid}
+      componentVersionId: {type: string, format: uuid}
+      overrideKind: {type: string, enum: [AMOUNT, PERCENTAGE]}
+      overrideValue: {type: number}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      supersedesOverrideId: {type: [string, 'null'], format: uuid}
+      superseded: {type: boolean}
+      versionNo: {type: integer, format: int64, minimum: 0}
+  PayrollLifecycleLineageWrite:
+    type: object
+    additionalProperties: false
+    required: [eventType, relationshipDecision, effectiveDate, reason]
+    properties:
+      eventType: {type: string, enum: [TRANSFER, REHIRE, CONCURRENT_ASSIGNMENT]}
+      relationshipDecision: {type: string, enum: [CONTINUE, SUCCESSOR]}
+      predecessorRelationshipId: {type: [string, 'null'], format: uuid}
+      successorRelationshipId: {type: [string, 'null'], format: uuid}
+      predecessorAssignmentId: {type: [string, 'null'], format: uuid}
+      successorAssignmentId: {type: [string, 'null'], format: uuid}
+      effectiveDate: {type: string, format: date}
+      reason: {type: string, minLength: 1, maxLength: 500}
+  PayrollLifecycleLineage:
+    type: object
+    additionalProperties: false
+    properties:
+      id: {type: string, format: uuid}
+      eventType: {type: string, enum: [TRANSFER, REHIRE, CONCURRENT_ASSIGNMENT]}
+      relationshipDecision: {type: string, enum: [CONTINUE, SUCCESSOR]}
+      predecessorRelationshipId: {type: [string, 'null'], format: uuid}
+      successorRelationshipId: {type: [string, 'null'], format: uuid}
+      predecessorAssignmentId: {type: [string, 'null'], format: uuid}
+      successorAssignmentId: {type: [string, 'null'], format: uuid}
+      effectiveDate: {type: string, format: date}
+      reason: {type: string}
+      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
+      versionNo: {type: integer, format: int64, minimum: 0}
+}
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200': {description: Explainable employee payment readiness, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentReadiness'}}}}
+
 schemas:
+  EipEvidenceRequest:
+    type: object
+    additionalProperties: false
+    required:
+    - evidenceRef
+    properties:
+      evidenceRef:
+        type: string
+        minLength: 1
+        maxLength: 240
+  EipRevealRequest:
+    type: object
+    additionalProperties: false
+    required:
+    - reason
+    properties:
+      reason:
+        type: string
+        minLength: 1
+        maxLength: 500
+  EipReveal:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - versionId
+    - kind
+    - value
+    - effectiveFrom
+    properties:
+      identityId:
+        type: string
+        format: uuid
+      versionId:
+        type: string
+        format: uuid
+      kind:
+        type: string
+      value:
+        type: string
+        readOnly: true
+      effectiveFrom:
+        type: string
+        format: date
+      effectiveTo:
+        type:
+        - string
+        - 'null'
+        format: date
+  EipImpactReviewRequest:
+    type: object
+    additionalProperties: false
+    required:
+    - evidenceRef
+    properties:
+      evidenceRef:
+        type: string
+        minLength: 1
+        maxLength: 240
+  EipSuspendRequest:
+    type: object
+    additionalProperties: false
+    required:
+    - reason
+    properties:
+      reason:
+        type: string
+        minLength: 1
+        maxLength: 500
+  EipPayrollIdentifierWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - schemeCode
+    - value
+    - effectiveFrom
+    properties:
+      identityId:
+        type:
+        - string
+        - 'null'
+        format: uuid
+      schemeCode:
+        type: string
+        pattern: ^[A-Z][A-Z0-9_]{1,39}$
+      value:
+        type: string
+        minLength: 2
+        maxLength: 128
+        writeOnly: true
+      sourceAuthority:
+        type:
+        - string
+        - 'null'
+        maxLength: 120
+      sourceReference:
+        type:
+        - string
+        - 'null'
+        maxLength: 240
+      effectiveFrom:
+        type: string
+        format: date
+      effectiveTo:
+        type:
+        - string
+        - 'null'
+        format: date
+  EipPayrollIdentifier:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - payrollRelationshipId
+    - schemeCode
+    - versionId
+    - versionNo
+    - maskedValue
+    - lifecycleStatus
+    properties:
+      identityId:
+        type: string
+        format: uuid
+      payrollRelationshipId:
+        type: string
+        format: uuid
+      schemeCode:
+        type: string
+      identityStatus:
+        type: string
+      versionId:
+        type: string
+        format: uuid
+      versionSequence:
+        type: integer
+        minimum: 1
+      versionNo:
+        type: integer
+        format: int64
+        minimum: 0
+      maskedValue:
+        type: string
+      sourceAuthority:
+        type:
+        - string
+        - 'null'
+      sourceReference:
+        type:
+        - string
+        - 'null'
+      effectiveFrom:
+        type: string
+        format: date
+      effectiveTo:
+        type:
+        - string
+        - 'null'
+        format: date
+      lifecycleStatus:
+        type: string
+      verificationEvidenceRef:
+        type:
+        - string
+        - 'null'
+      verifiedAt:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      approvedAt:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      verifiedBy:
+        type:
+        - string
+        - 'null'
+      approvedBy:
+        type:
+        - string
+        - 'null'
+      approvalEvidenceRef:
+        type:
+        - string
+        - 'null'
+      supersedesVersionId:
+        type:
+        - string
+        - 'null'
+        format: uuid
+  EipIdentityMismatchWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - affectedField
+    - sourceKind
+    - classification
+    - paymentImpact
+    - correctionOwner
+    properties:
+      affectedField:
+        type: string
+        pattern: ^[A-Z][A-Z0-9_]*$
+        maxLength: 40
+      sourceKind:
+        type: string
+        pattern: ^[A-Z][A-Z0-9_]*$
+        maxLength: 40
+      sourceAuthority:
+        type:
+        - string
+        - 'null'
+      sourceReference:
+        type:
+        - string
+        - 'null'
+      authoritativeValue:
+        type:
+        - string
+        - 'null'
+        writeOnly: true
+      observedValue:
+        type:
+        - string
+        - 'null'
+        writeOnly: true
+      classification:
+        type: string
+        pattern: ^[A-Z][A-Z0-9_]*$
+        maxLength: 40
+      paymentImpact:
+        type: string
+        enum:
+        - BLOCKING
+        - WARNING
+        - INFORMATIONAL
+      correctionOwner:
+        type: string
+        maxLength: 120
+  EipIdentityMismatchResolve:
+    type: object
+    additionalProperties: false
+    required:
+    - resolution
+    - reason
+    - evidenceRef
+    properties:
+      resolution:
+        type: string
+        enum:
+        - CORRECTED_AT_SOURCE
+        - ACCEPTED_VARIANCE
+        - FALSE_POSITIVE
+      reason:
+        type: string
+        minLength: 1
+        maxLength: 500
+      evidenceRef:
+        type: string
+        minLength: 1
+        maxLength: 240
+  EipIdentityMismatch:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payrollRelationshipId
+    - versionNo
+    - affectedField
+    - sourceKind
+    - classification
+    - paymentImpact
+    - status
+    properties:
+      id:
+        type: string
+        format: uuid
+      payrollRelationshipId:
+        type: string
+        format: uuid
+      versionNo:
+        type: integer
+        format: int64
+      affectedField:
+        type: string
+      sourceKind:
+        type: string
+      sourceAuthority:
+        type:
+        - string
+        - 'null'
+      sourceReference:
+        type:
+        - string
+        - 'null'
+      classification:
+        type: string
+      paymentImpact:
+        type: string
+      correctionOwner:
+        type: string
+      status:
+        type: string
+      detectedAt:
+        type: string
+        format: date-time
+      resolvedAt:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      resolvedBy:
+        type:
+        - string
+        - 'null'
+  EipEmployeeBankAccountWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - code
+    - bankName
+    - accountHolderName
+    - currencyCode
+    - accountNumber
+    - effectiveFrom
+    properties:
+      identityId:
+        type:
+        - string
+        - 'null'
+        format: uuid
+      code:
+        type: string
+        pattern: ^[A-Z][A-Z0-9_]*$
+        maxLength: 60
+      bankName:
+        type: string
+        maxLength: 160
+      branchName:
+        type:
+        - string
+        - 'null'
+        maxLength: 160
+      routingCode:
+        type:
+        - string
+        - 'null'
+        maxLength: 80
+      accountHolderName:
+        type: string
+        writeOnly: true
+        maxLength: 160
+      currencyCode:
+        type: string
+        pattern: ^[A-Z]{3}$
+      accountNumber:
+        type: string
+        writeOnly: true
+        maxLength: 128
+      effectiveFrom:
+        type: string
+        format: date
+      effectiveTo:
+        type:
+        - string
+        - 'null'
+        format: date
+  EipEmployeeBankAccount:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - payrollRelationshipId
+    - code
+    - versionId
+    - versionNo
+    - maskedAccountHolderName
+    - currencyCode
+    - maskedAccountNumber
+    - lifecycleStatus
+    properties:
+      identityId:
+        type: string
+        format: uuid
+      payrollRelationshipId:
+        type: string
+        format: uuid
+      code:
+        type: string
+      identityStatus:
+        type: string
+      versionId:
+        type: string
+        format: uuid
+      versionSequence:
+        type: integer
+      versionNo:
+        type: integer
+        format: int64
+      bankName:
+        type: string
+      branchName:
+        type:
+        - string
+        - 'null'
+      routingCode:
+        type:
+        - string
+        - 'null'
+      maskedAccountHolderName:
+        type: string
+      currencyCode:
+        type: string
+      maskedAccountNumber:
+        type: string
+      effectiveFrom:
+        type: string
+        format: date
+      effectiveTo:
+        type:
+        - string
+        - 'null'
+        format: date
+      lifecycleStatus:
+        type: string
+      verifiedAt:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      impactReviewedAt:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      approvedAt:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      suspendedAt:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      verificationEvidenceRef:
+        type:
+        - string
+        - 'null'
+      verifiedBy:
+        type:
+        - string
+        - 'null'
+      impactReviewedBy:
+        type:
+        - string
+        - 'null'
+      impactReviewEvidenceRef:
+        type:
+        - string
+        - 'null'
+      approvedBy:
+        type:
+        - string
+        - 'null'
+      approvalEvidenceRef:
+        type:
+        - string
+        - 'null'
+      suspendedBy:
+        type:
+        - string
+        - 'null'
+      suspensionReason:
+        type:
+        - string
+        - 'null'
+      supersedesVersionId:
+        type:
+        - string
+        - 'null'
+        format: uuid
+  EipPaymentInstructionLineWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - lineSequence
+    - employeeBankAccountVersionId
+    - lineType
+    properties:
+      lineSequence:
+        type: integer
+        minimum: 1
+      employeeBankAccountVersionId:
+        type: string
+        format: uuid
+      lineType:
+        type: string
+        enum:
+        - PERCENTAGE
+        - FIXED_AMOUNT
+        - REMAINING_BALANCE
+      percentage:
+        type:
+        - number
+        - 'null'
+        maximum: 100
+        exclusiveMinimum: 0
+      fixedAmount:
+        type:
+        - number
+        - 'null'
+        exclusiveMinimum: 0
+  EipPaymentInstructionWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - code
+    - currencyCode
+    - allocationMode
+    - effectiveFrom
+    - lines
+    properties:
+      identityId:
+        type:
+        - string
+        - 'null'
+        format: uuid
+      code:
+        type: string
+        pattern: ^[A-Z][A-Z0-9_]*$
+        maxLength: 60
+      currencyCode:
+        type: string
+        pattern: ^[A-Z]{3}$
+      allocationMode:
+        type: string
+        enum:
+        - PERCENTAGE
+        - FIXED_THEN_REMAINDER
+      effectiveFrom:
+        type: string
+        format: date
+      effectiveTo:
+        type:
+        - string
+        - 'null'
+        format: date
+      lines:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/schemas/EipPaymentInstructionLineWrite'
+  EipPaymentInstruction:
+    type: object
+    additionalProperties: false
+    required:
+    - identityId
+    - payrollRelationshipId
+    - code
+    - versionId
+    - versionNo
+    - currencyCode
+    - allocationMode
+    - lifecycleStatus
+    - lines
+    properties:
+      identityId:
+        type: string
+        format: uuid
+      payrollRelationshipId:
+        type: string
+        format: uuid
+      code:
+        type: string
+      versionId:
+        type: string
+        format: uuid
+      versionSequence:
+        type: integer
+      versionNo:
+        type: integer
+        format: int64
+      currencyCode:
+        type: string
+      allocationMode:
+        type: string
+      effectiveFrom:
+        type: string
+        format: date
+      effectiveTo:
+        type:
+        - string
+        - 'null'
+        format: date
+      lifecycleStatus:
+        type: string
+      lines:
+        type: array
+        items:
+          $ref: '#/schemas/EipPaymentInstructionLine'
+      identityStatus:
+        type: string
+      impactReviewedAt:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      impactReviewedBy:
+        type:
+        - string
+        - 'null'
+      impactReviewEvidenceRef:
+        type:
+        - string
+        - 'null'
+      approvedAt:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      approvedBy:
+        type:
+        - string
+        - 'null'
+      approvalEvidenceRef:
+        type:
+        - string
+        - 'null'
+      supersedesVersionId:
+        type:
+        - string
+        - 'null'
+        format: uuid
+  EipPaymentRestrictionWrite:
+    type: object
+    additionalProperties: false
+    required:
+    - restrictionKind
+    - sourceReference
+    - reasonCode
+    - evidenceRef
+    - effectiveFrom
+    properties:
+      restrictionKind:
+        type: string
+        enum:
+        - FRAUD
+        - SECURITY
+        - BENEFICIARY
+      sourceReference:
+        type: string
+        maxLength: 240
+      reasonCode:
+        type: string
+        pattern: ^[A-Z][A-Z0-9_]*$
+        maxLength: 80
+      evidenceRef:
+        type: string
+        maxLength: 240
+      effectiveFrom:
+        type: string
+        format: date
+      effectiveTo:
+        type:
+        - string
+        - 'null'
+        format: date
+  EipPaymentRestrictionClear:
+    type: object
+    additionalProperties: false
+    required:
+    - evidenceRef
+    properties:
+      evidenceRef:
+        type: string
+        maxLength: 240
+  EipPaymentRestriction:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - payrollRelationshipId
+    - versionNo
+    - restrictionKind
+    - currentState
+    - createdAt
+    - createdBy
+    - latestEventType
+    - latestEventAt
+    - latestEventActor
+    properties:
+      id:
+        type: string
+        format: uuid
+      payrollRelationshipId:
+        type: string
+        format: uuid
+      versionNo:
+        type: integer
+        format: int64
+      restrictionKind:
+        type: string
+        enum:
+        - FRAUD
+        - SECURITY
+        - BENEFICIARY
+      sourceReference:
+        type: string
+      reasonCode:
+        type: string
+      effectiveFrom:
+        type: string
+        format: date
+      effectiveTo:
+        type:
+        - string
+        - 'null'
+        format: date
+      currentState:
+        type: string
+        enum:
+        - IMPOSED
+        - CLEARED
+      createdAt:
+        type: string
+        format: date-time
+      createdBy:
+        type: string
+      latestEventType:
+        type: string
+      latestEventAt:
+        type: string
+        format: date-time
+      latestEventActor:
+        type: string
+  EipPaymentReadinessFinding:
+    type: object
+    additionalProperties: false
+    required:
+    - severity
+    - code
+    - detail
+    properties:
+      severity:
+        type: string
+        enum:
+        - BLOCKER
+        - WARNING
+      code:
+        type: string
+      detail:
+        type: string
+  EipPaymentReadiness:
+    type: object
+    additionalProperties: false
+    required:
+    - payrollRelationshipId
+    - currencyCode
+    - asOf
+    - ready
+    - findings
+    properties:
+      payrollRelationshipId:
+        type: string
+        format: uuid
+      currencyCode:
+        type: string
+        pattern: ^[A-Z]{3}$
+      asOf:
+        type: string
+        format: date
+      ready:
+        type: boolean
+      findings:
+        type: array
+        items:
+          $ref: '#/schemas/EipPaymentReadinessFinding'
+  EipPaymentInstructionLine:
+    type: object
+    additionalProperties: false
+    required:
+    - id
+    - lineSequence
+    - employeeBankAccountVersionId
+    - lineType
+    properties:
+      id:
+        type: string
+        format: uuid
+      lineSequence:
+        type: integer
+        minimum: 1
+      employeeBankAccountVersionId:
+        type: string
+        format: uuid
+      lineType:
+        type: string
+        enum:
+        - PERCENTAGE
+        - FIXED_AMOUNT
+        - REMAINING_BALANCE
+      percentage:
+        type:
+        - number
+        - 'null'
+        exclusiveMinimum: 0
+        maximum: 100
+      fixedAmount:
+        type:
+        - number
+        - 'null'
+        exclusiveMinimum: 0
   Problem:
     type: object
     properties:

@@ -93,3 +93,21 @@ payments or perform accounting.
 
 All new writes retain Idempotency-Key handling, tenant-scoped forced RLS, atomic
 audit/outbox evidence and permission checks.
+
+<!-- P5-EIP-01-G02A -->
+## P5-EIP-01 G02A — employee identity, bank and payment readiness API
+
+The relationship-scoped API adds masked payroll identifiers, source-authority
+identity mismatch cases, encrypted employee bank-account lifecycle, payment
+instructions, payment-only restrictions and explainable payment readiness.
+
+Reveal endpoints are separately permissioned, return Cache-Control: no-store,
+require a reason and append masked audit evidence only; they do not emit an
+outbox event containing the revealed value. Create/transition commands remain
+idempotent and their persisted request identity is hash/fingerprint based rather
+than plaintext secret payload.
+
+Allocation modes are exactly PERCENTAGE (100% total) or
+FIXED_THEN_REMAINDER (one or more fixed lines plus exactly one remaining
+balance). Payment readiness is computed as-of and returns BLOCKER/WARNING
+findings; it is not employee_payroll_profile.payroll_status.

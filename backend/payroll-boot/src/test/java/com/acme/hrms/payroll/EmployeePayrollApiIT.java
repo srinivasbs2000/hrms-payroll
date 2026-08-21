@@ -519,6 +519,296 @@ class EmployeePayrollApiIT {
   }
 
   @Test
+  void employeeIdentityBankPaymentSecurityIsMaskedAuditedIdempotentAndTenantIsolated()
+      throws Exception {
+    MvcResult relationshipCreated = mvc.perform(
+            post("/api/v1/payroll-relationships")
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.relationship.create",
+                    "eip-owner"))
+                .header("Idempotency-Key", "eip-relationship-create")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(relationshipRequest("EMP-EIP-001", "EIP-001")))
+        .andExpect(status().isCreated())
+        .andReturn();
+    JsonNode relationship = objectMapper.readTree(
+        relationshipCreated.getResponse().getContentAsString());
+    String relationshipId = relationship.get("identityId").asText();
+    String relationshipVersionId = relationship.get("versionId").asText();
+    approveRelationship(relationshipId, relationshipVersionId);
+
+    String identifierRequest =
+        """
+        {
+          "schemeCode":"PAN",
+          "value":"ABCDE1234F",
+          "sourceAuthority":"HR_MASTER",
+          "sourceReference":"EIP-API-IT",
+          "effectiveFrom":"2026-01-01",
+          "effectiveTo":"2029-01-01"
+        }
+        """;
+
+    MvcResult identifierCreated = mvc.perform(
+            post(
+                "/api/v1/payroll-relationships/{relationshipId}/identifiers",
+                relationshipId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.identifier.write",
+                    "eip-maker"))
+                .header("Idempotency-Key", "eip-identifier-write")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(identifierRequest))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.maskedValue").value("******234F"))
+        .andReturn();
+    assertThat(identifierCreated.getResponse().getContentAsString())
+        .doesNotContain("ABCDE1234F");
+    JsonNode identifier = objectMapper.readTree(
+        identifierCreated.getResponse().getContentAsString());
+    String identifierIdentityId = identifier.get("identityId").asText();
+    String identifierVersionId = identifier.get("versionId").asText();
+
+    MvcResult identifierReplay = mvc.perform(
+            post(
+                "/api/v1/payroll-relationships/{relationshipId}/identifiers",
+                relationshipId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.identifier.write",
+                    "eip-maker"))
+                .header("Idempotency-Key", "eip-identifier-write")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(identifierRequest))
+        .andExpect(status().isCreated())
+        .andReturn();
+    assertThat(objectMapper.readTree(
+            identifierReplay.getResponse().getContentAsString())
+        .get("versionId").asText())
+        .isEqualTo(identifierVersionId);
+
+    mvc.perform(
+            post(
+                "/api/v1/payroll-relationships/{relationshipId}/identifiers",
+                relationshipId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.identifier.read",
+                    "eip-reader"))
+                .header("Idempotency-Key", "eip-read-only-write-denied")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(identifierRequest))
+        .andExpect(status().isForbidden());
+
+    MvcResult identifierList = mvc.perform(
+            get(
+                "/api/v1/payroll-relationships/{relationshipId}/identifiers",
+                relationshipId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.identifier.read",
+                    "eip-reader")))
+        .andExpect(status().isOk())
+        .andReturn();
+    assertThat(identifierList.getResponse().getContentAsString())
+        .contains("******234F")
+        .doesNotContain("ABCDE1234F");
+
+    mvc.perform(
+            post(
+                "/api/v1/payroll-relationships/{relationshipId}/identifiers/{versionId}/verify",
+                relationshipId,
+                identifierVersionId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.identifier.verify",
+                    "eip-verifier"))
+                .header("Idempotency-Key", "eip-identifier-verify")
+                .header("If-Match", "0")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"evidenceRef\":\"eip-verification-evidence\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lifecycleStatus").value("VERIFIED"))
+        .andExpect(jsonPath("$.versionNo").value(1));
+
+    mvc.perform(
+            post(
+                "/api/v1/payroll-relationships/{relationshipId}/identifiers/{versionId}/approve",
+                relationshipId,
+                identifierVersionId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.identifier.approve",
+                    "eip-approver"))
+                .header("Idempotency-Key", "eip-identifier-approve")
+                .header("If-Match", "1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"evidenceRef\":\"eip-approval-evidence\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"))
+        .andExpect(jsonPath("$.versionNo").value(2));
+
+    mvc.perform(
+            post(
+                "/api/v1/payroll-relationships/{relationshipId}/identifiers/{versionId}/reveal",
+                relationshipId,
+                identifierVersionId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.identifier.read",
+                    "eip-reader"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"support-case-read-denied\"}"))
+        .andExpect(status().isForbidden());
+
+    MvcResult identifierReveal = mvc.perform(
+            post(
+                "/api/v1/payroll-relationships/{relationshipId}/identifiers/{versionId}/reveal",
+                relationshipId,
+                identifierVersionId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.identifier.reveal",
+                    "eip-revealer"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"support-case-authorized\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.value").value("ABCDE1234F"))
+        .andReturn();
+    assertThat(identifierReveal.getResponse().getHeader("Cache-Control"))
+        .contains("no-store");
+    assertThat(identifierReveal.getResponse().getHeader("Pragma"))
+        .contains("no-cache");
+
+    String bankRequest =
+        """
+        {
+          "code":"PRIMARY",
+          "bankName":"Synthetic Bank",
+          "branchName":"Bengaluru",
+          "routingCode":"SYNTH0001",
+          "accountHolderName":"Synthetic Employee",
+          "currencyCode":"INR",
+          "accountNumber":"1234567890",
+          "effectiveFrom":"2026-01-01",
+          "effectiveTo":"2029-01-01"
+        }
+        """;
+    MvcResult bankCreated = mvc.perform(
+            post(
+                "/api/v1/payroll-relationships/{relationshipId}/bank-accounts",
+                relationshipId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.bank-account.write",
+                    "eip-bank-maker"))
+                .header("Idempotency-Key", "eip-bank-write")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bankRequest))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.maskedAccountNumber").value("****7890"))
+        .andReturn();
+    assertThat(bankCreated.getResponse().getContentAsString())
+        .doesNotContain("1234567890")
+        .doesNotContain("Synthetic Employee");
+    JsonNode bank = objectMapper.readTree(
+        bankCreated.getResponse().getContentAsString());
+    String bankVersionId = bank.get("versionId").asText();
+
+    MvcResult bankReveal = mvc.perform(
+            post(
+                "/api/v1/payroll-relationships/{relationshipId}/bank-accounts/{versionId}/reveal",
+                relationshipId,
+                bankVersionId)
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.bank-account.reveal",
+                    "eip-bank-revealer"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"support-case-bank-authorized\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.value").value("1234567890"))
+        .andReturn();
+    assertThat(bankReveal.getResponse().getHeader("Cache-Control"))
+        .contains("no-store");
+
+    mvc.perform(
+            get(
+                "/api/v1/payroll-relationships/{relationshipId}/identifiers",
+                relationshipId)
+                .with(token(
+                    TENANT_B,
+                    "employee-payroll.identifier.read",
+                    "tenant-b-reader")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isEmpty());
+
+    mvc.perform(
+            get(
+                "/api/v1/payroll-relationships/{relationshipId}/payment-readiness",
+                relationshipId)
+                .param("currencyCode", "INR")
+                .param("asOf", "2026-06-01")
+                .with(token(
+                    TENANT_A,
+                    "employee-payroll.payment-readiness.read",
+                    "eip-readiness-reader")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ready").value(false))
+        .andExpect(jsonPath("$.findings[?(@.code == 'PAYMENT_INSTRUCTION_MISSING')]").exists());
+
+    try (Connection connection = admin();
+        Statement statement = connection.createStatement();
+        var result = statement.executeQuery(
+            """
+            select
+              coalesce((
+                select string_agg(coalesce(response_body::text,'') || request_hash, '')
+                  from integration.idempotency_record
+                 where tenant_id='%s'
+                   and operation like 'employee-payroll:%%'
+              ), '') as idempotency_text,
+              coalesce((
+                select string_agg(
+                  coalesce(before_state::text,'')
+                  || coalesce(after_state::text,'')
+                  || coalesce(metadata::text,''), '')
+                  from audit.audit_event
+                 where tenant_id='%s'
+              ), '') as audit_text,
+              coalesce((
+                select string_agg(payload::text, '')
+                  from integration.outbox_event
+                 where tenant_id='%s'
+              ), '') as outbox_text,
+              coalesce((
+                select string_agg(aggregate_version::text, ',' order by aggregate_version)
+                  from integration.outbox_event
+                 where tenant_id='%s'
+                   and aggregate_type='PAYROLL_IDENTIFIER'
+                   and aggregate_id='%s'
+              ), '') as identifier_event_versions
+            """.formatted(
+                TENANT_A,
+                TENANT_A,
+                TENANT_A,
+                TENANT_A,
+                identifierIdentityId))) {
+      assertThat(result.next()).isTrue();
+      assertThat(result.getString("idempotency_text"))
+          .doesNotContain("ABCDE1234F", "1234567890", "Synthetic Employee");
+      assertThat(result.getString("audit_text"))
+          .doesNotContain("ABCDE1234F", "1234567890", "Synthetic Employee");
+      assertThat(result.getString("outbox_text"))
+          .doesNotContain("ABCDE1234F", "1234567890", "Synthetic Employee");
+      assertThat(result.getString("identifier_event_versions"))
+          .isEqualTo("1,2,3");
+    }
+  }
+
+  @Test
   void idempotencyKeyReuseWithDifferentRelationshipPayloadIsConflict()
       throws Exception {
     String first =
@@ -818,9 +1108,15 @@ class EmployeePayrollApiIT {
   private static org.springframework.security.test.web.servlet.request
       .SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token(
           String tenant, String permission) {
+    return token(tenant, permission, "synthetic-subject");
+  }
+
+  private static org.springframework.security.test.web.servlet.request
+      .SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token(
+          String tenant, String permission, String subject) {
     return jwt().jwt(jwt -> jwt
         .issuer("https://issuer.example.test")
-        .subject("synthetic-subject")
+        .subject(subject)
         .claim("tenant_id", tenant))
         .authorities(() -> permission);
   }

@@ -88,3 +88,17 @@ routing/compatibility authority.
 Repository mutations that bind a stable source work-assignment reference or
 record impact evidence receive the application Clock timestamp explicitly. No
 new server-time dependency is introduced into domain decisions.
+
+<!-- P5-EIP-01-G02A -->
+## P5-EIP-01 G02A — application/security contract
+
+Employee-sensitive cryptography is employee-payroll-owned and follows the
+proven V035 contract: AES-256-GCM, 12-byte IV, key-version metadata and
+domain-separated HMAC-SHA-256 fingerprints. The employee-payroll module does not
+import organisation.internal security classes.
+
+Normal audit/outbox state contains masks, lifecycle state and non-secret
+metadata only. Identifier/account plaintext exists only in request memory and
+restricted reveal responses. Mismatch comparisons persist fingerprints rather
+than source values. All relationship-scoped transitions re-check that the
+version/case/restriction belongs to the relationship in the HTTP path.

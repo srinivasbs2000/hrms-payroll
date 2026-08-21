@@ -105,3 +105,14 @@ Required outcome:
 - failures, errors and skips are all zero;
 - OpenAPI has zero errors and zero warnings; and
 - `git diff --check` produces no output.
+
+<!-- P5-EIP-01-G02A -->
+## P5-EIP-01 G02A — future G02B UI boundary
+
+The existing Employee Payroll workspace remains the UI starting point. G02B must
+consume the merged G02A API for masked identifier history, restricted reveal,
+identity mismatch/source correction, employee bank verification and impact
+review, payment allocation, payment-only restrictions and readiness findings.
+
+All four P5-EIP-01 stories remain REQUIRED_PRODUCT_UI. Mock-only tests do not
+close them; real-backend browser E2E is mandatory after G02A publication.

@@ -39,5 +39,27 @@ public final class EmployeePayrollPermissions {
   public static final String LIFECYCLE_LINEAGE_CREATE = "employee-payroll.lifecycle-lineage.create";
   public static final String LIFECYCLE_LINEAGE_APPROVE = "employee-payroll.lifecycle-lineage.approve";
 
+
+  public static final String IDENTIFIER_READ = "employee-payroll.identifier.read";
+  public static final String IDENTIFIER_WRITE = "employee-payroll.identifier.write";
+  public static final String IDENTIFIER_VERIFY = "employee-payroll.identifier.verify";
+  public static final String IDENTIFIER_APPROVE = "employee-payroll.identifier.approve";
+  public static final String IDENTIFIER_REVEAL = "employee-payroll.identifier.reveal";
+  public static final String IDENTITY_MISMATCH_READ = "employee-payroll.identity-mismatch.read";
+  public static final String IDENTITY_MISMATCH_WRITE = "employee-payroll.identity-mismatch.write";
+  public static final String IDENTITY_MISMATCH_RESOLVE = "employee-payroll.identity-mismatch.resolve";
+  public static final String BANK_ACCOUNT_READ = "employee-payroll.bank-account.read";
+  public static final String BANK_ACCOUNT_WRITE = "employee-payroll.bank-account.write";
+  public static final String BANK_ACCOUNT_VERIFY = "employee-payroll.bank-account.verify";
+  public static final String BANK_ACCOUNT_APPROVE = "employee-payroll.bank-account.approve";
+  public static final String BANK_ACCOUNT_REVEAL = "employee-payroll.bank-account.reveal";
+  public static final String PAYMENT_INSTRUCTION_READ = "employee-payroll.payment-instruction.read";
+  public static final String PAYMENT_INSTRUCTION_WRITE = "employee-payroll.payment-instruction.write";
+  public static final String PAYMENT_INSTRUCTION_APPROVE = "employee-payroll.payment-instruction.approve";
+  public static final String PAYMENT_RESTRICTION_READ = "employee-payroll.payment-restriction.read";
+  public static final String PAYMENT_RESTRICTION_WRITE = "employee-payroll.payment-restriction.write";
+  public static final String PAYMENT_RESTRICTION_CLEAR = "employee-payroll.payment-restriction.clear";
+  public static final String PAYMENT_READINESS_READ = "employee-payroll.payment-readiness.read";
+
   private EmployeePayrollPermissions() {}
 }
