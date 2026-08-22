@@ -21,7 +21,12 @@ jobs:
           java-version: '21'
           cache: maven
       - name: Maven verify
-        run: ./mvnw --batch-mode verify
+        shell: bash
+        run: |
+          export PAYROLL_EMPLOYEE_SENSITIVE_ACTIVE_KEY_VERSION="ci-test-v1"
+          export PAYROLL_EMPLOYEE_SENSITIVE_ENCRYPTION_KEYS="ci-test-v1:$(printf '%s' 'hrms-ci-employee-sensitive-encryption' | openssl dgst -sha256 -binary | base64 -w0)"
+          export PAYROLL_EMPLOYEE_SENSITIVE_FINGERPRINT_KEY="$(printf '%s' 'hrms-ci-employee-sensitive-fingerprint' | openssl dgst -sha256 -binary | base64 -w0)"
+          ./mvnw --batch-mode verify
       - name: Upload Maven test reports
         if: always()
         uses: actions/upload-artifact@v6

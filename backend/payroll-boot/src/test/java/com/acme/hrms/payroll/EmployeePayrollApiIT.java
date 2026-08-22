@@ -134,21 +134,9 @@ class EmployeePayrollApiIT {
   @Autowired MockMvc mvc;
   @Autowired ObjectMapper objectMapper;
   @MockBean JwtDecoder jwtDecoder;
-  @MockBean
-  com.acme.hrms.payroll.employeepayroll.internal.security.EmployeeSensitiveCryptoProvider
-      employeeSensitiveCryptoProvider;
 
   @BeforeEach
   void seedApprovedDependencies() throws Exception {
-    org.mockito.Mockito.when(employeeSensitiveCryptoProvider.require())
-        .thenReturn(
-            com.acme.hrms.payroll.employeepayroll.internal.security.EmployeeSensitiveCrypto
-                .fromBase64(
-                    "test-v1",
-                    java.util.Map.of(
-                        "test-v1",
-                        "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE="),
-                    "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI="));
     try (Connection connection = admin();
         Statement statement = connection.createStatement()) {
       statement.execute("TRUNCATE platform.tenant CASCADE");
