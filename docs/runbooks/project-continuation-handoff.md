@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 19 August 2026 at P5-EIP-01 G01 verdict and G02 authorization
+**Updated:** 22 August 2026 at P5-EIP-01 G02A local-green hosted-CI recovery amendment authority
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -12,7 +12,7 @@
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-EPA-01 backend 7/7 GREEN; backend runtime hardening PR #84 merged; UI selector PR #20 5/5 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
 **Active capability:** P5-EIP-01 G02A — Employee Identity, Bank & Payment Readiness backend/database/contracts implementation
-**Current state:** P5-EIP-01 G01 CLOSED; G02 implementation authorized after this verdict authority merges
+**Current state:** P5-EIP-01 G02A local technical gate and independent review GREEN at `74c649fa4b9d7df34da4c7b7b4836e3787215305`; publication waits for the separately merged hosted-CI recovery amendment
 **Migrations:** V001–V050 committed and immutable
 **Next migration:** V051 reserved exclusively to P5-EIP-01 G02
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -34,7 +34,7 @@ live read-only GitHub evidence before starting write-capable work.
 | Hosted PR #36 CI | 9/9 GREEN |
 | Active write owner | P5-EIP-01 G02 — exact scope-authority allow-list |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | Exact backend/UI allow-list in P5-EIP-01 scope authority |
+| Active path ownership | Original backend/UI product allow-list unchanged; after amendment merge, temporary recovery authority adds only `.github/workflows/ci.yml` for exact reviewed recovery commit `74c649f...` |
 | Migration state | V001–V050 immutable |
 | Next migration | V051 reserved exclusively to P5-EIP-01 G02 |
 | Product deployment | Greenfield; no evidenced production deployment |
@@ -154,6 +154,21 @@ After this status-closure PR merges:
 - the historical product branch may be retained;
 - no next capability is activated by this closure.
 
+
+## P5-EIP-01 G02A hosted-CI recovery checkpoint
+
+Local recovery commit `74c649fa4b9d7df34da4c7b7b4836e3787215305`
+is technically green and independently reviewed. Its only recovery delta from
+remote PR #88 head `45a5841fb108c25b4fb4a91ce532c6fd2cbe83b2` is the CI Maven
+synthetic-key environment plus restoration of EmployeePayrollApiIT to the
+original G02A blob. V051 and both employee-payroll OpenAPI contract blobs are
+unchanged by the recovery commit.
+
+The separate recovery amendment
+`docs/planning/pln-01/p5-eip-01-g02a-hosted-ci-recovery-amendment.md`
+must merge before `74c649f...` is pushed. After that merge, revalidate main,
+remote PR #88 head and local recovery head, then publish only `74c649f...` to
+the existing PR #88 branch. Do not create another G02A PR or start G02B.
 
 ## Exact next controlled action
 

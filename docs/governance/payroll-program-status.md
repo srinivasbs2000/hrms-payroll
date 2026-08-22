@@ -13,9 +13,10 @@
 **Migration state:** V001–V050 committed and immutable; V051 reserved exclusively to P5-EIP-01 G02
 **Next migration:** V051 reserved — P5-EIP-01 only
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 19 August 2026 at P5-EIP-01 G01 architecture/schema/API/UI verdict
+**Last reconciled:** 22 August 2026 at P5-EIP-01 G02A hosted-CI recovery amendment authority
 **Current execution capability:** P5-EIP-01 G02A — Employee Identity, Bank & Payment Readiness backend/database/contracts implementation
 **Active capability scope authority:** `docs/planning/pln-01/p5-eip-01-employee-identity-bank-payment-readiness-scope.md`
+**Active hosted-CI recovery amendment:** `docs/planning/pln-01/p5-eip-01-g02a-hosted-ci-recovery-amendment.md` — temporary `.github/workflows/ci.yml` authority for exact reviewed recovery commit `74c649fa4b9d7df34da4c7b7b4836e3787215305` only
 **Latest closed capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
@@ -55,6 +56,19 @@ Canonical story boundary:
 Activation changes no canonical story status or program total. All four selected stories remain NOT EVIDENCED and are REQUIRED_PRODUCT_UI.
 
 G01 is CLOSED after this verdict authority merges. The verdict is **ADDITIVE V051 REQUIRED**. V001–V050 remain immutable; V051 is reserved exclusively to P5-EIP-01 G02. G02A owns only the exact backend/program allow-list in the active scope authority; G02B owns only the exact UI allow-list. Statutory memberships, tax/declarations, onboarding/broad readiness, generic payroll holds, complete employee snapshots, E06 calculation and payment execution remain excluded.
+
+## P5-EIP-01 G02A hosted-CI recovery amendment
+
+G02A is locally technically green at reviewed recovery commit
+`74c649fa4b9d7df34da4c7b7b4836e3787215305`: full root Maven verify is green,
+ArchitectureRulesTest is 3/3, EmployeePayrollApiIT is 4/4 under Failsafe, V051
+and OpenAPI recovery blobs are unchanged, and independent review is green.
+
+The original G02 product allow-list remains unchanged. A temporary governance
+amendment separately authorizes only `.github/workflows/ci.yml` for the exact
+reviewed recovery commit. This authority becomes effective only after its
+separate governance PR merges and expires after PR #88 hosted reconciliation.
+G02B remains blocked until G02A is hosted-green and merged.
 
 ## Latest closed capability — P5-EPA-01
 
