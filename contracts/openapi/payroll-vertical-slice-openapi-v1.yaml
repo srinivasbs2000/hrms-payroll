@@ -31,6 +31,42 @@ tags:
 - name: Documents
   description: Draft payslip generation and retrieval.
 paths:
+  /api/v1/payroll-relationships/{relationshipId}/identifiers:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollIdentifierCollection'
+  /api/v1/payroll-relationships/{relationshipId}/identifiers/{versionId}/verify:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollIdentifierVerification'
+  /api/v1/payroll-relationships/{relationshipId}/identifiers/{versionId}/approve:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollIdentifierApproval'
+  /api/v1/payroll-relationships/{relationshipId}/identifiers/{versionId}/reveal:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollIdentifierReveal'
+  /api/v1/payroll-relationships/{relationshipId}/identity-mismatches:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeeIdentityMismatchCollection'
+  /api/v1/payroll-relationships/{relationshipId}/identity-mismatches/{caseId}/resolve:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeeIdentityMismatchResolution'
+  /api/v1/payroll-relationships/{relationshipId}/bank-accounts:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeeBankAccountCollection'
+  /api/v1/payroll-relationships/{relationshipId}/bank-accounts/{versionId}/verify:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeeBankAccountVerification'
+  /api/v1/payroll-relationships/{relationshipId}/bank-accounts/{versionId}/impact-review:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeeBankAccountImpactReview'
+  /api/v1/payroll-relationships/{relationshipId}/bank-accounts/{versionId}/approve:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeeBankAccountApproval'
+  /api/v1/payroll-relationships/{relationshipId}/bank-accounts/{versionId}/suspend:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeeBankAccountSuspension'
+  /api/v1/payroll-relationships/{relationshipId}/bank-accounts/{versionId}/reveal:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeeBankAccountReveal'
+  /api/v1/payroll-relationships/{relationshipId}/payment-instructions:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePaymentInstructionCollection'
+  /api/v1/payroll-relationships/{relationshipId}/payment-instructions/{versionId}/impact-review:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePaymentInstructionImpactReview'
+  /api/v1/payroll-relationships/{relationshipId}/payment-instructions/{versionId}/approve:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePaymentInstructionApproval'
+  /api/v1/payroll-relationships/{relationshipId}/payment-restrictions:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePaymentRestrictionCollection'
+  /api/v1/payroll-relationships/{relationshipId}/payment-restrictions/{restrictionId}/clear:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePaymentRestrictionClear'
+  /api/v1/payroll-relationships/{relationshipId}/payment-readiness:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePaymentReadiness'
   /foundation-approval-authorities:
     $ref: './foundation-approval-authority-openapi-v1.yaml#/components/pathItems/ApprovalAuthorityCollection'
   /foundation-approval-authorities/{authorityId}/suspension:

@@ -1,6 +1,6 @@
 # Payroll vertical-slice Flyway package
 
-`sql/` is the canonical source for the ordered V001-V050 migrations. The Maven
+`sql/` is the canonical source for the ordered V001-V051 migrations. The Maven
 `backend/database-migrations` module packages these files at `db/migration` and
 exposes the Flyway Maven plugin; do not create a second migration copy in the
 module.
@@ -101,6 +101,7 @@ Migration order:
 48. salary-structure security and segregation-of-duties completion
 49. salary-structure audit-lineage read authority
 50. P5-EPA-01 employee payroll assignment and compensation binding completion
+51. P5-EIP-01 secure employee payroll identifiers, identity mismatch workflow, employee bank/payment instructions, payment-only restrictions and explainable payment readiness
 
 This remains a greenfield product with no evidenced production deployment.
 Forward-only migrations and populated-upgrade tests protect reproducible local,
@@ -112,3 +113,12 @@ application sets `app.tenant_id` with `SET LOCAL` at every transaction boundary.
 The seed is synthetic and development-only; it is deliberately not included in
 the automatic Flyway location. Local and CI migration tests use PostgreSQL 17
 under ADR-003.
+
+<!-- P5-EIP-01-V051 -->
+V051 is `V051__employee_identity_bank_payment_readiness.sql`, reserved exclusively
+to P5-EIP-01 G02 by merged G01 verdict PR #87. It is additive to V050 and adds
+employee-level encrypted identifier/bank secrets, source-authority mismatch
+evidence, versioned payment instructions, payment-only FRAUD/SECURITY/BENEFICIARY
+restriction evidence and deterministic payment-readiness findings. It does not
+implement statutory/tax truth, generic payroll holds, calculation or payment
+execution.
