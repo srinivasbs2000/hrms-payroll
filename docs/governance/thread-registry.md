@@ -1,13 +1,13 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 19 August 2026 P5-EIP-01 G01 verdict and G02 authorization
+**Last verified:** 22 August 2026 P5-EIP-01 G02A local-green / hosted-CI recovery amendment authority
 **Product reconciliation baseline:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-EPA-01 backend PR #83 and UI PR #19
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-EPA-01 backend 7/7 GREEN; runtime hardening PR #84 merged; UI selector PR #20 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
-**Active product write owner:** P5-EIP-01 G02 — exact allow-list only
+**Active product write owner:** P5-EIP-01 G02 — original product allow-list unchanged; temporary hosted-CI recovery authority is separately bounded to `.github/workflows/ci.yml` at exact reviewed commit `74c649fa4b9d7df34da4c7b7b4836e3787215305` after amendment merge
 **Migration authority:** V001–V050 immutable; V051 reserved exclusively to P5-EIP-01 G02
 
 Thread numbers are historical conversation labels, not implementation
@@ -59,6 +59,21 @@ P5-EIP-01 is active at **G02A BACKEND/DATABASE/CONTRACTS** after this verdict au
 - G02A backend publication/merge precedes G02B UI real-backend browser closure;
 - canonical story statuses and totals remain unchanged by this authority; and
 - statutory memberships, tax/declarations, onboarding/broad readiness, generic payroll holds, complete employee snapshots, E06 calculation and payment execution remain excluded.
+
+## P5-EIP-01 G02A hosted-CI recovery checkpoint
+
+- PR #88 existing branch remains the only G02A product publication branch;
+- remote PR branch before recovery publication: `45a5841fb108c25b4fb4a91ce532c6fd2cbe83b2`;
+- reviewed local recovery commit: `74c649fa4b9d7df34da4c7b7b4836e3787215305`;
+- local full Maven verify: GREEN;
+- ArchitectureRulesTest: 3/3 GREEN;
+- EmployeePayrollApiIT under Failsafe: 4/4 GREEN;
+- independent technical review: GREEN;
+- original G02 product allow-list: unchanged;
+- temporary recovery addition after amendment merge: `.github/workflows/ci.yml`
+  only for exact reviewed commit `74c649f...`;
+- publication/merge: still separate owner-controlled actions;
+- G02B: blocked until G02A hosted-green and merged.
 
 ## Program-status closure process
 
