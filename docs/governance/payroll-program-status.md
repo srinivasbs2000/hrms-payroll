@@ -3,21 +3,21 @@
 **Status:** Canonical repository-wide program checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Repository topology:** backend/program authority here; React UI authority in `srinivasbs2000/hrms-payroll-web`
-**Product reconciliation baseline:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
+**Product reconciliation baseline:** P5-EIP-01 backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code a self-referential closure SHA here
-**Latest merged product increment:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
-**Latest merged quality increment:** P5-EPA-01 backend product hosted 7/7 GREEN; runtime hardening PR #84 merged; UI selector PR #20 5/5 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
+**Latest merged product increment:** P5-EIP-01 backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`
+**Latest merged quality increment:** P5-EIP-01 backend PR #88 hosted 7/7 GREEN; G02B auth-runtime amendment PR #90 merged at `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`; UI PR #21 hosted 5/5 GREEN including cross-repository browser E2E
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** P5-EIP-01 G02 — exact backend/UI allow-list in active scope authority
-**Migration state:** V001–V050 committed and immutable; V051 reserved exclusively to P5-EIP-01 G02
-**Next migration:** V051 reserved — P5-EIP-01 only
+**Active product write owner:** NONE
+**Migration state:** V001–V051 committed and immutable; V052 unreserved
+**Next migration:** V052 unreserved
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 22 August 2026 at P5-EIP-01 G02A hosted-CI recovery amendment authority
-**Current execution capability:** P5-EIP-01 G02A — Employee Identity, Bank & Payment Readiness backend/database/contracts implementation
-**Active capability scope authority:** `docs/planning/pln-01/p5-eip-01-employee-identity-bank-payment-readiness-scope.md`
-**Active hosted-CI recovery amendment:** `docs/planning/pln-01/p5-eip-01-g02a-hosted-ci-recovery-amendment.md` — temporary `.github/workflows/ci.yml` authority for exact reviewed recovery commit `74c649fa4b9d7df34da4c7b7b4836e3787215305` only
-**Latest closed capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
+**Last reconciled:** 23 August 2026 at P5-EIP-01 G02C post-merge capability closure
+**Current execution capability:** NONE — P5-EIP-01 CLOSED; continuation requires fresh repository/live-GitHub reconciliation and separately governed selection/activation
+**P5-EIP-01 closed scope authority:** `docs/planning/pln-01/p5-eip-01-employee-identity-bank-payment-readiness-scope.md`
+**P5-EIP-01 G02A hosted-CI recovery amendment:** `docs/planning/pln-01/p5-eip-01-g02a-hosted-ci-recovery-amendment.md` — MERGED / EXPIRED after PR #88 hosted reconciliation
+**Previous closed capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
 
@@ -42,35 +42,37 @@ Validate this checkpoint against:
 Conversation history and thread names are locators only. They are not the
 project-status authority.
 
-## Active capability — P5-EIP-01
+## Latest closed capability — P5-EIP-01
 
-Fresh post-P5-EPA-01 R3 selects **P5-EIP-01 — Employee Identity, Bank & Payment Readiness**.
+P5-EIP-01 — Employee Identity, Bank & Payment Readiness is CLOSED after merged
+backend/UI product evidence and this G02C reconciliation.
 
-Canonical story boundary:
+Canonical closure boundary:
 
 - `PLN-E05-005`;
 - `PLN-E05-006`;
 - `PLN-E05-011`;
 - `PLN-E05-012`.
 
-Activation changes no canonical story status or program total. All four selected stories remain NOT EVIDENCED and are REQUIRED_PRODUCT_UI.
+All four selected stories are IMPLEMENTED with HIGH confidence and their required
+product UI/browser evidence is COMPLETE. Backend product PR #88 merged at
+`7ade2c199c0eca1351e8907a6e43fbfe8b567b7a` from exact reviewed head
+`74c649fa4b9d7df34da4c7b7b4836e3787215305`; UI PR #21 merged at
+`00368e714665785000002fe4cbd330bc1e5cc180` from exact reviewed head
+`668a1a7d0a09b41afbb5f43432c2764f33edf6c1`.
 
-G01 is CLOSED after this verdict authority merges. The verdict is **ADDITIVE V051 REQUIRED**. V001–V050 remain immutable; V051 is reserved exclusively to P5-EIP-01 G02. G02A owns only the exact backend/program allow-list in the active scope authority; G02B owns only the exact UI allow-list. Statutory memberships, tax/declarations, onboarding/broad readiness, generic payroll holds, complete employee snapshots, E06 calculation and payment execution remain excluded.
+Backend hosted CI passed all seven required checks. The bounded auth-runtime
+amendment PR #90 merged at `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`.
+G02B local v3.1 real-backend E2E and independent exact-eight-path review passed;
+UI PR #21 then passed all five hosted checks including cross-repository browser
+E2E.
 
-## P5-EIP-01 G02A hosted-CI recovery amendment
+V051 is committed and immutable. V052 is unreserved. No backend or UI product
+write owner remains. The broader E05 epic remains PARTIALLY IMPLEMENTED because
+onboarding/broad readiness, statutory memberships, tax/declarations, generic
+payroll holds, snapshots and other excluded E05 stories remain open.
 
-G02A is locally technically green at reviewed recovery commit
-`74c649fa4b9d7df34da4c7b7b4836e3787215305`: full root Maven verify is green,
-ArchitectureRulesTest is 3/3, EmployeePayrollApiIT is 4/4 under Failsafe, V051
-and OpenAPI recovery blobs are unchanged, and independent review is green.
-
-The original G02 product allow-list remains unchanged. A temporary governance
-amendment separately authorizes only `.github/workflows/ci.yml` for the exact
-reviewed recovery commit. This authority becomes effective only after its
-separate governance PR merges and expires after PR #88 hosted reconciliation.
-G02B remains blocked until G02A is hosted-green and merged.
-
-## Latest closed capability — P5-EPA-01
+## Previous closed capability — P5-EPA-01
 
 P5-EPA-01 — Employee Payroll Assignment & Compensation Binding Completion is CLOSED after merged backend/UI product evidence and G02C reconciliation.
 
@@ -237,9 +239,9 @@ The approved program contains 450 detailed source-linked stories:
 
 | Status | Stories | Percentage |
 |---|---:|---:|
-| Implemented | 58 | 12.89% |
+| Implemented | 62 | 13.78% |
 | Partially implemented | 127 | 28.22% |
-| Not evidenced | 75 | 16.67% |
+| Not evidenced | 71 | 15.78% |
 | Not started | 159 | 35.33% |
 | Legal/domain revalidation | 31 | 6.89% |
 | **Total** | **450** | **100%** |
@@ -815,7 +817,28 @@ Backend hosted run `32126631284` passed all seven required checks. Final UI host
 
 V001-V050 are immutable. V051 is unreserved. P5-EPA-01 retains no backend or UI product write ownership. No next capability is activated by this closure; continuation requires fresh repository/live-GitHub R3 reconciliation and separately governed selection/activation.
 
-## P5-EIP-01 G02B auth-runtime bounded amendment
+## Historical P5-EIP-01 G02B auth-runtime bounded amendment
 
 <!-- P5-EIP-01-G02B-AUTH-RUNTIME-AMENDMENT-V1 -->
-P5-EIP-01 G02B local source validation is green, but isolated real-backend browser E2E is blocked by an issuer mismatch caused by the shared localhost:8081 auth assumption and the frontend Keycloak environment access path. This amendment adds only `src/auth/keycloak-client.ts` and `src/auth/keycloak-client.test.ts` to G02B UI write ownership after amendment merge. Existing Employee Payroll and `e2e/p5-eip-01*.ts` ownership remains unchanged. No story status, migration, backend/API or G02C state changes.
+The bounded auth-runtime amendment merged through backend/program PR #90 and
+authorized only `src/auth/keycloak-client.ts` plus its unit test in the G02B UI
+boundary. That authority was consumed by the reviewed G02B implementation and
+expired when UI PR #21 merged. No continuing product ownership is granted.
+
+<!-- P5-EIP-01-G02C-FINAL-CLOSURE -->
+## P5-EIP-01 G02C final post-merge capability closure
+
+- backend product PR #88: head `74c649fa4b9d7df34da4c7b7b4836e3787215305`,
+  merge `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`, hosted 7/7 GREEN;
+- auth-runtime governance amendment PR #90: merge/main
+  `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`;
+- UI product PR #21: head `668a1a7d0a09b41afbb5f43432c2764f33edf6c1`,
+  merge `00368e714665785000002fe4cbd330bc1e5cc180`, hosted 5/5 GREEN;
+- selected stories `PLN-E05-005`, `006`, `011`, `012`: IMPLEMENTED / HIGH;
+- canonical totals: 62 / 127 / 71 / 159 / 31 = 450;
+- V001–V051 immutable; V052 unreserved;
+- active backend/UI product write owner: NONE;
+- no next capability activated.
+
+Continuation requires a fresh repository/live-GitHub reconciliation and separately
+merged capability selection/activation authority.

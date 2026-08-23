@@ -80,3 +80,22 @@ Post-G06 totals: 21 IMPLEMENTED / 155 PARTIALLY IMPLEMENTED / 84 NOT EVIDENCED /
 
 The next action is not P5-A5/E03. It is a separately bounded backend amendment
 activation for the demonstrated contract gaps before any further product write.
+
+<!-- P5-EIP-01-G02C-E2E-OVERLAY -->
+## P5-EIP-01 post-merge end-to-end overlay — 23 August 2026
+
+P5-EIP-01 backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`
+and UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`
+provide the required merged backend, product UI and real-backend browser boundary
+for `PLN-E05-005`, `PLN-E05-006`, `PLN-E05-011` and `PLN-E05-012`.
+
+All four are REQUIRED_PRODUCT_UI and are now end-to-end COMPLETE. Exact local
+G02B v3.1 proved maker/verifier/approver actor claims, identifier verification/
+approval, mismatch resolution, bank verification/approval, payment-instruction
+approval and SECURITY-restriction BLOCKER -> clear readiness behavior. Independent
+exact-eight-path review passed; backend hosted CI was 7/7 GREEN and UI hosted CI
+was 5/5 GREEN.
+
+Canonical totals after this overlay are 62 IMPLEMENTED / 127 PARTIALLY
+IMPLEMENTED / 71 NOT EVIDENCED / 159 NOT STARTED / 31 LEGAL/DOMAIN
+REVALIDATION = 450. No next product capability is activated by this overlay.

@@ -1,20 +1,20 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 22 August 2026 at P5-EIP-01 G02A local-green hosted-CI recovery amendment authority
+**Updated:** 23 August 2026 at P5-EIP-01 G02C final post-merge closure
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
 **Local UI repository:** `C:\\dev\\hrms-payroll-web`
-**Product reconciliation baseline:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
+**Product reconciliation baseline:** P5-EIP-01 backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
+**Latest merged product increment:** P5-EIP-01 backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
-**Latest merged quality increment:** P5-EPA-01 backend 7/7 GREEN; backend runtime hardening PR #84 merged; UI selector PR #20 5/5 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
-**Active capability:** P5-EIP-01 G02A — Employee Identity, Bank & Payment Readiness backend/database/contracts implementation
-**Current state:** P5-EIP-01 G02A local technical gate and independent review GREEN at `74c649fa4b9d7df34da4c7b7b4836e3787215305`; publication waits for the separately merged hosted-CI recovery amendment
-**Migrations:** V001–V050 committed and immutable
-**Next migration:** V051 reserved exclusively to P5-EIP-01 G02
+**Latest merged quality increment:** P5-EIP-01 backend 7/7 GREEN; auth-runtime amendment PR #90 merged; UI PR #21 5/5 GREEN including cross-repository browser E2E
+**Active capability:** NONE — P5-EIP-01 CLOSED; fresh selection/activation required
+**Current state:** P5-EIP-01 G02C closure reconciles four selected stories to IMPLEMENTED / HIGH; no backend/UI product write owner remains
+**Migrations:** V001–V051 committed and immutable
+**Next migration:** V052 unreserved
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,11 +32,11 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | P5-EIP-01 G02 — exact scope-authority allow-list |
+| Active write owner | NONE |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | Original backend/UI product allow-list unchanged; after amendment merge, temporary recovery authority adds only `.github/workflows/ci.yml` for exact reviewed recovery commit `74c649f...` |
-| Migration state | V001–V050 immutable |
-| Next migration | V051 reserved exclusively to P5-EIP-01 G02 |
+| Active path ownership | NONE — P5-EIP-01 product and temporary recovery authorities are consumed/closed |
+| Migration state | V001–V051 immutable |
+| Next migration | V052 unreserved |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
 
@@ -77,9 +77,9 @@ and E06 calculation execution.
 
 The 450 detailed stories reconcile to:
 
-- 58 implemented;
+- 62 implemented;
 - 127 partially implemented;
-- 75 not evidenced;
+- 71 not evidenced;
 - 159 not started;
 - 31 requiring legal/domain revalidation.
 
@@ -155,28 +155,19 @@ After this status-closure PR merges:
 - no next capability is activated by this closure.
 
 
-## P5-EIP-01 G02A hosted-CI recovery checkpoint
+## Historical P5-EIP-01 G02A hosted-CI recovery checkpoint
 
-Local recovery commit `74c649fa4b9d7df34da4c7b7b4836e3787215305`
-is technically green and independently reviewed. Its only recovery delta from
-remote PR #88 head `45a5841fb108c25b4fb4a91ce532c6fd2cbe83b2` is the CI Maven
-synthetic-key environment plus restoration of EmployeePayrollApiIT to the
-original G02A blob. V051 and both employee-payroll OpenAPI contract blobs are
-unchanged by the recovery commit.
-
-The separate recovery amendment
-`docs/planning/pln-01/p5-eip-01-g02a-hosted-ci-recovery-amendment.md`
-must merge before `74c649f...` is pushed. After that merge, revalidate main,
-remote PR #88 head and local recovery head, then publish only `74c649f...` to
-the existing PR #88 branch. Do not create another G02A PR or start G02B.
+The G02A recovery authority was consumed successfully. Exact reviewed head
+`74c649fa4b9d7df34da4c7b7b4836e3787215305` merged through backend PR #88 at
+`7ade2c199c0eca1351e8907a6e43fbfe8b567b7a` after all seven hosted checks
+passed. The later bounded G02B auth-runtime governance amendment merged through
+PR #90 at `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`.
 
 ## Exact next controlled action
 
-After this verdict authority merges, execute **P5-EIP-01 G02A BACKEND/DATABASE/CONTRACTS** against the exact merge/main.
-
-Implement only the exact scope-authority allow-list: V051, employee-payroll backend, migration/API tests, employee-payroll OpenAPI/vertical slice, Keycloak permissions, empty employee-sensitive key placeholders and employee-payroll runbooks. Reuse the V035 security contract without modifying organisation internals.
-
-Before publication require local full Maven verification, full migration/Flyway evidence, employee-payroll API/security tests, plaintext-leak negative checks and independent review. Publish/merge backend only after all seven hosted checks are green. G02B UI starts against that exact merged backend authority.
+P5-EIP-01 is CLOSED after G02C. Do not perform further P5-EIP product writes or
+reserve V052. Begin any continuation with fresh repository/live-GitHub
+reconciliation, then separately select and activate the next bounded capability.
 
 <!-- P5-EIP-01-ACTIVATION -->
 ## P5-EIP-01 activation checkpoint
@@ -503,7 +494,20 @@ capability selection/activation.
 - story status/totals: unchanged;
 - next gate: G02A backend/database/contracts implementation, then G02B UI + real-backend E2E.
 
-## P5-EIP-01 G02B auth-runtime amendment handoff
+## Historical P5-EIP-01 G02B auth-runtime amendment handoff
 
 <!-- P5-EIP-01-G02B-AUTH-RUNTIME-AMENDMENT-V1 -->
 Preserve `C:\dev\hrms-payroll-web-worktrees\p5-eip-01-g02b` on branch `feature/p5-eip-01-g02b-identity-payment-ui` at base `9dbf0d2f700764e2fe577f89142cd6784028f70c`; do not reset, clean or recreate it. The next product action after this governance amendment merges is to resume G02B by correcting Vite-recognizable Keycloak environment access in the two newly authorized auth files and aligning the P5-EIP-only browser login with the isolated runtime Keycloak port.
+
+<!-- P5-EIP-01-G02C-HANDOFF-CLOSURE -->
+## P5-EIP-01 G02C continuation checkpoint
+
+- backend product PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`;
+- auth-runtime amendment PR #90 / `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`;
+- UI product PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`;
+- PLN-E05-005, 006, 011 and 012: IMPLEMENTED / HIGH;
+- required UI delivery/browser evidence for all four: COMPLETE;
+- canonical totals: 62 / 127 / 71 / 159 / 31 = 450;
+- V001–V051 immutable; V052 unreserved;
+- active product write owner: NONE;
+- next capability: NOT ACTIVATED.
