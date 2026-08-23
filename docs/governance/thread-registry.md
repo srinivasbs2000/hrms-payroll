@@ -1,14 +1,14 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 22 August 2026 P5-EIP-01 G02A local-green / hosted-CI recovery amendment authority
-**Product reconciliation baseline:** P5-EPA-01 backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; UI PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`
+**Last verified:** 23 August 2026 P5-EIP-01 G02C final post-merge closure
+**Product reconciliation baseline:** P5-EIP-01 backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
-**Latest merged product increment:** P5-EPA-01 backend PR #83 and UI PR #19
+**Latest merged product increment:** P5-EIP-01 backend PR #88 and UI PR #21
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
-**Latest merged quality increment:** P5-EPA-01 backend 7/7 GREEN; runtime hardening PR #84 merged; UI selector PR #20 GREEN/merged; final UI PR #19 5/5 GREEN including cross-repository browser E2E
-**Active product write owner:** P5-EIP-01 G02 — original product allow-list unchanged; temporary hosted-CI recovery authority is separately bounded to `.github/workflows/ci.yml` at exact reviewed commit `74c649fa4b9d7df34da4c7b7b4836e3787215305` after amendment merge
-**Migration authority:** V001–V050 immutable; V051 reserved exclusively to P5-EIP-01 G02
+**Latest merged quality increment:** P5-EIP-01 backend 7/7 GREEN; auth-runtime amendment PR #90 merged; UI PR #21 5/5 GREEN including cross-repository browser E2E
+**Active product write owner:** NONE
+**Migration authority:** V001–V051 immutable; V052 unreserved
 
 Thread numbers are historical conversation labels, not implementation
 authority. Only an explicitly active capability entry may own files or a
@@ -45,22 +45,17 @@ migration number.
 
 | P5-EPA-01 | CLOSED after this status closure | Employee payroll relationship, assignment, pay-group binding, salary/target assignment, employee override, compensation-change impact and transfer/rehire/concurrent-assignment completion | Backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; runtime PR #84 / `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`; UI selector PR #20 / `c81d351dda6607030a22c3d8afa1514ba17f75f0`; UI product PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`; closure PR is the PR containing this update | V050 immutable | None |
 
-| P5-EIP-01 | ACTIVE — G02 AUTHORIZED | Secure employee payroll identifiers, identity mismatch workflow, employee bank/payment instructions and payment readiness | Activation PR #86 plus G01 verdict/G02 authority | V051 reserved exclusively | Exact scope-authority allow-list |
+| P5-EIP-01 | CLOSED after G02C | Secure employee payroll identifiers, identity mismatch workflow, employee bank/payment instructions and payment readiness | Backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; auth amendment PR #90 / `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`; UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`; closure PR is the PR containing this update | V051 immutable | None |
 
 ## Active capability workstream
 
-P5-EIP-01 is active at **G02A BACKEND/DATABASE/CONTRACTS** after this verdict authority merges.
+No capability currently owns product files or a migration. P5-EIP-01 is CLOSED
+after G02C. Its four selected stories are IMPLEMENTED / HIGH with COMPLETE
+required UI/browser evidence. V001–V051 are immutable and V052 is unreserved.
+A fresh repository/live-GitHub reconciliation and separately governed
+selection/activation is required before any new product write.
 
-- selected stories remain `PLN-E05-005`, `006`, `011`, `012`;
-- all four remain NOT EVIDENCED and REQUIRED_PRODUCT_UI until product evidence closes them;
-- G01 verdict: **ADDITIVE V051 REQUIRED**;
-- V001–V050 are immutable; V051 is reserved exclusively to P5-EIP-01 G02;
-- backend/UI ownership is limited to the exact scope-authority allow-list;
-- G02A backend publication/merge precedes G02B UI real-backend browser closure;
-- canonical story statuses and totals remain unchanged by this authority; and
-- statutory memberships, tax/declarations, onboarding/broad readiness, generic payroll holds, complete employee snapshots, E06 calculation and payment execution remain excluded.
-
-## P5-EIP-01 G02A hosted-CI recovery checkpoint
+## Historical P5-EIP-01 G02A hosted-CI recovery checkpoint
 
 - PR #88 existing branch remains the only G02A product publication branch;
 - remote PR branch before recovery publication: `45a5841fb108c25b4fb4a91ce532c6fd2cbe83b2`;
@@ -110,7 +105,18 @@ P5-EIP-01 fresh-R3 activation selects PLN-E05-005, 006, 011 and 012 for a read-o
 <!-- P5-EIP-01-G01-VERDICT -->
 P5-EIP-01 G01 closed against backend/program `7818f874d01e3391b922a3f90c65f916d6bf70f4` and UI `9dbf0d2f700764e2fe577f89142cd6784028f70c`. Additive V051 is required and becomes reserved exclusively to P5-EIP-01 G02 after the verdict authority merges. G02 owns only the exact backend/UI paths declared in the active scope authority. Canonical story status remains unchanged.
 
-## P5-EIP-01 G02B auth-runtime amendment checkpoint
+## Historical P5-EIP-01 G02B auth-runtime amendment checkpoint
 
 <!-- P5-EIP-01-G02B-AUTH-RUNTIME-AMENDMENT-V1 -->
 G02B remains ACTIVE and unmerged. Local lint, focused tests, full UI regression and build are green; isolated V051 reset is green. Browser E2E is blocked at HTTP 401 because browser and backend issuer ports diverge. After this amendment merges, only `src/auth/keycloak-client.ts` and its unit test are added to G02B UI ownership.
+
+<!-- P5-EIP-01-G02C-THREAD-CLOSURE -->
+## P5-EIP-01 G02C registry closure
+
+P5-EIP-01 product evidence: backend PR #88 /
+`7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; auth-runtime amendment PR #90 /
+`8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`; UI PR #21 /
+`00368e714665785000002fe4cbd330bc1e5cc180`. Selected stories
+PLN-E05-005, 006, 011 and 012 are IMPLEMENTED / HIGH and required UI/browser
+evidence is COMPLETE. V051 is immutable, V052 is unreserved, ownership is NONE,
+and no next capability is activated.

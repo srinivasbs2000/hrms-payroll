@@ -1,12 +1,12 @@
 # P5-EIP-01 — Employee Identity, Bank & Payment Readiness
 
-**Status:** G01 CLOSED — G02 IMPLEMENTATION AUTHORIZED after this verdict authority merges
+**Status:** CLOSED — G02A/G02B merged and G02C post-merge reconciliation complete
 **R3 selection date:** 19 August 2026
 **Backend/program authority baseline:** activation PR #86 merge/main `7818f874d01e3391b922a3f90c65f916d6bf70f4`
 **UI authority baseline:** `9dbf0d2f700764e2fe577f89142cd6784028f70c`
 **Canonical epic:** E05 — Employee Payroll Profile
-**Migration state after G01 authority:** V001–V050 immutable; V051 reserved exclusively to P5-EIP-01 G02
-**Product write state after G01 authority:** G02 exact backend/UI allow-list authorized
+**Closure migration state:** V001–V051 immutable; V052 unreserved
+**Closure product write state:** NONE
 
 ## 1. Fresh R3 selection verdict
 
@@ -419,3 +419,23 @@ G02 is authorized only after this verdict authority merges:
 
 Canonical story status and program totals are unchanged by this G01/G02
 authority. All explicitly excluded E05 and E06 stories remain outside scope.
+
+<!-- P5-EIP-01-G02C-SCOPE-CLOSURE -->
+## 15. G02C final closure outcome
+
+P5-EIP-01 is CLOSED from merged evidence:
+
+- backend PR #88, exact reviewed head
+  `74c649fa4b9d7df34da4c7b7b4836e3787215305`, merge
+  `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`, hosted 7/7 GREEN;
+- bounded G02B auth-runtime amendment PR #90 merged at
+  `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`;
+- UI PR #21, exact reviewed head
+  `668a1a7d0a09b41afbb5f43432c2764f33edf6c1`, merge
+  `00368e714665785000002fe4cbd330bc1e5cc180`, hosted 5/5 GREEN;
+- exact local G02B real-backend E2E and independent source/diff review: PASS.
+
+PLN-E05-005, 006, 011 and 012 are IMPLEMENTED / HIGH with COMPLETE required
+UI/browser evidence. V051 is immutable. V052 is unreserved. Product ownership is
+NONE. The exclusions in this scope remain excluded; no next capability is
+activated by this closure.
