@@ -109,3 +109,8 @@ P5-EIP-01 fresh-R3 activation selects PLN-E05-005, 006, 011 and 012 for a read-o
 
 <!-- P5-EIP-01-G01-VERDICT -->
 P5-EIP-01 G01 closed against backend/program `7818f874d01e3391b922a3f90c65f916d6bf70f4` and UI `9dbf0d2f700764e2fe577f89142cd6784028f70c`. Additive V051 is required and becomes reserved exclusively to P5-EIP-01 G02 after the verdict authority merges. G02 owns only the exact backend/UI paths declared in the active scope authority. Canonical story status remains unchanged.
+
+## P5-EIP-01 G02B auth-runtime amendment checkpoint
+
+<!-- P5-EIP-01-G02B-AUTH-RUNTIME-AMENDMENT-V1 -->
+G02B remains ACTIVE and unmerged. Local lint, focused tests, full UI regression and build are green; isolated V051 reset is green. Browser E2E is blocked at HTTP 401 because browser and backend issuer ports diverge. After this amendment merges, only `src/auth/keycloak-client.ts` and its unit test are added to G02B UI ownership.

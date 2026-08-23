@@ -814,3 +814,8 @@ The canonical story ledger promotes only `PLN-E05-001`, `002`, `007`, `008`, `00
 Backend hosted run `32126631284` passed all seven required checks. Final UI hosted run `32241925335` passed all five required checks, including cross-repository browser E2E. Local integrated G02B closure v1.2 passed 144/144 frontend tests, lint/build and 16 passed / 2 skipped real-backend browser E2E.
 
 V001-V050 are immutable. V051 is unreserved. P5-EPA-01 retains no backend or UI product write ownership. No next capability is activated by this closure; continuation requires fresh repository/live-GitHub R3 reconciliation and separately governed selection/activation.
+
+## P5-EIP-01 G02B auth-runtime bounded amendment
+
+<!-- P5-EIP-01-G02B-AUTH-RUNTIME-AMENDMENT-V1 -->
+P5-EIP-01 G02B local source validation is green, but isolated real-backend browser E2E is blocked by an issuer mismatch caused by the shared localhost:8081 auth assumption and the frontend Keycloak environment access path. This amendment adds only `src/auth/keycloak-client.ts` and `src/auth/keycloak-client.test.ts` to G02B UI write ownership after amendment merge. Existing Employee Payroll and `e2e/p5-eip-01*.ts` ownership remains unchanged. No story status, migration, backend/API or G02C state changes.
