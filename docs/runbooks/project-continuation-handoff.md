@@ -502,3 +502,8 @@ capability selection/activation.
 - product ownership: exact backend/UI allow-list in the P5-EIP-01 scope authority;
 - story status/totals: unchanged;
 - next gate: G02A backend/database/contracts implementation, then G02B UI + real-backend E2E.
+
+## P5-EIP-01 G02B auth-runtime amendment handoff
+
+<!-- P5-EIP-01-G02B-AUTH-RUNTIME-AMENDMENT-V1 -->
+Preserve `C:\dev\hrms-payroll-web-worktrees\p5-eip-01-g02b` on branch `feature/p5-eip-01-g02b-identity-payment-ui` at base `9dbf0d2f700764e2fe577f89142cd6784028f70c`; do not reset, clean or recreate it. The next product action after this governance amendment merges is to resume G02B by correcting Vite-recognizable Keycloak environment access in the two newly authorized auth files and aligning the P5-EIP-only browser login with the isolated runtime Keycloak port.

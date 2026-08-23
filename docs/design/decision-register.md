@@ -163,3 +163,8 @@ action. Do not record brainstorms as approved decisions.
   consolidated salary-structure controller/service/validation model.
 - MDR-053 — G07 closes local quality and governance only; Git publication is a
   separate owner-controlled action.
+
+## P5-EIP-01 G02B auth-runtime boundary amendment
+
+<!-- P5-EIP-01-G02B-AUTH-RUNTIME-AMENDMENT-V1 -->
+Decision: do not weaken OIDC issuer validation and do not depend on the ambient localhost:8081 Keycloak. Authorize only `src/auth/keycloak-client.ts` and `src/auth/keycloak-client.test.ts` so the frontend honors its configured Vite Keycloak endpoint; keep P5-EIP-specific dynamic-port login changes inside the already-owned `e2e/p5-eip-01*.ts` boundary.
