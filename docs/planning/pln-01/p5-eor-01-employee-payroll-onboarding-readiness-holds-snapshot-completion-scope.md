@@ -122,6 +122,7 @@ Existing files that may be changed when required:
 - `backend/employee-payroll/src/main/java/com/acme/hrms/payroll/employeepayroll/EmployeePayrollProfileController.java`
 - `backend/employee-payroll/src/main/java/com/acme/hrms/payroll/employeepayroll/internal/application/EmployeePayrollProfileService.java`
 - `contracts/openapi/employee-payroll-openapi-v1.yaml`
+- `contracts/openapi/payroll-vertical-slice-openapi-v1.yaml`
 - `deploy/local/keycloak/payroll-realm.json`
 - `docs/runbooks/employee-payroll-api.md`
 - `docs/runbooks/employee-payroll-application-layer.md`
