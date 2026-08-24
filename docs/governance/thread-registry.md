@@ -1,14 +1,14 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 24 August 2026 post-EIP R3 selection and execution-optimization governance checkpoint
+**Last verified:** 24 August 2026 after P5-EOR-01 G01 semantic review and GOV-01 fast-lane authority preparation
 **Product reconciliation baseline:** P5-EIP-01 backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-EIP-01 backend PR #88 and UI PR #21
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-EIP-01 backend 7/7 GREEN; auth-runtime amendment PR #90 merged; UI PR #21 5/5 GREEN including cross-repository browser E2E
-**Active product write owner:** NONE
-**Migration authority:** V001–V051 immutable; V052 unreserved
+**Active product write owner:** P5-EOR-01 — effective when this authority merges
+**Migration authority:** V001–V051 immutable; V052 reserved exclusively to P5-EOR-01 when this authority merges
 
 Thread numbers are historical conversation labels, not implementation
 authority. Only an explicitly active capability entry may own files or a
@@ -46,15 +46,11 @@ migration number.
 | P5-EPA-01 | CLOSED after this status closure | Employee payroll relationship, assignment, pay-group binding, salary/target assignment, employee override, compensation-change impact and transfer/rehire/concurrent-assignment completion | Backend PR #83 / `847adab127dcbca3431f9f0af4f35ce46ab55285`; runtime PR #84 / `3c8528b8cd809bdb89aeb50fda2d43f96e8550a7`; UI selector PR #20 / `c81d351dda6607030a22c3d8afa1514ba17f75f0`; UI product PR #19 / `9dbf0d2f700764e2fe577f89142cd6784028f70c`; closure PR is the PR containing this update | V050 immutable | None |
 
 | P5-EIP-01 | CLOSED after G02C | Secure employee payroll identifiers, identity mismatch workflow, employee bank/payment instructions and payment readiness | Backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; auth amendment PR #90 / `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`; UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`; closure PR is the PR containing this update | V051 immutable | None |
+| P5-EOR-01 | IMPLEMENTATION_AUTHORIZED when this governance authority merges | Employee Payroll onboarding lifecycle, multidimensional readiness, scoped holds, immutable employee snapshot completion and workbenches | `docs/planning/pln-01/p5-eor-01-employee-payroll-onboarding-readiness-holds-snapshot-completion-scope.md` | V052 reserved on merge | P5-EOR-01 |
 
 ## Active capability workstream
 
-No capability currently owns product files or a migration. P5-EIP-01 remains
-CLOSED after G02C. The 24 August 2026 post-EIP R3 reconciliation selected
-P5-EOR-01 as the next bounded candidate for `G01_READ_ONLY` fast-lane eligibility
-evaluation only. V001–V051 are immutable, V052 is unreserved, and backend/UI
-product write ownership remains NONE. No product write is authorized until a
-later merged authority explicitly moves the capability to `IMPLEMENTATION_AUTHORIZED`.
+P5-EOR-01 is the next product-write capability when this GOV-01 fast-lane authority merges. G01 is PASS and GOV-01 is ELIGIBLE for the bounded PLN-E05-003/004/017/019/020 scope. V001–V051 remain immutable; V052 is reserved exclusively to P5-EOR-01 on merge. Backend/UI writes are limited to the canonical scope allow-lists. Until this governance change is merged, remote `main` continues to have no product-write owner and V052 remains unreserved.
 
 ## Historical P5-EIP-01 G02A hosted-CI recovery checkpoint
 

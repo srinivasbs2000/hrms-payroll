@@ -9,17 +9,23 @@
 **Latest merged quality increment:** P5-EIP-01 backend PR #88 hosted 7/7 GREEN; G02B auth-runtime amendment PR #90 merged at `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`; UI PR #21 hosted 5/5 GREEN including cross-repository browser E2E
 **P5-JRF-01 product-status closure:** PR #39; post-merge authority closed
 **P5-FBA-01 product-status closure:** PR #45; post-merge authority closure
-**Active product write owner:** NONE
-**Migration state:** V001–V051 committed and immutable; V052 unreserved
-**Next migration:** V052 unreserved
+**Active product write owner:** P5-EOR-01 — effective when this authority merges
+**Migration state:** V001–V051 committed and immutable; V052 reserved exclusively to P5-EOR-01 after this authority merges
+**Next migration:** V052 — reserved exclusively to P5-EOR-01 after this authority merges
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 24 August 2026 after post-EIP R3 selection and execution-optimization governance checkpoint
-**Current execution capability:** NONE — P5-EOR-01 is R3-selected for read-only G01 fast-lane eligibility evaluation only; it is not activated for product write; V052 remains unreserved
+**Last reconciled:** 24 August 2026 after P5-EOR-01 G01 semantic review and GOV-01 fast-lane authority preparation
+**Current execution capability:** P5-EOR-01 — G01 PASS / GOV-01 ELIGIBLE; implementation-authorized and V052-reserved when this authority merges
 **P5-EIP-01 closed scope authority:** `docs/planning/pln-01/p5-eip-01-employee-identity-bank-payment-readiness-scope.md`
 **P5-EIP-01 G02A hosted-CI recovery amendment:** `docs/planning/pln-01/p5-eip-01-g02a-hosted-ci-recovery-amendment.md` — MERGED / EXPIRED after PR #88 hosted reconciliation
 **Previous closed capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
 **P5-FAD-01 product merge:** PR #55 / `a80e7b4da121665a8b1548acada6b96fac4dfa01`
 **P5-FSR-01 product merges:** backend final `74bbd65449adad7b7058d8afd96097b1e08d2a0a`; UI `8e8b47c829ac33aa2495ef07fba0ae2afd51e770`
+
+**P5-EOR-01 authority effect:** The implementation authority and V052 reservation recorded below become effective only when this exact governance change is merged to `main`. Until that merge, remote `main` continues to have no product-write owner and V052 remains unreserved.
+
+## P5-EOR-01 GOV-01 fast-lane authority
+
+Canonical authority: `docs/planning/pln-01/p5-eor-01-employee-payroll-onboarding-readiness-holds-snapshot-completion-scope.md`. R3 selected PLN-E05-003/004/017/019/020; G01 is PASS; GOV-01 is ELIGIBLE; V052 is required additively; the existing immutable payroll-input snapshot contract is extended without a separate E06 public-contract amendment. Product mutation remains prohibited until this governance authority merges.
 
 ## 1. Mandatory starting point
 

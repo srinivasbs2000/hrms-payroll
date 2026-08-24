@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 24 August 2026 after post-EIP R3 selection and execution-optimization governance checkpoint
+**Updated:** 24 August 2026 after P5-EOR-01 G01 semantic review and GOV-01 fast-lane authority preparation
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,10 +11,10 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-EIP-01 backend 7/7 GREEN; auth-runtime amendment PR #90 merged; UI PR #21 5/5 GREEN including cross-repository browser E2E
-**Active capability:** NONE — P5-EOR-01 is R3-selected for G01 read-only fast-lane eligibility evaluation only; no product-write activation
-**Current state:** P5-EIP-01 remains CLOSED; post-EIP R3 selected P5-EOR-01 as the next bounded candidate; execution optimization governance must precede its G01 read-only verdict
+**Active capability:** P5-EOR-01 — implementation-authorized when this GOV-01 authority merges; no product write before merge
+**Current state:** P5-EIP-01 remains CLOSED; P5-EOR-01 G01 PASS / GOV-01 ELIGIBLE; combined fast-lane implementation authority is prospective until merged
 **Migrations:** V001–V051 committed and immutable
-**Next migration:** V052 unreserved
+**Next migration:** V052 — reserved exclusively to P5-EOR-01 when this authority merges
 **Canonical status:** `docs/governance/payroll-program-status.md`
 
 Read the canonical program status first. Validate all facts against local Git and
@@ -32,13 +32,23 @@ live read-only GitHub evidence before starting write-capable work.
 | P5-JRF-01 product merge | PR #36 / `6ee101bd398b745a0078bd0517b4e3797c571c2b` |
 | P5-JRF-01 product-status closure | PR #39 |
 | Hosted PR #36 CI | 9/9 GREEN |
-| Active write owner | NONE |
+| Active write owner | P5-EOR-01 after this governance authority merges |
 | Historical P5-FBA-01 implementation branch | `feature/p5-fba-01-foundation-banking-authority` retained |
-| Active path ownership | NONE — P5-EIP-01 product and temporary recovery authorities are consumed/closed |
+| Active path ownership | P5-EOR-01 exact backend/UI allow-lists in its canonical scope, effective after merge |
 | Migration state | V001–V051 immutable |
-| Next migration | V052 unreserved |
+| Next migration | V052 reserved exclusively to P5-EOR-01 after authority merge |
 | Product deployment | Greenfield; no evidenced production deployment |
 | Assistant/agent GitHub access | Strictly read-only |
+
+## P5-EOR-01 GOV-01 fast-lane checkpoint
+
+- selected stories: `PLN-E05-003`, `PLN-E05-004`, `PLN-E05-017`, `PLN-E05-019`, `PLN-E05-020`;
+- G01 verdict: `PASS`; GOV-01: `ELIGIBLE`;
+- excluded statutory/tax stories: `PLN-E05-013` through `PLN-E05-016`;
+- migration: additive V052 required, reserved only after this authority merges;
+- snapshot: extend the existing immutable payroll-input snapshot payload/sealing; no separate E06 public-contract amendment;
+- exact product ownership, permissions, readiness/hold semantics and browser gates: `docs/planning/pln-01/p5-eor-01-employee-payroll-onboarding-readiness-holds-snapshot-completion-scope.md`;
+- no product mutation is authorized from an unmerged preparation branch.
 
 ## P5-EPA-01 activation checkpoint
 
