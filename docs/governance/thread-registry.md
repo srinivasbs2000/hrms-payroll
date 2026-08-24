@@ -1,6 +1,6 @@
 # HRMS Payroll Thread and Capability Registry
 
-**Last verified:** 23 August 2026 P5-EIP-01 G02C final post-merge closure
+**Last verified:** 24 August 2026 post-EIP R3 selection and execution-optimization governance checkpoint
 **Product reconciliation baseline:** P5-EIP-01 backend PR #88 / `7ade2c199c0eca1351e8907a6e43fbfe8b567b7a`; UI PR #21 / `00368e714665785000002fe4cbd330bc1e5cc180`
 **Current repository HEAD:** verify from local Git and live read-only GitHub; do not hard-code it here
 **Latest merged product increment:** P5-EIP-01 backend PR #88 and UI PR #21
@@ -49,11 +49,12 @@ migration number.
 
 ## Active capability workstream
 
-No capability currently owns product files or a migration. P5-EIP-01 is CLOSED
-after G02C. Its four selected stories are IMPLEMENTED / HIGH with COMPLETE
-required UI/browser evidence. V001–V051 are immutable and V052 is unreserved.
-A fresh repository/live-GitHub reconciliation and separately governed
-selection/activation is required before any new product write.
+No capability currently owns product files or a migration. P5-EIP-01 remains
+CLOSED after G02C. The 24 August 2026 post-EIP R3 reconciliation selected
+P5-EOR-01 as the next bounded candidate for `G01_READ_ONLY` fast-lane eligibility
+evaluation only. V001–V051 are immutable, V052 is unreserved, and backend/UI
+product write ownership remains NONE. No product write is authorized until a
+later merged authority explicitly moves the capability to `IMPLEMENTATION_AUTHORIZED`.
 
 ## Historical P5-EIP-01 G02A hosted-CI recovery checkpoint
 
@@ -120,3 +121,15 @@ P5-EIP-01 product evidence: backend PR #88 /
 PLN-E05-005, 006, 011 and 012 are IMPLEMENTED / HIGH and required UI/browser
 evidence is COMPLETE. V051 is immutable, V052 is unreserved, ownership is NONE,
 and no next capability is activated.
+<!-- EXECUTION-OPTIMIZATION-GOVERNANCE-V1 -->
+## Execution optimization registry checkpoint — 24 August 2026
+
+- execution optimization standard: approved after merge;
+- P5-EOR-01: R3-selected candidate only, not a product-write owner;
+- next lifecycle state: `G01_READ_ONLY` evaluation after this governance merge;
+- fast-lane final eligibility: PENDING G01;
+- backend/program product owner: NONE;
+- UI product owner: NONE;
+- V052: UNRESERVED;
+- local `governance/p5-eor-01-activation` commit `8240ad83...`: PRESERVED / DO NOT PUBLISH / superseded for publication by optimized governance sequence;
+- next controlled action: P5-EOR-01 G01 read-only verdict using the R3 evidence and fresh Authority Snapshot.

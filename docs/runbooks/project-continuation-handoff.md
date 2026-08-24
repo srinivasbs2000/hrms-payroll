@@ -1,6 +1,6 @@
 # HRMS Payroll Project Continuation Handoff
 
-**Updated:** 23 August 2026 at P5-EIP-01 G02C final post-merge closure
+**Updated:** 24 August 2026 after post-EIP R3 selection and execution-optimization governance checkpoint
 **Repository:** `srinivasbs2000/hrms-payroll`
 **Local repository:** `C:\\dev\\hrms-payroll`
 **UI repository:** `srinivasbs2000/hrms-payroll-web`
@@ -11,8 +11,8 @@
 **P5-JRF-01 product-status closure:** PR #39
 **P5-FBA-01 product-status closure:** PR #45
 **Latest merged quality increment:** P5-EIP-01 backend 7/7 GREEN; auth-runtime amendment PR #90 merged; UI PR #21 5/5 GREEN including cross-repository browser E2E
-**Active capability:** NONE — P5-EIP-01 CLOSED; fresh selection/activation required
-**Current state:** P5-EIP-01 G02C closure reconciles four selected stories to IMPLEMENTED / HIGH; no backend/UI product write owner remains
+**Active capability:** NONE — P5-EOR-01 is R3-selected for G01 read-only fast-lane eligibility evaluation only; no product-write activation
+**Current state:** P5-EIP-01 remains CLOSED; post-EIP R3 selected P5-EOR-01 as the next bounded candidate; execution optimization governance must precede its G01 read-only verdict
 **Migrations:** V001–V051 committed and immutable
 **Next migration:** V052 unreserved
 **Canonical status:** `docs/governance/payroll-program-status.md`
@@ -165,9 +165,11 @@ PR #90 at `8ca6edfb06f20f90c9ef7f3624196d73fc2260a5`.
 
 ## Exact next controlled action
 
-P5-EIP-01 is CLOSED after G02C. Do not perform further P5-EIP product writes or
-reserve V052. Begin any continuation with fresh repository/live-GitHub
-reconciliation, then separately select and activate the next bounded capability.
+P5-EIP-01 is CLOSED and post-EIP R3 is complete. Do not perform P5-EIP product
+writes or reserve V052. After this execution-optimization governance authority
+merges, run P5-EOR-01 G01 READ-ONLY fast-lane eligibility/contract verdict. Do
+not start product implementation until a later merged authority explicitly moves
+the capability to IMPLEMENTATION_AUTHORIZED.
 
 <!-- P5-EIP-01-ACTIVATION -->
 ## P5-EIP-01 activation checkpoint
@@ -511,3 +513,17 @@ Preserve `C:\dev\hrms-payroll-web-worktrees\p5-eip-01-g02b` on branch `feature/p
 - V001–V051 immutable; V052 unreserved;
 - active product write owner: NONE;
 - next capability: NOT ACTIVATED.
+<!-- EXECUTION-OPTIMIZATION-GOVERNANCE-V1 -->
+## Execution optimization continuation checkpoint
+
+Standing optimization authority after merge: `docs/governance/payroll-execution-optimization-standard.md`.
+
+P5-EOR-01 current disposition:
+
+- R3-selected candidate stories: PLN-E05-003, 004, 017, 019, 020;
+- product write activation: NO;
+- V052 reservation: NO;
+- final GOV-01 fast-lane eligibility: PENDING G01;
+- unresolved G01 authority questions: deterministic migration verdict and PLN-E05-019 snapshot/E06 contract boundary;
+- held local activation commit `8240ad83c4e325590164101620c667bc05713f3a`: preserve, do not publish, superseded for publication;
+- next controlled action after governance merge: read-only P5-EOR-01 G01 verdict using a fresh machine-readable Authority Snapshot and the completed R3 evidence.
