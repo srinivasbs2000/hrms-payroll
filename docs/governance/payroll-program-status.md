@@ -13,8 +13,8 @@
 **Migration state:** V001–V051 committed and immutable; V052 unreserved
 **Next migration:** V052 unreserved
 **Product deployment:** Greenfield; no evidenced production deployment or live customer payroll migration
-**Last reconciled:** 23 August 2026 at P5-EIP-01 G02C post-merge capability closure
-**Current execution capability:** NONE — P5-EIP-01 CLOSED; continuation requires fresh repository/live-GitHub reconciliation and separately governed selection/activation
+**Last reconciled:** 24 August 2026 after post-EIP R3 selection and execution-optimization governance checkpoint
+**Current execution capability:** NONE — P5-EOR-01 is R3-selected for read-only G01 fast-lane eligibility evaluation only; it is not activated for product write; V052 remains unreserved
 **P5-EIP-01 closed scope authority:** `docs/planning/pln-01/p5-eip-01-employee-identity-bank-payment-readiness-scope.md`
 **P5-EIP-01 G02A hosted-CI recovery amendment:** `docs/planning/pln-01/p5-eip-01-g02a-hosted-ci-recovery-amendment.md` — MERGED / EXPIRED after PR #88 hosted reconciliation
 **Previous closed capability scope authority:** `docs/planning/pln-01/p5-epa-01-employee-payroll-assignment-compensation-binding-scope.md`
@@ -840,5 +840,22 @@ expired when UI PR #21 merged. No continuing product ownership is granted.
 - active backend/UI product write owner: NONE;
 - no next capability activated.
 
-Continuation requires a fresh repository/live-GitHub reconciliation and separately
-merged capability selection/activation authority.
+The historical G02C continuation requirement for a fresh repository/live-GitHub
+reconciliation is satisfied by the 24 August 2026 post-EIP R3 result. Current
+continuation is governed by the execution-optimization checkpoint below.
+<!-- EXECUTION-OPTIMIZATION-GOVERNANCE-V1 -->
+## Execution optimization governance checkpoint — 24 August 2026
+
+The completed post-EIP R3 reconciliation selected `P5-EOR-01 — Employee Payroll Onboarding, Readiness, Holds & Snapshot Completion` as the next bounded candidate for further authority work. This checkpoint does **not** activate product write.
+
+Current control state:
+
+- selected candidate stories: `PLN-E05-003`, `004`, `017`, `019`, `020`;
+- excluded statutory/tax-sensitive stories remain outside the candidate;
+- product write owner: NONE in backend/program and UI repositories;
+- V001–V051 remain immutable; V052 remains unreserved;
+- the prior local-only activation preparation commit `8240ad83c4e325590164101620c667bc05713f3a` is preserved but must not be pushed/PR'd/merged and is superseded for publication by the optimized governance path;
+- GOV-01 fast lane is now available only after a complete read-only G01 verdict proves all eligibility conditions;
+- P5-EOR-01 final fast-lane eligibility is pending the deterministic migration verdict and the employee-snapshot/E06 contract-boundary verdict.
+
+**Next controlled action after this governance authority merges:** run one read-only P5-EOR-01 G01 architecture/schema/API/UI/contract verdict. No product mutation or migration reservation is authorized by this checkpoint.
