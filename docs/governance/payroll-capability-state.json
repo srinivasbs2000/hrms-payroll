@@ -1,13 +1,13 @@
 {
   "schemaVersion": "1.0",
-  "currentExecutionCapability": null,
+  "currentExecutionCapability": "P5-EOR-01",
   "migration": {
     "next": "V052",
-    "reservedBy": null
+    "reservedBy": "P5-EOR-01"
   },
   "capabilities": {
     "P5-EOR-01": {
-      "state": "SELECTED",
+      "state": "IMPLEMENTATION_AUTHORIZED",
       "repositories": {
         "backend": true,
         "ui": true
@@ -22,6 +22,34 @@
             "type": "POST_EIP_R3_SELECTION",
             "id": "POST_EIP_R3_SCHEMA_DATA_RECONCILIATION",
             "governanceMerge": "421f0ba7bfc7694fe78469b427efb4a55feffc4b"
+          }
+        },
+        {
+          "at": "2026-08-24T14:22:49.178Z",
+          "from": "SELECTED",
+          "to": "G01_READ_ONLY",
+          "mode": "GOV01_FAST_LANE_PREP",
+          "authority": {
+            "type": "G01_READ_ONLY_VERDICT",
+            "id": "P5-EOR-01-G01-v1.0",
+            "verdict": "PASS",
+            "gov01": "ELIGIBLE",
+            "scope": "docs/planning/pln-01/p5-eor-01-employee-payroll-onboarding-readiness-holds-snapshot-completion-scope.md",
+            "effectiveWhen": "MERGED_TO_MAIN"
+          }
+        },
+        {
+          "at": "2026-08-24T14:22:49.178Z",
+          "from": "G01_READ_ONLY",
+          "to": "IMPLEMENTATION_AUTHORIZED",
+          "mode": "GOV01_FAST_LANE_PREP",
+          "authority": {
+            "type": "IMPLEMENTATION_AUTHORITY",
+            "id": "P5-EOR-01-GOV01-v1.0",
+            "scope": "docs/planning/pln-01/p5-eor-01-employee-payroll-onboarding-readiness-holds-snapshot-completion-scope.md",
+            "migrationVerdict": "ADDITIVE_V052_REQUIRED",
+            "snapshotE06Split": "NO_SEPARATE_E06_PUBLIC_CONTRACT_AMENDMENT_REQUIRED",
+            "effectiveWhen": "MERGED_TO_MAIN"
           }
         }
       ]
