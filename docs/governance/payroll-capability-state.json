@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "currentExecutionCapability": null,
+  "migration": {
+    "next": "V052",
+    "reservedBy": null
+  },
+  "capabilities": {
+    "P5-EOR-01": {
+      "state": "SELECTED",
+      "repositories": {
+        "backend": true,
+        "ui": true
+      },
+      "history": [
+        {
+          "at": "2026-08-24T00:00:00Z",
+          "from": null,
+          "to": "SELECTED",
+          "mode": "RECONCILIATION_BOOTSTRAP",
+          "authority": {
+            "type": "POST_EIP_R3_SELECTION",
+            "id": "POST_EIP_R3_SCHEMA_DATA_RECONCILIATION",
+            "governanceMerge": "421f0ba7bfc7694fe78469b427efb4a55feffc4b"
+          }
+        }
+      ]
+    }
+  }
+}
