@@ -907,6 +907,7 @@ pathItems:
   CompensationChangeCollection:
     get:
       tags: [Employee Payroll]
+      summary: List Compensation Changes
       operationId: listCompensationChanges
       x-permission: employee-payroll.compensation-change.read
       parameters:
@@ -924,6 +925,7 @@ pathItems:
         '403': {$ref: '#/responses/Forbidden'}
     post:
       tags: [Employee Payroll]
+      summary: Create Compensation Change
       operationId: createCompensationChange
       x-permission: employee-payroll.compensation-change.create
       parameters:
@@ -949,6 +951,7 @@ pathItems:
       schema: {type: string, format: uuid}
     post:
       tags: [Employee Payroll]
+      summary: Assess Compensation Change
       operationId: assessCompensationChange
       x-permission: employee-payroll.compensation-change.assess
       parameters:
@@ -970,6 +973,7 @@ pathItems:
       schema: {type: string, format: uuid}
     get:
       tags: [Employee Payroll]
+      summary: Get Compensation Change Impact
       operationId: getCompensationChangeImpact
       x-permission: employee-payroll.compensation-change.read
       responses:
@@ -982,6 +986,7 @@ pathItems:
       schema: {type: string, format: uuid}
     post:
       tags: [Employee Payroll]
+      summary: Approve Compensation Change
       operationId: approveCompensationChange
       x-permission: employee-payroll.compensation-change.approve
       parameters:
@@ -997,6 +1002,7 @@ pathItems:
       schema: {type: string, format: uuid}
     get:
       tags: [Employee Payroll]
+      summary: Get Compensation Change Audit
       operationId: getCompensationChangeAudit
       x-permission: audit.read
       responses:
@@ -1004,6 +1010,7 @@ pathItems:
   ComponentOverrideCollection:
     get:
       tags: [Employee Payroll]
+      summary: List Employee Component Overrides
       operationId: listEmployeeComponentOverrides
       x-permission: employee-payroll.component-override.read
       parameters:
@@ -1015,6 +1022,7 @@ pathItems:
         '200': {description: Employee component overrides, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EmployeeComponentOverride'}}}}}
     post:
       tags: [Employee Payroll]
+      summary: Create Employee Component Override
       operationId: createEmployeeComponentOverride
       x-permission: employee-payroll.component-override.create
       parameters:
@@ -1034,6 +1042,7 @@ pathItems:
       schema: {type: string, format: uuid}
     post:
       tags: [Employee Payroll]
+      summary: Correct Employee Component Override
       operationId: correctEmployeeComponentOverride
       x-permission: employee-payroll.component-override.correct
       parameters:
@@ -1052,6 +1061,7 @@ pathItems:
       schema: {type: string, format: uuid}
     post:
       tags: [Employee Payroll]
+      summary: Approve Employee Component Override
       operationId: approveEmployeeComponentOverride
       x-permission: employee-payroll.component-override.approve
       parameters:
@@ -1067,6 +1077,7 @@ pathItems:
       schema: {type: string, format: uuid}
     get:
       tags: [Employee Payroll]
+      summary: Get Employee Component Override Audit
       operationId: getEmployeeComponentOverrideAudit
       x-permission: audit.read
       responses:
@@ -1074,6 +1085,7 @@ pathItems:
   LifecycleLineageCollection:
     get:
       tags: [Employee Payroll]
+      summary: List Payroll Lifecycle Lineage
       operationId: listPayrollLifecycleLineage
       x-permission: employee-payroll.lifecycle-lineage.read
       parameters:
@@ -1085,6 +1097,7 @@ pathItems:
         '200': {description: Transfer/rehire/concurrency lineage, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/PayrollLifecycleLineage'}}}}}
     post:
       tags: [Employee Payroll]
+      summary: Create Payroll Lifecycle Lineage
       operationId: createPayrollLifecycleLineage
       x-permission: employee-payroll.lifecycle-lineage.create
       parameters:
@@ -1104,6 +1117,7 @@ pathItems:
       schema: {type: string, format: uuid}
     post:
       tags: [Employee Payroll]
+      summary: Approve Payroll Lifecycle Lineage
       operationId: approvePayrollLifecycleLineage
       x-permission: employee-payroll.lifecycle-lineage.approve
       parameters:
@@ -1119,6 +1133,7 @@ pathItems:
       schema: {type: string, format: uuid}
     get:
       tags: [Employee Payroll]
+      summary: Get Payroll Lifecycle Lineage Audit
       operationId: getPayrollLifecycleLineageAudit
       x-permission: audit.read
       responses:
@@ -1130,6 +1145,7 @@ pathItems:
     - $ref: '#/parameters/CorrelationId'
     get:
       tags: [Employee Payroll]
+      summary: List Employee Payroll Identifiers
       operationId: listEmployeePayrollIdentifiers
       x-permission: employee-payroll.identifier.read
       responses:
@@ -1138,6 +1154,7 @@ pathItems:
         '403': {$ref: '#/responses/Forbidden'}
     post:
       tags: [Employee Payroll]
+      summary: Write Employee Payroll Identifier
       operationId: writeEmployeePayrollIdentifier
       x-permission: employee-payroll.identifier.write
       parameters:
@@ -1155,6 +1172,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Verify Employee Payroll Identifier
       operationId: verifyEmployeePayrollIdentifier
       x-permission: employee-payroll.identifier.verify
       parameters:
@@ -1170,6 +1188,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Approve Employee Payroll Identifier
       operationId: approveEmployeePayrollIdentifier
       x-permission: employee-payroll.identifier.approve
       parameters:
@@ -1185,6 +1204,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Reveal Employee Payroll Identifier
       operationId: revealEmployeePayrollIdentifier
       x-permission: employee-payroll.identifier.reveal
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipRevealRequest'}}}}
@@ -1197,12 +1217,14 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     get:
       tags: [Employee Payroll]
+      summary: List Employee Identity Mismatches
       operationId: listEmployeeIdentityMismatches
       x-permission: employee-payroll.identity-mismatch.read
       responses:
         '200': {description: Identity mismatch cases, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EipIdentityMismatch'}}}}}
     post:
       tags: [Employee Payroll]
+      summary: Create Employee Identity Mismatch
       operationId: createEmployeeIdentityMismatch
       x-permission: employee-payroll.identity-mismatch.write
       parameters:
@@ -1220,6 +1242,7 @@ pathItems:
       schema: {type: string, format: uuid}
     post:
       tags: [Employee Payroll]
+      summary: Resolve Employee Identity Mismatch
       operationId: resolveEmployeeIdentityMismatch
       x-permission: employee-payroll.identity-mismatch.resolve
       parameters:
@@ -1234,12 +1257,14 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     get:
       tags: [Employee Payroll]
+      summary: List Employee Bank Accounts
       operationId: listEmployeeBankAccounts
       x-permission: employee-payroll.bank-account.read
       responses:
         '200': {description: Masked employee bank-account history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EipEmployeeBankAccount'}}}}}
     post:
       tags: [Employee Payroll]
+      summary: Write Employee Bank Account
       operationId: writeEmployeeBankAccount
       x-permission: employee-payroll.bank-account.write
       parameters:
@@ -1255,6 +1280,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Verify Employee Bank Account
       operationId: verifyEmployeeBankAccount
       x-permission: employee-payroll.bank-account.verify
       parameters:
@@ -1270,6 +1296,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Review Employee Bank Account Payment Impact
       operationId: reviewEmployeeBankAccountPaymentImpact
       x-permission: employee-payroll.bank-account.verify
       parameters:
@@ -1285,6 +1312,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Approve Employee Bank Account
       operationId: approveEmployeeBankAccount
       x-permission: employee-payroll.bank-account.approve
       parameters:
@@ -1300,6 +1328,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Suspend Employee Bank Account
       operationId: suspendEmployeeBankAccount
       x-permission: employee-payroll.bank-account.approve
       parameters:
@@ -1315,6 +1344,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Reveal Employee Bank Account
       operationId: revealEmployeeBankAccount
       x-permission: employee-payroll.bank-account.reveal
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EipRevealRequest'}}}}
@@ -1326,12 +1356,14 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     get:
       tags: [Employee Payroll]
+      summary: List Employee Payment Instructions
       operationId: listEmployeePaymentInstructions
       x-permission: employee-payroll.payment-instruction.read
       responses:
         '200': {description: Payment instruction history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EipPaymentInstruction'}}}}}
     post:
       tags: [Employee Payroll]
+      summary: Write Employee Payment Instruction
       operationId: writeEmployeePaymentInstruction
       x-permission: employee-payroll.payment-instruction.write
       parameters:
@@ -1347,6 +1379,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Review Employee Payment Instruction Impact
       operationId: reviewEmployeePaymentInstructionImpact
       x-permission: employee-payroll.payment-instruction.write
       parameters:
@@ -1362,6 +1395,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Approve Employee Payment Instruction
       operationId: approveEmployeePaymentInstruction
       x-permission: employee-payroll.payment-instruction.approve
       parameters:
@@ -1376,12 +1410,14 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     get:
       tags: [Employee Payroll]
+      summary: List Employee Payment Restrictions
       operationId: listEmployeePaymentRestrictions
       x-permission: employee-payroll.payment-restriction.read
       responses:
         '200': {description: Payment-only restriction history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EipPaymentRestriction'}}}}}
     post:
       tags: [Employee Payroll]
+      summary: Impose Employee Payment Restriction
       operationId: imposeEmployeePaymentRestriction
       x-permission: employee-payroll.payment-restriction.write
       parameters:
@@ -1398,6 +1434,7 @@ pathItems:
       schema: {type: string, format: uuid}
     post:
       tags: [Employee Payroll]
+      summary: Clear Employee Payment Restriction
       operationId: clearEmployeePaymentRestriction
       x-permission: employee-payroll.payment-restriction.clear
       parameters:
@@ -1412,402 +1449,14 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     get:
       tags: [Employee Payroll]
+      summary: Get Employee Payment Readiness
       operationId: getEmployeePaymentReadiness
       x-permission: employee-payroll.payment-readiness.read
       parameters:
       - name: currencyCode
         in: query
         required: true
-        schema: {type: string, pattern: '^[A-Z]{3}  Problem:
-    type: object
-    properties:
-      type: {type: string, format: uri}
-      title: {type: string}
-      status: {type: integer}
-      detail: {type: string}
-      instance: {type: string, format: uri-reference}
-  AuditEvent:
-    type: object
-    additionalProperties: false
-    required:
-    - id
-    - occurredAt
-    - actor
-    - action
-    - objectType
-    - objectId
-    - correlationId
-    properties:
-      id: {type: string, format: uuid}
-      occurredAt: {type: string, format: date-time}
-      actor: {type: string}
-      action: {type: string}
-      objectType: {type: string}
-      objectId: {type: string, format: uuid}
-      correlationId: {type: string, format: uuid}
-      beforeState: {type: [string, 'null']}
-      afterState: {type: [string, 'null']}
-      metadata: {type: [string, 'null']}
-  PayrollRelationshipWrite:
-    type: object
-    additionalProperties: false
-    required: [legalEntityVersionId, relationshipStart]
-    properties:
-      externalEmployeeId:
-        type: [string, 'null']
-        maxLength: 100
-        description: Required when creating the stable relationship identity.
-      employeeNumber:
-        type: [string, 'null']
-        maxLength: 60
-        description: Required when creating the stable relationship identity.
-      legalEntityVersionId: {type: string, format: uuid}
-      payrollStatutoryUnitVersionId: {type: [string, 'null'], format: uuid}
-      aggregationBoundaryKey: {type: [string, 'null'], maxLength: 120}
-      relationshipStart: {type: string, format: date}
-      relationshipEnd: {type: [string, 'null'], format: date}
-  PayrollRelationshipEndDate:
-    type: object
-    additionalProperties: false
-    required: [relationshipEnd]
-    properties:
-      relationshipEnd: {type: string, format: date}
-  PayrollRelationship:
-    type: object
-    additionalProperties: false
-    required:
-    - identityId
-    - externalEmployeeId
-    - employeeNumber
-    - identityStatus
-    - versionId
-    - versionSequence
-    - versionNo
-    - legalEntityVersionId
-    - relationshipStart
-    - approvalStatus
-    - superseded
-    properties:
-      identityId: {type: string, format: uuid}
-      externalEmployeeId: {type: string}
-      employeeNumber: {type: string}
-      identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
-      versionId: {type: string, format: uuid}
-      versionSequence: {type: integer, minimum: 1}
-      versionNo: {type: integer, format: int64, minimum: 0}
-      legalEntityVersionId: {type: string, format: uuid}
-      payrollStatutoryUnitVersionId: {type: [string, 'null'], format: uuid}
-      aggregationBoundaryKey: {type: [string, 'null'], maxLength: 120}
-      countryCode: {type: string, pattern: '^[A-Z]{2}$'}
-      employerCurrency: {type: string, pattern: '^[A-Z]{3}$'}
-      relationshipStart: {type: string, format: date}
-      relationshipEnd: {type: [string, 'null'], format: date}
-      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
-      supersedesVersionId: {type: [string, 'null'], format: uuid}
-      superseded: {type: boolean}
-  PayrollAssignmentWrite:
-    type: object
-    additionalProperties: false
-    required:
-    - payrollRelationshipVersionId
-    - establishmentVersionId
-    - assignmentStart
-    properties:
-      payrollRelationshipId:
-        type: [string, 'null']
-        format: uuid
-        description: Required when creating the stable assignment identity.
-      assignmentNumber:
-        type: [string, 'null']
-        maxLength: 60
-        description: Required when creating the stable assignment identity.
-      payrollRelationshipVersionId: {type: string, format: uuid}
-      establishmentVersionId: {type: string, format: uuid}
-      sourceWorkAssignmentRef: {type: [string, 'null'], maxLength: 160}
-      payrollRole: {type: [string, 'null'], enum: [PRIMARY, SECONDARY, null]}
-      payrollEligibilityFrom: {type: [string, 'null'], format: date}
-      payrollEligibilityTo: {type: [string, 'null'], format: date}
-      assignmentStart: {type: string, format: date}
-      assignmentEnd: {type: [string, 'null'], format: date}
-  PayrollAssignmentEndDate:
-    type: object
-    additionalProperties: false
-    required: [assignmentEnd]
-    properties:
-      assignmentEnd: {type: string, format: date}
-  PayrollAssignment:
-    type: object
-    additionalProperties: false
-    required:
-    - identityId
-    - payrollRelationshipId
-    - assignmentNumber
-    - identityStatus
-    - versionId
-    - versionSequence
-    - versionNo
-    - payrollRelationshipVersionId
-    - establishmentVersionId
-    - assignmentStart
-    - approvalStatus
-    - superseded
-    properties:
-      identityId: {type: string, format: uuid}
-      payrollRelationshipId: {type: string, format: uuid}
-      assignmentNumber: {type: string}
-      identityStatus: {type: string, enum: [ACTIVE, INACTIVE]}
-      versionId: {type: string, format: uuid}
-      versionSequence: {type: integer, minimum: 1}
-      versionNo: {type: integer, format: int64, minimum: 0}
-      payrollRelationshipVersionId: {type: string, format: uuid}
-      establishmentVersionId: {type: string, format: uuid}
-      sourceWorkAssignmentRef: {type: [string, 'null'], maxLength: 160}
-      payrollRole: {type: [string, 'null'], enum: [PRIMARY, SECONDARY, null]}
-      payrollEligibilityFrom: {type: [string, 'null'], format: date}
-      payrollEligibilityTo: {type: [string, 'null'], format: date}
-      assignmentStart: {type: string, format: date}
-      assignmentEnd: {type: [string, 'null'], format: date}
-      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
-      supersedesVersionId: {type: [string, 'null'], format: uuid}
-      superseded: {type: boolean}
-  EmployeePayrollProfileWrite:
-    type: object
-    additionalProperties: false
-    required: [payrollRelationshipId]
-    properties:
-      payrollRelationshipId: {type: string, format: uuid}
-      currency: {type: [string, 'null'], const: INR, default: INR}
-  EmployeePayrollProfileStatusWrite:
-    type: object
-    additionalProperties: false
-    required: [payrollStatus]
-    properties:
-      payrollStatus:
-        type: string
-        enum: [INCOMPLETE, READY, ON_HOLD, INACTIVE]
-  EmployeePayrollProfile:
-    type: object
-    additionalProperties: false
-    required:
-    - id
-    - payrollRelationshipId
-    - employeeNumber
-    - currency
-    - payrollStatus
-    - versionNo
-    properties:
-      id: {type: string, format: uuid}
-      payrollRelationshipId: {type: string, format: uuid}
-      employeeNumber: {type: string}
-      currency: {type: string, const: INR}
-      payrollStatus:
-        type: string
-        enum: [INCOMPLETE, READY, ON_HOLD, INACTIVE]
-      versionNo: {type: integer, format: int64, minimum: 0}
-  PayGroupAssignmentWrite:
-    type: object
-    additionalProperties: false
-    required:
-    - payrollAssignmentVersionId
-    - payGroupVersionId
-    - effectiveFrom
-    properties:
-      payrollAssignmentVersionId: {type: string, format: uuid}
-      payGroupVersionId: {type: string, format: uuid}
-      effectiveFrom: {type: string, format: date}
-      effectiveTo: {type: [string, 'null'], format: date}
-      impactAssessmentThrough: {type: [string, 'null'], format: date}
-  EffectiveEndDate:
-    type: object
-    additionalProperties: false
-    required: [effectiveTo]
-    properties:
-      effectiveTo: {type: string, format: date}
-  PayGroupAssignment:
-    type: object
-    additionalProperties: false
-    required:
-    - id
-    - payrollAssignmentVersionId
-    - payGroupVersionId
-    - effectiveFrom
-    - approvalStatus
-    - superseded
-    - versionNo
-    properties:
-      id: {type: string, format: uuid}
-      payrollAssignmentVersionId: {type: string, format: uuid}
-      payGroupVersionId: {type: string, format: uuid}
-      effectiveFrom: {type: string, format: date}
-      effectiveTo: {type: [string, 'null'], format: date}
-      impactAssessmentThrough: {type: [string, 'null'], format: date}
-      impactedPeriodCount: {type: integer, minimum: 0}
-      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
-      supersedesAssignmentId: {type: [string, 'null'], format: uuid}
-      superseded: {type: boolean}
-      versionNo: {type: integer, format: int64, minimum: 0}
-  SalaryAssignmentWrite:
-    type: object
-    additionalProperties: false
-    required:
-    - payrollAssignmentVersionId
-    - salaryStructureVersionId
-    - effectiveFrom
-    oneOf:
-    - required: [monthlyAmount]
-    - required: [targetType, targetValue, targetFrequency, currency, sourceCompensationEventId]
-    properties:
-      payrollAssignmentVersionId: {type: string, format: uuid}
-      salaryStructureVersionId: {type: string, format: uuid}
-      monthlyAmount: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
-      targetType: {type: [string, 'null'], maxLength: 40}
-      targetValue: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
-      targetFrequency: {type: [string, 'null'], enum: [ANNUAL, MONTHLY, HOURLY, DAILY, null]}
-      currency: {type: [string, 'null'], pattern: '^[A-Z]{3}$'}
-      sourceCompensationEventId: {type: [string, 'null'], format: uuid}
-      effectiveFrom: {type: string, format: date}
-      effectiveTo: {type: [string, 'null'], format: date}
-  SalaryAssignment:
-    type: object
-    additionalProperties: false
-    required:
-    - id
-    - payrollAssignmentVersionId
-    - salaryStructureVersionId
-    - monthlyAmount
-    - currency
-    - effectiveFrom
-    - approvalStatus
-    - superseded
-    - versionNo
-    properties:
-      id: {type: string, format: uuid}
-      payrollAssignmentVersionId: {type: string, format: uuid}
-      salaryStructureVersionId: {type: string, format: uuid}
-      monthlyAmount: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
-      targetType: {type: [string, 'null'], maxLength: 40}
-      targetValue: {type: [number, 'null'], minimum: 0, multipleOf: 0.0001}
-      targetFrequency: {type: [string, 'null'], enum: [ANNUAL, MONTHLY, HOURLY, DAILY, null]}
-      currency: {type: string, pattern: '^[A-Z]{3}$'}
-      sourceCompensationEventId: {type: [string, 'null'], format: uuid}
-      effectiveFrom: {type: string, format: date}
-      effectiveTo: {type: [string, 'null'], format: date}
-      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
-      supersedesAssignmentId: {type: [string, 'null'], format: uuid}
-      superseded: {type: boolean}
-      versionNo: {type: integer, format: int64, minimum: 0}
-
-  PayGroupAssignmentImpact:
-    type: object
-    additionalProperties: false
-    properties:
-      payPeriodId: {type: string, format: uuid}
-      periodCode: {type: string}
-      periodStart: {type: string, format: date}
-      periodEnd: {type: string, format: date}
-      reasonCode: {type: string, const: EFFECTIVE_RANGE_OVERLAP}
-  CompensationChangeWrite:
-    type: object
-    additionalProperties: false
-    required: [payrollAssignmentId, eventType, effectiveDate, reason]
-    properties:
-      payrollAssignmentId: {type: string, format: uuid}
-      eventType: {type: string, enum: [PROSPECTIVE, CURRENT_PERIOD, RETROSPECTIVE, CORRECTION, REVERSAL]}
-      effectiveDate: {type: string, format: date}
-      sourceEventId: {type: [string, 'null'], format: uuid}
-      reason: {type: string, minLength: 1, maxLength: 500}
-  CompensationChangeAssessment:
-    type: object
-    additionalProperties: false
-    required: [assessmentThrough]
-    properties:
-      assessmentThrough: {type: string, format: date}
-  CompensationChange:
-    type: object
-    additionalProperties: false
-    properties:
-      id: {type: string, format: uuid}
-      payrollAssignmentId: {type: string, format: uuid}
-      eventType: {type: string}
-      effectiveDate: {type: string, format: date}
-      sourceEventId: {type: [string, 'null'], format: uuid}
-      reason: {type: string}
-      assessmentThrough: {type: [string, 'null'], format: date}
-      impactAssessedAt: {type: [string, 'null'], format: date-time}
-      impactAssessedBy: {type: [string, 'null']}
-      impactedPeriodCount: {type: integer, minimum: 0}
-      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
-      approvedAt: {type: [string, 'null'], format: date-time}
-      approvedBy: {type: [string, 'null']}
-      versionNo: {type: integer, format: int64, minimum: 0}
-  CompensationChangeImpact:
-    type: object
-    additionalProperties: false
-    properties:
-      payPeriodId: {type: string, format: uuid}
-      periodCode: {type: string}
-      periodStart: {type: string, format: date}
-      periodEnd: {type: string, format: date}
-      reasonCode: {type: string, const: EFFECTIVE_DATE_OVERLAP}
-  EmployeeComponentOverrideWrite:
-    type: object
-    additionalProperties: false
-    required: [payrollAssignmentVersionId, salaryAssignmentId, salaryStructureLineId, componentVersionId, overrideKind, overrideValue, effectiveFrom]
-    properties:
-      payrollAssignmentVersionId: {type: string, format: uuid}
-      salaryAssignmentId: {type: string, format: uuid}
-      salaryStructureLineId: {type: string, format: uuid}
-      componentVersionId: {type: string, format: uuid}
-      overrideKind: {type: string, enum: [AMOUNT, PERCENTAGE]}
-      overrideValue: {type: number, minimum: 0}
-      effectiveFrom: {type: string, format: date}
-      effectiveTo: {type: [string, 'null'], format: date}
-  EmployeeComponentOverride:
-    type: object
-    additionalProperties: false
-    properties:
-      id: {type: string, format: uuid}
-      payrollAssignmentVersionId: {type: string, format: uuid}
-      salaryAssignmentId: {type: string, format: uuid}
-      salaryStructureLineId: {type: string, format: uuid}
-      componentVersionId: {type: string, format: uuid}
-      overrideKind: {type: string, enum: [AMOUNT, PERCENTAGE]}
-      overrideValue: {type: number}
-      effectiveFrom: {type: string, format: date}
-      effectiveTo: {type: [string, 'null'], format: date}
-      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
-      supersedesOverrideId: {type: [string, 'null'], format: uuid}
-      superseded: {type: boolean}
-      versionNo: {type: integer, format: int64, minimum: 0}
-  PayrollLifecycleLineageWrite:
-    type: object
-    additionalProperties: false
-    required: [eventType, relationshipDecision, effectiveDate, reason]
-    properties:
-      eventType: {type: string, enum: [TRANSFER, REHIRE, CONCURRENT_ASSIGNMENT]}
-      relationshipDecision: {type: string, enum: [CONTINUE, SUCCESSOR]}
-      predecessorRelationshipId: {type: [string, 'null'], format: uuid}
-      successorRelationshipId: {type: [string, 'null'], format: uuid}
-      predecessorAssignmentId: {type: [string, 'null'], format: uuid}
-      successorAssignmentId: {type: [string, 'null'], format: uuid}
-      effectiveDate: {type: string, format: date}
-      reason: {type: string, minLength: 1, maxLength: 500}
-  PayrollLifecycleLineage:
-    type: object
-    additionalProperties: false
-    properties:
-      id: {type: string, format: uuid}
-      eventType: {type: string, enum: [TRANSFER, REHIRE, CONCURRENT_ASSIGNMENT]}
-      relationshipDecision: {type: string, enum: [CONTINUE, SUCCESSOR]}
-      predecessorRelationshipId: {type: [string, 'null'], format: uuid}
-      successorRelationshipId: {type: [string, 'null'], format: uuid}
-      predecessorAssignmentId: {type: [string, 'null'], format: uuid}
-      successorAssignmentId: {type: [string, 'null'], format: uuid}
-      effectiveDate: {type: string, format: date}
-      reason: {type: string}
-      approvalStatus: {type: string, enum: [DRAFT, APPROVED, REJECTED]}
-      versionNo: {type: integer, format: int64, minimum: 0}
-}
+        schema: {type: string, pattern: '^[A-Z]{3}$'}
       - $ref: '#/parameters/AsOf'
       responses:
         '200': {description: Explainable employee payment readiness, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentReadiness'}}}}

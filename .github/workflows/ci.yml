@@ -50,7 +50,10 @@ jobs:
       - name: Validate foundation snapshot readiness contract alignment
         run: node scripts/verify-foundation-snapshot-readiness-contracts.mjs
       - name: Validate OpenAPI
-        run: npx --yes --package=@redocly/cli@2.39.0 redocly lint contracts/openapi/payroll-vertical-slice-openapi-v1.yaml 2>&1 | tee openapi-validation.log
+        shell: bash
+        run: |
+          set -o pipefail
+          npx --yes --package=@redocly/cli@2.39.0 redocly lint contracts/openapi/payroll-vertical-slice-openapi-v1.yaml 2>&1 | tee openapi-validation.log
       - name: Upload OpenAPI diagnostics
         if: always()
         uses: actions/upload-artifact@v6
