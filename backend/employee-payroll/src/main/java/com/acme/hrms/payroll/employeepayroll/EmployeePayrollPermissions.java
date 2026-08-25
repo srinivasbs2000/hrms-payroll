@@ -61,5 +61,17 @@ public final class EmployeePayrollPermissions {
   public static final String PAYMENT_RESTRICTION_CLEAR = "employee-payroll.payment-restriction.clear";
   public static final String PAYMENT_READINESS_READ = "employee-payroll.payment-readiness.read";
 
+  public static final String ONBOARDING_READ = "employee-payroll.onboarding.read";
+  public static final String ONBOARDING_WRITE = "employee-payroll.onboarding.write";
+  public static final String ONBOARDING_APPROVE = "employee-payroll.onboarding.approve";
+  public static final String READINESS_READ = "employee-payroll.readiness.read";
+  public static final String READINESS_POLICY_READ = "employee-payroll.readiness-policy.read";
+  public static final String READINESS_POLICY_WRITE = "employee-payroll.readiness-policy.write";
+  public static final String HOLD_READ = "employee-payroll.hold.read";
+  public static final String HOLD_WRITE = "employee-payroll.hold.write";
+  public static final String HOLD_APPROVE = "employee-payroll.hold.approve";
+  public static final String HOLD_RELEASE = "employee-payroll.hold.release";
+  public static final String WORKBENCH_READ = "employee-payroll.workbench.read";
+
   private EmployeePayrollPermissions() {}
 }

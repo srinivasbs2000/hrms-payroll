@@ -31,6 +31,26 @@ tags:
 - name: Documents
   description: Draft payslip generation and retrieval.
 paths:
+  /api/v1/payroll-relationships/{relationshipId}/onboarding:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollOnboarding'
+  /api/v1/payroll-relationships/{relationshipId}/onboarding/history:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollOnboardingHistory'
+  /api/v1/payroll-relationships/{relationshipId}/onboarding/transition:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollOnboardingTransition'
+  /api/v1/payroll-relationships/{relationshipId}/onboarding/approve:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollOnboardingApproval'
+  /api/v1/payroll-relationships/{relationshipId}/readiness:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollReadiness'
+  /api/v1/employee-payroll/readiness-policies:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollReadinessPolicyCollection'
+  /api/v1/payroll-relationships/{relationshipId}/holds:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollHoldCollection'
+  /api/v1/payroll-relationships/{relationshipId}/holds/{versionId}/approve:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollHoldApproval'
+  /api/v1/payroll-relationships/{relationshipId}/holds/{versionId}/release:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollHoldRelease'
+  /api/v1/employee-payroll/workbench:
+    $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollWorkbench'
   /api/v1/payroll-relationships/{relationshipId}/identifiers:
     $ref: './employee-payroll-openapi-v1.yaml#/pathItems/EmployeePayrollIdentifierCollection'
   /api/v1/payroll-relationships/{relationshipId}/identifiers/{versionId}/verify:
