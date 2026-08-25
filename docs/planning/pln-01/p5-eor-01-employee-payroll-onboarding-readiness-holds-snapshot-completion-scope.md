@@ -119,6 +119,7 @@ Read-only roles receive only required read/readiness/workbench permissions. They
 Existing files that may be changed when required:
 
 - `backend/employee-payroll/src/main/java/com/acme/hrms/payroll/employeepayroll/EmployeePayrollPermissions.java`
+- `backend/employee-payroll/src/test/java/com/acme/hrms/payroll/employeepayroll/EmployeePayrollContractTest.java`
 - `backend/employee-payroll/src/main/java/com/acme/hrms/payroll/employeepayroll/EmployeePayrollProfileController.java`
 - `backend/employee-payroll/src/main/java/com/acme/hrms/payroll/employeepayroll/internal/application/EmployeePayrollProfileService.java`
 - `contracts/openapi/employee-payroll-openapi-v1.yaml`
