@@ -1461,7 +1461,345 @@ pathItems:
       responses:
         '200': {description: Explainable employee payment readiness, content: {application/json: {schema: {$ref: '#/schemas/EipPaymentReadiness'}}}}
 
+  EmployeePayrollOnboarding:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    get:
+      tags: [Employee Payroll]
+      summary: Get employee payroll onboarding
+      operationId: getEmployeePayrollOnboarding
+      x-permission: employee-payroll.onboarding.read
+      responses:
+        '200': {description: Payroll onboarding case, content: {application/json: {schema: {$ref: '#/schemas/EorOnboardingCase'}}}}
+        '404': {$ref: '#/responses/NotFound'}
+    post:
+      tags: [Employee Payroll]
+      summary: Create employee payroll onboarding
+      operationId: createEmployeePayrollOnboarding
+      x-permission: employee-payroll.onboarding.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EorOnboardingCreate'}}}}
+      responses:
+        '201': {description: Payroll onboarding case created, content: {application/json: {schema: {$ref: '#/schemas/EorOnboardingCase'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeePayrollOnboardingHistory:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    get:
+      tags: [Employee Payroll]
+      summary: List employee payroll onboarding history
+      operationId: listEmployeePayrollOnboardingHistory
+      x-permission: employee-payroll.onboarding.read
+      responses:
+        '200': {description: Immutable onboarding event history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EorOnboardingEvent'}}}}}
+  EmployeePayrollOnboardingTransition:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    post:
+      tags: [Employee Payroll]
+      summary: Transition employee payroll onboarding
+      operationId: transitionEmployeePayrollOnboarding
+      x-permission: employee-payroll.onboarding.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EorOnboardingTransition'}}}}
+      responses:
+        '200': {description: Payroll onboarding transitioned, content: {application/json: {schema: {$ref: '#/schemas/EorOnboardingCase'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeePayrollOnboardingApproval:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    post:
+      tags: [Employee Payroll]
+      summary: Approve employee payroll onboarding transition
+      operationId: approveEmployeePayrollOnboardingTransition
+      x-permission: employee-payroll.onboarding.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EorOnboardingTransition'}}}}
+      responses:
+        '200': {description: Approval-gated onboarding transition completed, content: {application/json: {schema: {$ref: '#/schemas/EorOnboardingCase'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeePayrollReadiness:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    get:
+      tags: [Employee Payroll]
+      summary: Get employee payroll readiness
+      operationId: getEmployeePayrollReadiness
+      x-permission: employee-payroll.readiness.read
+      parameters:
+      - $ref: '#/parameters/AsOf'
+      - name: currencyCode
+        in: query
+        required: false
+        schema: {type: string, pattern: '^[A-Z]{3}$'}
+      responses:
+        '200': {description: Ten-dimensional employee payroll readiness, content: {application/json: {schema: {$ref: '#/schemas/EorReadiness'}}}}
+  EmployeePayrollReadinessPolicyCollection:
+    get:
+      tags: [Employee Payroll]
+      summary: List employee payroll readiness policies
+      operationId: listEmployeePayrollReadinessPolicies
+      x-permission: employee-payroll.readiness-policy.read
+      parameters:
+      - name: dimension
+        in: query
+        required: false
+        schema: {$ref: '#/schemas/EorReadinessDimension'}
+      responses:
+        '200': {description: Readiness policy versions, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EorReadinessPolicy'}}}}}
+    post:
+      tags: [Employee Payroll]
+      summary: Create employee payroll readiness policy
+      operationId: createEmployeePayrollReadinessPolicy
+      x-permission: employee-payroll.readiness-policy.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EorReadinessPolicyWrite'}}}}
+      responses:
+        '201': {description: Approved readiness policy version created, content: {application/json: {schema: {$ref: '#/schemas/EorReadinessPolicy'}}}}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeePayrollHoldCollection:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    get:
+      tags: [Employee Payroll]
+      summary: List employee payroll holds
+      operationId: listEmployeePayrollHolds
+      x-permission: employee-payroll.hold.read
+      parameters:
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200': {description: Payroll hold version history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EorPayrollHold'}}}}}
+    post:
+      tags: [Employee Payroll]
+      summary: Create employee payroll hold
+      operationId: createEmployeePayrollHold
+      x-permission: employee-payroll.hold.write
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EorPayrollHoldWrite'}}}}
+      responses:
+        '201': {description: Payroll hold draft created, content: {application/json: {schema: {$ref: '#/schemas/EorPayrollHold'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+        '422': {$ref: '#/responses/UnprocessableEntity'}
+  EmployeePayrollHoldApproval:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      summary: Approve employee payroll hold
+      operationId: approveEmployeePayrollHold
+      x-permission: employee-payroll.hold.approve
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EorEvidence'}}}}
+      responses:
+        '200': {description: Payroll hold activated by independent checker, content: {application/json: {schema: {$ref: '#/schemas/EorPayrollHold'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeePayrollHoldRelease:
+    parameters:
+    - $ref: '#/parameters/RelationshipId'
+    - $ref: '#/parameters/VersionId'
+    post:
+      tags: [Employee Payroll]
+      summary: Release employee payroll hold
+      operationId: releaseEmployeePayrollHold
+      x-permission: employee-payroll.hold.release
+      parameters:
+      - $ref: '#/parameters/IdempotencyKey'
+      - $ref: '#/parameters/IfMatch'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/schemas/EorEvidence'}}}}
+      responses:
+        '200': {description: Payroll hold released with preserved history, content: {application/json: {schema: {$ref: '#/schemas/EorPayrollHold'}}}}
+        '409': {$ref: '#/responses/Conflict'}
+  EmployeePayrollWorkbench:
+    get:
+      tags: [Employee Payroll]
+      summary: Get employee payroll operational workbench
+      operationId: getEmployeePayrollOperationalWorkbench
+      x-permission: employee-payroll.workbench.read
+      parameters:
+      - name: onboardingStatus
+        in: query
+        required: false
+        schema: {type: string}
+      - name: holdScope
+        in: query
+        required: false
+        schema: {$ref: '#/schemas/EorPayrollHoldScope'}
+      - $ref: '#/parameters/AsOf'
+      responses:
+        '200': {description: Employee payroll operational workbench, content: {application/json: {schema: {$ref: '#/schemas/EorWorkbench'}}}}
+
 schemas:
+  EorReadinessDimension:
+    type: string
+    enum: [IDENTITY, ASSIGNMENT, COMPENSATION, CALENDAR, PAYMENT, STATUTORY, TAX, DOCUMENTATION, APPROVAL, INTEGRATION]
+  EorPayrollHoldScope:
+    type: string
+    enum: [CALCULATION, PAYMENT, DOCUMENT_PUBLICATION, STATUTORY_SUBMISSION]
+  EorOnboardingCreate:
+    type: object
+    additionalProperties: false
+    required: [caseId, reason, evidenceRef]
+    properties:
+      caseId: {type: string, format: uuid}
+      reason: {type: string, minLength: 1, maxLength: 500}
+      evidenceRef: {type: string, minLength: 1, maxLength: 240}
+  EorOnboardingTransition:
+    type: object
+    additionalProperties: false
+    required: [targetStatus, reason, evidenceRef]
+    properties:
+      targetStatus: {type: string, enum: [DATA_COLLECTION, VALIDATION, APPROVAL, READINESS, COMPLETED, ON_HOLD, CANCELLED]}
+      reason: {type: string, minLength: 1, maxLength: 500}
+      evidenceRef: {type: string, minLength: 1, maxLength: 240}
+      asOf: {type: [string, 'null'], format: date}
+  EorOnboardingCase:
+    type: object
+    additionalProperties: false
+    required: [id, payrollRelationshipId, currentStatus, createdAt, createdBy, updatedAt, updatedBy, versionNo]
+    properties:
+      id: {type: string, format: uuid}
+      payrollRelationshipId: {type: string, format: uuid}
+      currentStatus: {type: string}
+      createdAt: {type: string, format: date-time}
+      createdBy: {type: string}
+      updatedAt: {type: string, format: date-time}
+      updatedBy: {type: string}
+      versionNo: {type: integer, format: int64}
+  EorOnboardingEvent:
+    type: object
+    additionalProperties: false
+    required: [id, onboardingCaseId, payrollRelationshipId, eventSequence, toStatus, reason, evidenceRef, occurredAt, actor]
+    properties:
+      id: {type: string, format: uuid}
+      onboardingCaseId: {type: string, format: uuid}
+      payrollRelationshipId: {type: string, format: uuid}
+      eventSequence: {type: integer, minimum: 1}
+      fromStatus: {type: [string, 'null']}
+      toStatus: {type: string}
+      reason: {type: string}
+      evidenceRef: {type: string}
+      occurredAt: {type: string, format: date-time}
+      actor: {type: string}
+  EorReadinessFinding:
+    type: object
+    additionalProperties: false
+    required: [dimension, severity, status, findingCode, detail, sourceKind, sourceReference]
+    properties:
+      dimension: {$ref: '#/schemas/EorReadinessDimension'}
+      severity: {type: string, enum: [BLOCKING, WARNING, INFORMATIONAL]}
+      status: {type: string, enum: [READY, BLOCKED, NOT_EVALUATED, EXPLICIT_NOT_APPLICABLE]}
+      findingCode: {type: string}
+      detail: {type: string}
+      sourceKind: {type: string}
+      sourceReference: {type: string}
+  EorReadiness:
+    type: object
+    additionalProperties: false
+    required: [payrollRelationshipId, asOf, ready, findings]
+    properties:
+      payrollRelationshipId: {type: string, format: uuid}
+      currencyCode: {type: [string, 'null'], pattern: '^[A-Z]{3}$'}
+      asOf: {type: string, format: date}
+      ready: {type: boolean}
+      findings: {type: array, items: {$ref: '#/schemas/EorReadinessFinding'}, minItems: 10}
+  EorReadinessPolicyWrite:
+    type: object
+    additionalProperties: false
+    required: [versionId, dimension, applicability, severity, evidenceRef, reason, effectiveFrom]
+    properties:
+      versionId: {type: string, format: uuid}
+      dimension: {$ref: '#/schemas/EorReadinessDimension'}
+      applicability: {type: string, enum: [REQUIRED, EXPLICIT_NOT_APPLICABLE]}
+      severity: {type: string, enum: [BLOCKING, WARNING, INFORMATIONAL]}
+      evidenceRef: {type: string, minLength: 1, maxLength: 240}
+      reason: {type: string, minLength: 1, maxLength: 500}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+  EorReadinessPolicy:
+    allOf:
+    - $ref: '#/schemas/EorReadinessPolicyWrite'
+    - type: object
+      required: [id, versionSequence, approvedAt, approvedBy]
+      properties:
+        id: {type: string, format: uuid}
+        versionSequence: {type: integer, minimum: 1}
+        supersedesVersionId: {type: [string, 'null'], format: uuid}
+        approvedAt: {type: string, format: date-time}
+        approvedBy: {type: string}
+  EorPayrollHoldWrite:
+    type: object
+    additionalProperties: false
+    required: [holdId, versionId, scopes, reasonCode, reason, sourceReference, effectiveFrom]
+    properties:
+      holdId: {type: string, format: uuid}
+      versionId: {type: string, format: uuid}
+      scopes: {type: array, minItems: 1, uniqueItems: true, items: {$ref: '#/schemas/EorPayrollHoldScope'}}
+      reasonCode: {type: string, pattern: '^[A-Z][A-Z0-9_]{1,79}$'}
+      reason: {type: string, minLength: 1, maxLength: 500}
+      sourceReference: {type: string, minLength: 1, maxLength: 240}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+  EorEvidence:
+    type: object
+    additionalProperties: false
+    required: [evidenceRef]
+    properties:
+      evidenceRef: {type: string, minLength: 1, maxLength: 240}
+  EorPayrollHold:
+    type: object
+    additionalProperties: false
+    required: [holdId, versionId, payrollRelationshipId, versionSequence, reasonCode, reason, sourceReference, effectiveFrom, lifecycleStatus, versionNo, scopes]
+    properties:
+      holdId: {type: string, format: uuid}
+      versionId: {type: string, format: uuid}
+      payrollRelationshipId: {type: string, format: uuid}
+      versionSequence: {type: integer, minimum: 1}
+      reasonCode: {type: string}
+      reason: {type: string}
+      sourceReference: {type: string}
+      effectiveFrom: {type: string, format: date}
+      effectiveTo: {type: [string, 'null'], format: date}
+      lifecycleStatus: {type: string, enum: [DRAFT, ACTIVE, RELEASED, SUPERSEDED, REJECTED]}
+      approvedAt: {type: [string, 'null'], format: date-time}
+      approvedBy: {type: [string, 'null']}
+      releasedAt: {type: [string, 'null'], format: date-time}
+      releasedBy: {type: [string, 'null']}
+      versionNo: {type: integer, format: int64}
+      scopes: {type: array, items: {$ref: '#/schemas/EorPayrollHoldScope'}}
+  EorWorkbenchItem:
+    type: object
+    additionalProperties: false
+    required: [payrollRelationshipId, onboardingCaseId, onboardingStatus, asOf, payrollReady, blockingFindingCount, blockingDimensions, activeHoldCount, activeHoldScopes]
+    properties:
+      payrollRelationshipId: {type: string, format: uuid}
+      onboardingCaseId: {type: string, format: uuid}
+      onboardingStatus: {type: string}
+      asOf: {type: string, format: date}
+      payrollReady: {type: boolean}
+      blockingFindingCount: {type: integer, format: int64, minimum: 0}
+      blockingDimensions: {type: array, items: {$ref: '#/schemas/EorReadinessDimension'}}
+      activeHoldCount: {type: integer, format: int64, minimum: 0}
+      activeHoldScopes: {type: array, items: {$ref: '#/schemas/EorPayrollHoldScope'}}
+  EorWorkbench:
+    type: object
+    additionalProperties: false
+    required: [asOf, total, items]
+    properties:
+      asOf: {type: string, format: date}
+      total: {type: integer, minimum: 0}
+      items: {type: array, items: {$ref: '#/schemas/EorWorkbenchItem'}}
   EipEvidenceRequest:
     type: object
     additionalProperties: false
