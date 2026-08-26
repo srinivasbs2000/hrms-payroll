@@ -902,10 +902,13 @@ DECLARE
   v_as_of date;
   v_currency varchar(3);
   v_onboarding jsonb;
-  v_readiness jsonb;
-  v_holds jsonb;
+  v_readiness jsonb := '[]'::jsonb;
+  v_holds jsonb := '[]'::jsonb;
   v_readiness_hash char(64);
   v_hold_hash char(64);
+  v_has_onboarding boolean := false;
+  v_has_readiness_policy boolean := false;
+  v_has_active_hold boolean := false;
 BEGIN
   SELECT version.payroll_relationship_id
     INTO v_relationship_id
@@ -939,31 +942,61 @@ BEGIN
     FROM employee_payroll.payroll_onboarding_case onboarding
    WHERE onboarding.tenant_id=NEW.tenant_id
      AND onboarding.payroll_relationship_id=v_relationship_id;
-  IF v_onboarding IS NULL OR v_onboarding->>'status' <> 'COMPLETED' THEN
+
+  v_has_onboarding := v_onboarding IS NOT NULL;
+
+  SELECT EXISTS (
+    SELECT 1
+      FROM employee_payroll.payroll_readiness_policy_version policy
+     WHERE policy.tenant_id=NEW.tenant_id
+       AND policy.effective_from<=v_as_of
+       AND (policy.effective_to IS NULL OR v_as_of<policy.effective_to)
+  ) INTO v_has_readiness_policy;
+
+  SELECT EXISTS (
+    SELECT 1
+      FROM employee_payroll.payroll_hold_version hold_version
+     WHERE hold_version.tenant_id=NEW.tenant_id
+       AND hold_version.payroll_relationship_id=v_relationship_id
+       AND hold_version.lifecycle_status='ACTIVE'
+       AND hold_version.effective_from<=v_as_of
+       AND (hold_version.effective_to IS NULL OR v_as_of<hold_version.effective_to)
+  ) INTO v_has_active_hold;
+
+  -- Preserve the pre-V052 snapshot contract for relationships that have no
+  -- P5-EOR operational evidence. This keeps historical/legacy payroll flows
+  -- deterministic while making V052 fail-closed once P5-EOR is applicable.
+  IF NOT (v_has_onboarding OR v_has_readiness_policy OR v_has_active_hold) THEN
+    RETURN NEW;
+  END IF;
+
+  IF v_has_onboarding AND v_onboarding->>'status' <> 'COMPLETED' THEN
     RAISE EXCEPTION 'completed onboarding evidence is required before input sealing'
       USING ERRCODE='23514';
   END IF;
 
-  SELECT coalesce(jsonb_agg(jsonb_build_object(
-      'dimension',finding.dimension,
-      'severity',finding.severity,
-      'status',finding.status,
-      'code',finding.finding_code,
-      'detail',finding.detail,
-      'sourceKind',finding.source_kind,
-      'sourceReference',finding.source_reference)
-      ORDER BY finding.dimension,finding.finding_code), '[]'::jsonb)
-    INTO v_readiness
-    FROM employee_payroll.payroll_readiness_findings(
-      NEW.tenant_id,v_relationship_id,v_currency,v_as_of) finding;
+  IF v_has_onboarding OR v_has_readiness_policy THEN
+    SELECT coalesce(jsonb_agg(jsonb_build_object(
+        'dimension',finding.dimension,
+        'severity',finding.severity,
+        'status',finding.status,
+        'code',finding.finding_code,
+        'detail',finding.detail,
+        'sourceKind',finding.source_kind,
+        'sourceReference',finding.source_reference)
+        ORDER BY finding.dimension,finding.finding_code), '[]'::jsonb)
+      INTO v_readiness
+      FROM employee_payroll.payroll_readiness_findings(
+        NEW.tenant_id,v_relationship_id,v_currency,v_as_of) finding;
 
-  IF EXISTS (
-    SELECT 1 FROM employee_payroll.payroll_readiness_findings(
-      NEW.tenant_id,v_relationship_id,v_currency,v_as_of) finding
-     WHERE finding.severity='BLOCKING'
-       AND finding.status NOT IN ('READY','EXPLICIT_NOT_APPLICABLE')) THEN
-    RAISE EXCEPTION 'blocking employee readiness prevents input sealing'
-      USING ERRCODE='23514';
+    IF EXISTS (
+      SELECT 1 FROM employee_payroll.payroll_readiness_findings(
+        NEW.tenant_id,v_relationship_id,v_currency,v_as_of) finding
+       WHERE finding.severity='BLOCKING'
+         AND finding.status NOT IN ('READY','EXPLICIT_NOT_APPLICABLE')) THEN
+      RAISE EXCEPTION 'blocking employee readiness prevents input sealing'
+        USING ERRCODE='23514';
+    END IF;
   END IF;
 
   SELECT coalesce(jsonb_agg(item ORDER BY item->>'holdId',item->>'versionId'), '[]'::jsonb)
@@ -1028,7 +1061,6 @@ BEGIN
   NEW.snapshot_hash := encode(public.digest(NEW.snapshot_payload::text,'sha256'),'hex');
   RETURN NEW;
 END $$;
-
 CREATE TRIGGER input_snapshot_employee_operational_enrichment_v052
   BEFORE INSERT ON payroll_ops.input_snapshot
   FOR EACH ROW EXECUTE FUNCTION payroll_ops.enrich_employee_operational_snapshot_v052();

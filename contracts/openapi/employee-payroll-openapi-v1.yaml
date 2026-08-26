@@ -1466,6 +1466,7 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     get:
       tags: [Employee Payroll]
+      summary: Get employee payroll onboarding
       operationId: getEmployeePayrollOnboarding
       x-permission: employee-payroll.onboarding.read
       responses:
@@ -1473,6 +1474,7 @@ pathItems:
         '404': {$ref: '#/responses/NotFound'}
     post:
       tags: [Employee Payroll]
+      summary: Create employee payroll onboarding
       operationId: createEmployeePayrollOnboarding
       x-permission: employee-payroll.onboarding.write
       parameters:
@@ -1486,6 +1488,7 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     get:
       tags: [Employee Payroll]
+      summary: List employee payroll onboarding history
       operationId: listEmployeePayrollOnboardingHistory
       x-permission: employee-payroll.onboarding.read
       responses:
@@ -1495,6 +1498,7 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     post:
       tags: [Employee Payroll]
+      summary: Transition employee payroll onboarding
       operationId: transitionEmployeePayrollOnboarding
       x-permission: employee-payroll.onboarding.write
       parameters:
@@ -1510,6 +1514,7 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     post:
       tags: [Employee Payroll]
+      summary: Approve employee payroll onboarding transition
       operationId: approveEmployeePayrollOnboardingTransition
       x-permission: employee-payroll.onboarding.approve
       parameters:
@@ -1525,6 +1530,7 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     get:
       tags: [Employee Payroll]
+      summary: Get employee payroll readiness
       operationId: getEmployeePayrollReadiness
       x-permission: employee-payroll.readiness.read
       parameters:
@@ -1538,6 +1544,7 @@ pathItems:
   EmployeePayrollReadinessPolicyCollection:
     get:
       tags: [Employee Payroll]
+      summary: List employee payroll readiness policies
       operationId: listEmployeePayrollReadinessPolicies
       x-permission: employee-payroll.readiness-policy.read
       parameters:
@@ -1549,6 +1556,7 @@ pathItems:
         '200': {description: Readiness policy versions, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EorReadinessPolicy'}}}}}
     post:
       tags: [Employee Payroll]
+      summary: Create employee payroll readiness policy
       operationId: createEmployeePayrollReadinessPolicy
       x-permission: employee-payroll.readiness-policy.write
       parameters:
@@ -1562,6 +1570,7 @@ pathItems:
     - $ref: '#/parameters/RelationshipId'
     get:
       tags: [Employee Payroll]
+      summary: List employee payroll holds
       operationId: listEmployeePayrollHolds
       x-permission: employee-payroll.hold.read
       parameters:
@@ -1570,6 +1579,7 @@ pathItems:
         '200': {description: Payroll hold version history, content: {application/json: {schema: {type: array, items: {$ref: '#/schemas/EorPayrollHold'}}}}}
     post:
       tags: [Employee Payroll]
+      summary: Create employee payroll hold
       operationId: createEmployeePayrollHold
       x-permission: employee-payroll.hold.write
       parameters:
@@ -1585,6 +1595,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Approve employee payroll hold
       operationId: approveEmployeePayrollHold
       x-permission: employee-payroll.hold.approve
       parameters:
@@ -1600,6 +1611,7 @@ pathItems:
     - $ref: '#/parameters/VersionId'
     post:
       tags: [Employee Payroll]
+      summary: Release employee payroll hold
       operationId: releaseEmployeePayrollHold
       x-permission: employee-payroll.hold.release
       parameters:
@@ -1612,6 +1624,7 @@ pathItems:
   EmployeePayrollWorkbench:
     get:
       tags: [Employee Payroll]
+      summary: Get employee payroll operational workbench
       operationId: getEmployeePayrollOperationalWorkbench
       x-permission: employee-payroll.workbench.read
       parameters:

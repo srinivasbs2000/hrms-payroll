@@ -158,7 +158,18 @@ class EmployeePayrollContractTest {
             "employee-payroll.payment-restriction.read",
             "employee-payroll.payment-restriction.write",
             "employee-payroll.payment-restriction.clear",
-            "employee-payroll.payment-readiness.read"
+            "employee-payroll.payment-readiness.read",
+            "employee-payroll.onboarding.read",
+            "employee-payroll.onboarding.write",
+            "employee-payroll.onboarding.approve",
+            "employee-payroll.readiness.read",
+            "employee-payroll.readiness-policy.read",
+            "employee-payroll.readiness-policy.write",
+            "employee-payroll.hold.read",
+            "employee-payroll.hold.write",
+            "employee-payroll.hold.approve",
+            "employee-payroll.hold.release",
+            "employee-payroll.workbench.read"
         );
     Set<String> values = new java.util.HashSet<>();
     for (var field : EmployeePayrollPermissions.class.getFields()) {
